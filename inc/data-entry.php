@@ -14,8 +14,7 @@ add_action( 'save_post', 'redirect_content_areas', 99, 2 );
  * @param WP_Post $post The post.
  */
 function redirect_content_areas( $post_id, $post ) {
-	// TODO: Include all data types.
-	if ( 'movie' !== $post->post_type || 'publish' !== $post->post_status ) {
+	if ( ! in_array( $post->post_type, get_data_type_slugs(), true ) || 'publish' !== $post->post_status ) {
 		return;
 	}
 
@@ -79,8 +78,7 @@ add_action( 'the_post', 'hydrate_data_with_content' );
  * @param WP_Post $post The current post.
  */
 function hydrate_data_with_content( $post ) {
-	// TODO: Include all data types.
-	if ( 'movie' !== $post->post_type ) {
+	if ( ! in_array( $post->post_type, get_data_type_slugs(), true ) ) {
 		return;
 	}
 
