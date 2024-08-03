@@ -16,20 +16,10 @@ add_filter( 'get_block_type_variations', 'register_block_variations', 10, 2 );
 function register_block_variations( $variations, $block_type ) {
 	if ( 'core/paragraph' === $block_type->name ) {
 		foreach ( get_registered_data_types() as $data_type ) {
-			$template = get_data_type_template( $data_type->slug );
-			$template = parse_blocks( $template );
-
-			// TODO: Fix recursion.
-			foreach ( $template as $block ) {
-				$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
-
-				if ( is_null( $binding ) || 'post_content' === $binding ) {
-					continue;
-				}
-
+			foreach ( get_data_type_custom_fields( $data_type ) as $custom_field ) {
 				$variations[] = array(
-					'name'       => $binding,
-					'title'      => ucwords( $binding ),
+					'name'       => $custom_field,
+					'title'      => ucwords( $custom_field ),
 					'category'   => $data_type->slug . '-fields',
 					'icon'       => 'book-alt',
 					'attributes' => array(
@@ -38,7 +28,7 @@ function register_block_variations( $variations, $block_type ) {
 								'content' => array(
 									'source' => 'core/post-meta',
 									'args'   => array(
-										'key' => $binding,
+										'key' => $custom_field,
 									),
 								),
 							),

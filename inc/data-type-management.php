@@ -24,8 +24,6 @@ add_action(
 		$data_types = get_registered_data_types();
 
 		foreach ( $data_types as $data_type ) {
-			$blocks = parse_blocks( $data_type->template );
-
 			register_post_type(
 				$data_type->slug,
 				array(
@@ -34,11 +32,11 @@ add_action(
 					'show_in_menu' => true,
 					'show_in_rest' => true,
 					'icon'         => 'dashicons-admin-site',
-					'template'     => _convert_parsed_blocks_for_js( $blocks ),
+					'template'     => _convert_parsed_blocks_for_js( parse_blocks( $data_type->template ) ),
 				)
 			);
 
-			$meta_fields = _get_meta_fields( $blocks );
+			$meta_fields = get_data_type_custom_fields( $data_type );
 
 			foreach ( $meta_fields as $meta_field ) {
 				register_post_meta(
@@ -79,29 +77,6 @@ function _convert_parsed_blocks_for_js( $blocks ) {
 }
 
 /**
- * Parse the blocks looking for bound post meta fields.
- *
- * TODO: Fix recursion.
- *
- * @param array $blocks The blocks from the CPT template.
- */
-function _get_meta_fields( $blocks ) {
-	$meta_fields = array();
-
-	foreach ( $blocks as $block ) {
-		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
-
-		if ( is_null( $binding ) || 'post_content' === $binding ) {
-			continue;
-		}
-
-		$meta_fields[] = $binding;
-	}
-
-	return $meta_fields;
-}
-
-/**
  * Get all registered data types.
  */
 function get_registered_data_types() {
@@ -127,14 +102,34 @@ function get_data_type_slugs() {
 }
 
 /**
- * Get the template of a specific data type.
+ * Resolve all custom fields from the data type's template.
  *
- * @param string $data_type_slug The slug of the data type.
+ * @param object $data_type The data type.
  */
-function get_data_type_template( $data_type_slug ) {
-	foreach ( get_registered_data_types() as $data_type ) {
-		if ( $data_type->slug === $data_type_slug ) {
-			return $data_type->template;
+function get_data_type_custom_fields( $data_type ) {
+	$blocks = parse_blocks( $data_type->template );
+	return _get_custom_fields( $blocks );
+}
+
+/**
+ * Gets custom fields from blocks.
+ *
+ * @param array $blocks The blocks.
+ */
+function _get_custom_fields( $blocks ) {
+	foreach ( $blocks as $block ) {
+		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
+
+		if ( is_null( $binding ) || 'post_content' === $binding ) {
+			continue;
+		}
+
+		$acc[] = $binding;
+
+		if ( ! empty( $block['innerBlocks'] ) ) {
+			$acc = array_merge( $acc, _get_custom_fields( $block['innerBlocks'] ) );
 		}
 	}
+
+	return $acc;
 }
