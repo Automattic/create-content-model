@@ -18,21 +18,18 @@ function redirect_content_areas( $post_id, $post ) {
 		return;
 	}
 
-	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-		return;
-	}
-
 	remove_action( 'save_post', 'redirect_content_areas', 99 );
 
 	$blocks = parse_blocks( wp_unslash( $post->post_content ) );
 
-	$data = extract_content_from_blocks( $blocks );
+	$post_content = _find_post_content( $blocks );
+	$meta_fields  = _find_meta_fields( $blocks );
 
 	wp_update_post(
 		array(
 			'ID'           => $post_id,
-			'post_content' => $data['post_content'],
-			'meta_input'   => $data['meta_fields'],
+			'post_content' => $post_content ?? '',
+			'meta_input'   => $meta_fields,
 		)
 	);
 
@@ -40,74 +37,114 @@ function redirect_content_areas( $post_id, $post ) {
 }
 
 /**
- * Extract contents from the blocks.
+ * Finds the post_content content area within blocks.
  *
- * TODO: Fix recursion.
+ * @param array $blocks The blocks.
  *
- * @param array $blocks The blocks from the post.
+ * @return string The post content markup.
  */
-function extract_content_from_blocks( $blocks ) {
-	$data = array(
-		'post_content' => '',
-		'meta_fields'  => array(),
-	);
+function _find_post_content( $blocks ) {
+	foreach ( $blocks as $block ) {
+		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
+
+		if ( 'post_content' === $binding ) {
+			return serialize_blocks( $block['innerBlocks'] );
+		}
+
+		if ( ! empty( $block['innerBlocks'] ) ) {
+			$result = _find_post_content( $block['innerBlocks'] );
+
+			if ( $result ) {
+				return $result;
+			}
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Finds meta fields within blocks.
+ *
+ * @param array $blocks The blocks.
+ *
+ * @return array The meta fields key-value pair: key is the meta field name, and value is the markup.
+ */
+function _find_meta_fields( $blocks ) {
+	$acc = array();
 
 	foreach ( $blocks as $block ) {
 		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
 
-		if ( is_null( $binding ) ) {
-			continue;
-		}
-
 		if ( 'post_content' === $binding ) {
-			$data['post_content'] = serialize_blocks( $block['innerBlocks'] );
 			continue;
 		}
 
-		$data['meta_fields'][ $binding ] = serialize_blocks( $block['innerBlocks'] );
+		if ( ! is_null( $binding ) ) {
+			$acc[ $binding ] = serialize_blocks( $block['innerBlocks'] );
+			continue;
+		}
+
+		if ( ! empty( $block['innerBlocks'] ) ) {
+			$acc = array_merge( $acc, _find_meta_fields( $block['innerBlocks'] ) );
+		}
 	}
 
-	return $data;
+	return $acc;
 }
 
-add_action( 'the_post', 'hydrate_data_with_content' );
+add_action( 'the_post', 'hydrate_template_with_content' );
 
 /**
- * In the editor, hydrate the template with the actual data and display it.
+ * In the editor, display the template and fill it with the data.
  *
  * @param WP_Post $post The current post.
  */
-function hydrate_data_with_content( $post ) {
+function hydrate_template_with_content( $post ) {
 	if ( ! in_array( $post->post_type, get_data_type_slugs(), true ) ) {
 		return;
 	}
 
 	$template = get_data_type_template( $post->post_type );
-	$template = parse_blocks( $template );
 
-	// TODO: Fix recursion.
-	foreach ( $template as $key => $block ) {
+	$parsed_template = parse_blocks( $template );
+	$hydrated_blocks = hydrate_blocks_with_content( $parsed_template );
+
+	$post->post_content = serialize_blocks( $hydrated_blocks );
+}
+
+/**
+ * Iterates over blocks and fills the bindings with content (from post content or meta fields).
+ *
+ * @param array $blocks The blocks.
+ *
+ * @return array Filled blocks.
+ */
+function hydrate_blocks_with_content( $blocks ) {
+	foreach ( $blocks as $index => $block ) {
 		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
 
 		if ( is_null( $binding ) ) {
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$blocks[ $index ]['innerBlocks'] = hydrate_blocks_with_content( $block['innerBlocks'] );
+			}
+
 			continue;
 		}
 
 		if ( 'post_content' === $binding ) {
-			$content = $post->post_content;
+			$content = get_the_content();
 		} else {
 			$content = get_post_meta( get_the_ID(), $binding, true );
 		}
 
-		$template[ $key ]['innerBlocks'] = parse_blocks( $content );
+		$blocks[ $index ]['innerBlocks'] = parse_blocks( $content );
 
-		$new_content = backfill_html( $block['innerHTML'], $content );
-
-		$template[ $key ]['innerHTML']    = $new_content;
-		$template[ $key ]['innerContent'] = array( $new_content );
+		$blocks[ $index ]['innerHTML']    = inject_content_into_block_markup( $content, $block['innerHTML'] );
+		$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );
 	}
 
-	$post->post_content = serialize_blocks( $template );
+	return $blocks;
 }
 
 /**
@@ -124,13 +161,13 @@ function get_data_type_template( $data_type_slug ) {
 }
 
 /**
- * Backfill the HTML.
+ * Adds the content (from post_content or post meta) within the markup.
  *
- * @param string $inner_html The markup.
- * @param string $block_content The content of the block.
+ * @param string $content The content.
+ * @param string $block_markup The innerHTML of the block.
  */
-function backfill_html( $inner_html, $block_content ) {
-	$p = new WP_HTML_Tag_Processor( $inner_html );
+function inject_content_into_block_markup( $content, $block_markup ) {
+	$p = new WP_HTML_Tag_Processor( $block_markup );
 	$p->next_tag();
 	$p2 = new WP_HTML_Tag_Processor( '<div>' );
 	$p2->next_tag();
@@ -138,5 +175,5 @@ function backfill_html( $inner_html, $block_content ) {
 		$p2->set_attribute( $attribute, $p->get_attribute( $attribute ) );
 	}
 
-	return $p2->get_updated_html() . $block_content . '</div>';
+	return $p2->get_updated_html() . $content . '</div>';
 }

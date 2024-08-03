@@ -117,6 +117,8 @@ function get_data_type_custom_fields( $data_type ) {
  * @param array $blocks The blocks.
  */
 function _get_custom_fields( $blocks ) {
+	$acc = array();
+
 	foreach ( $blocks as $block ) {
 		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
 

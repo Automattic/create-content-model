@@ -4,7 +4,6 @@
 
 ### TODO
 
-- [ ] Fix TODOs
-- [ ] Default pattern for created CPT
 - [ ] Lock all content except bound blocks
+- [ ] Default pattern for created CPT
 - [ ] Document stuff better.
