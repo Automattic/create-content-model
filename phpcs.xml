@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<ruleset name="wpcom-standard">
+	<description>The phpcs standard for wpcom code.</description>
+	<arg value="ps"/>
+	<arg name="parallel" value="20"/>
+	<!-- <rule ref="NoGetCurrentUser"/> -->
+	<rule ref="VariableAnalysis"/>
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable">
+		<type>error</type>
+	</rule>
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
+		<properties>
+			<property name="allowUnusedCaughtExceptions" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="WordPress">
+		<rule ref="WordPress.WP.GlobalVariablesOverride">
+			<properties>
+				<property name="custom_test_class_whitelist" type="array">
+					<element value="Bkismet_UnitTestCase"/>
+				</property>
+			</properties>
+		</rule>
+	</rule>
+	<rule ref="WordPress.WP.I18n.NoHtmlWrappedStrings">
+		<type>error</type>
+	</rule>
+	<rule ref="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+	<rule ref="Universal.Arrays.DisallowShortArraySyntax">
+	  <severity>0</severity>
+	</rule>
+	<rule ref="Squiz.Commenting">
+		<severity>0</severity>
+	</rule>
+	<rule ref="Generic.Commenting">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.Files.FileName">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.DB.PreparedSQL.NotPrepared">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.WP.CapitalPDangit">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.PHP.YodaConditions.NotYoda">
+		<type>warning</type>
+	</rule>
+	<rule ref="WordPress.Arrays.ArrayDeclarationSpacing">
+		<exclude-pattern>**/*.asset.php</exclude-pattern>
+	</rule>
+</ruleset>

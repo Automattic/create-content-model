@@ -1,0 +1,39 @@
+{
+    "name": "cf-exploration",
+    "version": "1.0.0",
+    "main": ".prettierrc.js",
+    "scripts": {
+        "prepare": "husky",
+        "dev-server": "npx @wp-now/wp-now start --wp=nightly --skip-browser --blueprint=dev.json",
+        "format": "wp-scripts format",
+        "lint:css": "wp-scripts lint-style",
+        "lint:js": "wp-scripts lint-js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "@wordpress/eslint-plugin": "^20.0.0",
+        "@wordpress/prettier-config": "^4.3.0",
+        "@wordpress/scripts": "^27.9.0",
+        "husky": "^9.1.4",
+        "prettier": "npm:wp-prettier@^3.0.3"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.{js,json,ts,tsx,yml,yaml}": [
+            "npm run format"
+        ],
+        "*.{js,ts,tsx}": [
+            "npm run lint:js"
+        ],
+        "*.scss": [
+            "npm run lint:css"
+        ]
+    }
+}

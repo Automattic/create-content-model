@@ -1,0 +1,10 @@
+root: true
+env:
+    es6: true
+    browser: true
+    jest: true
+extends:
+    - plugin:@wordpress/eslint-plugin/recommended
+rules:
+    '@wordpress/no-unsafe-wp-apis': off
+    'import/no-extraneous-dependencies': off
