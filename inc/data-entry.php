@@ -82,9 +82,8 @@ function hydrate_data_with_content( $post ) {
 		return;
 	}
 
-	// TODO: Get the template from the post type.
-	$template = get_post( 80 );
-	$template = parse_blocks( $template->post_content );
+	$template = get_data_type_template( $post->post_type );
+	$template = parse_blocks( $template );
 
 	// TODO: Fix recursion.
 	foreach ( $template as $key => $block ) {

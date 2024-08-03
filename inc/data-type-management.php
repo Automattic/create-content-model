@@ -125,3 +125,16 @@ function get_registered_data_types() {
 function get_data_type_slugs() {
 	return array_map( fn( $data_type ) => $data_type->slug, get_registered_data_types() );
 }
+
+/**
+ * Get the template of a specific data type.
+ *
+ * @param string $data_type_slug The slug of the data type.
+ */
+function get_data_type_template( $data_type_slug ) {
+	foreach ( get_registered_data_types() as $data_type ) {
+		if ( $data_type->slug === $data_type_slug ) {
+			return $data_type->template;
+		}
+	}
+}
