@@ -138,6 +138,11 @@ function hydrate_blocks_with_content( $blocks ) {
 			$content = get_post_meta( get_the_ID(), $binding, true );
 		}
 
+		// If can't find the corresponding content, do not try to inject it.
+		if ( ! $content ) {
+			continue;
+		}
+
 		$blocks[ $index ]['innerBlocks'] = parse_blocks( $content );
 
 		$blocks[ $index ]['innerHTML']    = inject_content_into_block_markup( $content, $block['innerHTML'] );

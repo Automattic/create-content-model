@@ -32,7 +32,6 @@ add_action(
 					'show_in_menu' => true,
 					'show_in_rest' => true,
 					'icon'         => 'dashicons-admin-site',
-					'template'     => _convert_parsed_blocks_for_js( parse_blocks( $data_type->template ) ),
 				)
 			);
 
@@ -54,27 +53,6 @@ add_action(
 	},
 	0
 );
-
-/**
- * Converts parsed blocks to a format Gutenberg can understand.
- *
- * @param array $blocks A list of blocks.
- */
-function _convert_parsed_blocks_for_js( $blocks ) {
-	$template = array();
-	foreach ( $blocks as $block ) {
-		if ( null === $block['blockName'] && empty( trim( $block['innerHTML'] ) ) ) {
-			continue;
-		}
-
-		$entry = array( $block['blockName'], $block['attrs'] );
-		if ( isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
-			$entry[] = _convert_parsed_blocks_for_js( $block['innerBlocks'] );
-		}
-		$template[] = $entry;
-	}
-	return $template;
-}
 
 /**
  * Get all registered data types.
