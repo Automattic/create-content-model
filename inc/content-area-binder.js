@@ -23,7 +23,7 @@ function registerContentAreaInspector( wp ) {
 						wp.element.createElement(
 							PanelBody,
 							{
-								title: 'Content Area',
+								title: 'Content area',
 								initialOpen: true,
 							},
 							[

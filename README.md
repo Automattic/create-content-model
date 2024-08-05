@@ -1,9 +1,30 @@
-# Data Types with post_content and post meta
+# Data Types with content areas
 
-`npm install` and `npm run dev-server`
+Run it with `npm install` and `npm run dev-server`.
 
-### TODO
+## How it works
 
-- [ ] Document stuff better and show teammates
-- [ ] Lock all content and styling except bound blocks's inside when entering data
-- [ ] Work on examples that have a primary and secondary content
+### Creating a data type
+
+Much like the Hackathon, the Editor creates a new post type and define the fields.
+
+The "fields" in this prototype are limited to the content areas.
+
+When you select a Group block, a new inspector control ("Content area") is added to the sidebar,
+where you can bind the contents to a specific part of the post object.
+
+- `post_content` binds to the `post_content` attribute.
+- Any other value binds to the post meta fields.
+
+### Entering data
+
+The data type template and displayed in the Editor. User enters content in the group blocks that were added.
+
+Upon clicking "Save", the back-end will intercept the post, extract the bound Group's contents and
+route them to the appropriate places.
+
+### Displaying data
+
+The `post_content` is not intercepted, and the stored content is displayed.
+
+The plugin creates a block variation for each post meta field, and also exposes a block that renders the data type template.
