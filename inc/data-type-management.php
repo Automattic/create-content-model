@@ -45,7 +45,6 @@ add_action(
 						'show_in_rest' => true,
 						'single'       => true,
 						'type'         => 'string',
-						'default'      => $meta_field,
 					)
 				);
 			}
