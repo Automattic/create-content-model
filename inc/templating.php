@@ -60,3 +60,50 @@ function register_field_categories( $categories ) {
 
 	return $categories;
 }
+
+add_action( 'init', 'register_data_type_template_block' );
+
+/**
+ * Register a block that represents the data type template.
+ */
+function register_data_type_template_block() {
+	$block_name = 'data-types/type-template';
+
+	$args = array(
+		'api_version'     => 1,
+		'title'           => 'Data type template',
+		'attributes'      => array(),
+		// translators: %s is the data type's name.
+		'description'     => __( 'Template for the data type.' ),
+		'category'        => 'text',
+		'render_callback' => function () {
+			global $post;
+
+			if ( ! $post ) {
+				return __( 'No post found' );
+			}
+
+			$template = get_data_type_template( $post->post_type );
+
+			$parsed_template = parse_blocks( $template );
+			$hydrated_blocks = hydrate_blocks_with_content( $parsed_template );
+
+			return implode( '', array_map( 'render_block', $hydrated_blocks ) );
+		},
+	);
+
+	register_block_type( $block_name, $args );
+}
+
+add_action(
+	'enqueue_block_editor_assets',
+	function () {
+		wp_enqueue_script(
+			'data-types/type-template',
+			plugin_dir_url( __FILE__ ) . '/type-template-inserter.js',
+			array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post', 'wp-i18n' ),
+			'v1',
+			true
+		);
+	}
+);

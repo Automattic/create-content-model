@@ -100,11 +100,13 @@ function _get_custom_fields( $blocks ) {
 	foreach ( $blocks as $block ) {
 		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
 
-		if ( is_null( $binding ) || 'post_content' === $binding ) {
+		if ( 'post_content' === $binding ) {
 			continue;
 		}
 
-		$acc[] = $binding;
+		if ( ! is_null( $binding ) ) {
+			$acc[] = $binding;
+		}
 
 		if ( ! empty( $block['innerBlocks'] ) ) {
 			$acc = array_merge( $acc, _get_custom_fields( $block['innerBlocks'] ) );
