@@ -2,15 +2,15 @@
 
 Run it with `npm install` and `npm run dev-server`.
 
-[Watch the solution walkthrough here](https://www.youtube.com/watch?v=pA_lq7eeGlg)
+[Watch the solution walkthrough here](https://www.youtube.com/watch?v=pA_lq7eeGlg).
 
 ## How it works
 
 ### Creating a data type
 
-Much like the Hackathon, the Editor creates a new post type and define the fields.
+Much like the Hackathon, the Editor is used to create a new data type and define its fields.
 
-The "fields" in this prototype are limited to the content areas.
+**The "fields" in this prototype are limited to the content areas.**
 
 When you select a Group block, a new inspector control ("Content area") is added to the sidebar,
 where you can bind the contents to a specific part of the post object:
