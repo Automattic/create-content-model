@@ -29,4 +29,4 @@ save them to the appropriate places (e.g., `post_content` and post meta fields.)
 
 The `post_content` is not intercepted, and the stored content is displayed.
 
-The plugin creates a block variation for each post meta field, and also exposes a block that renders the data type template from the current Query Loop context.
+The plugin creates a block variation for each post meta field, and also exposes a block that renders the data type's template in the current Query Loop context.
