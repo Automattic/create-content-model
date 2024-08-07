@@ -5,8 +5,7 @@
 			"step": "defineWpConfigConsts",
 			"consts": {
 				"WP_DEBUG": true,
-				"WP_DEBUG_LOG": "/var/www/html/wp-content/plugins/cf24-cpts/debug.log",
-				"WP_PD_DEV": true
+				"WP_DEBUG_LOG": "/var/www/html/wp-content/plugins/create-content-model/debug.log"
 			}
 		}
 	]

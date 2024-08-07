@@ -14,7 +14,7 @@ add_action( 'save_post', 'redirect_content_areas', 99, 2 );
  * @param WP_Post $post The post.
  */
 function redirect_content_areas( $post_id, $post ) {
-	if ( ! in_array( $post->post_type, get_data_type_slugs(), true ) || 'publish' !== $post->post_status ) {
+	if ( ! in_array( $post->post_type, get_content_model_slugs(), true ) || 'publish' !== $post->post_status ) {
 		return;
 	}
 
@@ -101,11 +101,11 @@ add_action( 'the_post', 'hydrate_template_with_content' );
  * @param WP_Post $post The current post.
  */
 function hydrate_template_with_content( $post ) {
-	if ( ! in_array( $post->post_type, get_data_type_slugs(), true ) ) {
+	if ( ! in_array( $post->post_type, get_content_model_slugs(), true ) ) {
 		return;
 	}
 
-	$template = get_data_type_template( $post->post_type );
+	$template = get_content_model_template( $post->post_type );
 
 	$parsed_template = parse_blocks( $template );
 	$hydrated_blocks = hydrate_blocks_with_content( $parsed_template );
@@ -153,14 +153,14 @@ function hydrate_blocks_with_content( $blocks ) {
 }
 
 /**
- * Get the template of a specific data type.
+ * Get the template of a specific content model.
  *
- * @param string $data_type_slug The slug of the data type.
+ * @param string $content_model_slug The slug of the content model.
  */
-function get_data_type_template( $data_type_slug ) {
-	foreach ( get_registered_data_types() as $data_type ) {
-		if ( $data_type->slug === $data_type_slug ) {
-			return $data_type->template;
+function get_content_model_template( $content_model_slug ) {
+	foreach ( get_registered_content_models() as $content_model ) {
+		if ( $content_model->slug === $content_model_slug ) {
+			return $content_model->template;
 		}
 	}
 }
@@ -181,4 +181,11 @@ function inject_content_into_block_markup( $content, $block_markup ) {
 	}
 
 	return $p2->get_updated_html() . $content . '</div>';
+}
+
+/**
+ * Get all register content model slugs.
+ */
+function get_content_model_slugs() {
+	return array_map( fn( $content_model ) => $content_model->slug, get_registered_content_models() );
 }

@@ -1,8 +1,4 @@
 function registerContentAreaInspector( wp ) {
-	const loadedPagePostType = wp.data
-		.select( 'core/editor' )
-		.getCurrentPostType();
-
 	const createHigherOrderComponent = wp.compose.createHigherOrderComponent;
 	const { Fragment } = wp.element;
 	const { InspectorControls } = wp.blockEditor;
@@ -30,8 +26,6 @@ function registerContentAreaInspector( wp ) {
 								wp.element.createElement( TextControl, {
 									key: 'location',
 									label: 'location',
-									readOnly:
-										'data_types' !== loadedPagePostType,
 									value: attributes.metadata?.[
 										'data-types/binding'
 									],
