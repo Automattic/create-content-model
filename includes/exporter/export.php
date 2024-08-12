@@ -1,0 +1,178 @@
+<?php
+/**
+ * Handles the export functionality for Content Models.
+ *
+ * @package create-content-model
+ */
+
+/**
+ * Adds the export submenu page.
+ */
+function add_export_submenu_page() {
+	add_submenu_page(
+		'edit.php?post_type=content_model',
+		'Export Content Models',
+		'Export',
+		'manage_options',
+		'export-content-models',
+		'render_export_page'
+	);
+}
+add_action( 'admin_menu', 'add_export_submenu_page' );
+
+/**
+ * Renders the export page.
+ */
+function render_export_page() {
+	render_export_ui();
+	if ( isset( $_POST['export_content_models'] ) && check_admin_referer( 'export_content_models', 'export_nonce' ) ) {
+		preview_json_export();
+		return;
+	}
+}
+
+/**
+ * Renders the export UI.
+ */
+function render_export_ui() {
+	?>
+	<div class="wrap">
+		<h1>Export Content Models</h1>
+		<form method="post" action="">
+			<?php wp_nonce_field( 'export_content_models', 'export_nonce' ); ?>
+			<p>Click the button below to display the JSON for all Content Models.</p>
+			<input type="submit" name="export_content_models" class="button button-primary" value="Display Content Models JSON">
+		</form>
+		
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<?php wp_nonce_field( 'download_content_models_zip', 'download_zip_nonce' ); ?>
+			<input type="hidden" name="action" value="download_content_models_zip">
+			<p>Click the button below to download a ZIP file containing all Content Models.</p>
+			<input type="submit" name="download_content_models_zip" class="button button-secondary" value="Download ZIP file">
+		</form>
+	</div>
+	<?php
+}
+
+/**
+ * Preview the JSON export.
+ */
+function preview_json_export() {
+	$content_models = get_registered_content_models();
+
+	$all_models_json = array();
+
+	foreach ( $content_models as $model ) {
+		$json_data                       = generate_json_for_model( $model );
+		$all_models_json[ $model->slug ] = $json_data;
+	}
+
+	echo '<h2>Content Models JSON</h2>';
+	echo '<pre style="background-color: #f4f4f4; padding: 15px; overflow: auto; max-height: 500px;">';
+	echo esc_html( wp_json_encode( $all_models_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
+	echo '</pre>';
+	echo '<h2>Content Models JSON Minified</h2>';
+	echo '<pre style="background-color: #f4f4f4; padding: 15px; overflow: auto; max-height: 500px;">';
+	echo esc_html( wp_json_encode( $all_models_json, JSON_UNESCAPED_UNICODE ) );
+	echo '</pre>';
+}
+
+/**
+ * Generates the JSON data for a single content model.
+ *
+ * @param WP_Post $model The content model post object.
+ * @return array The JSON data structure.
+ */
+function generate_json_for_model( $model ) {
+	$fields = get_content_model_custom_fields( $model );
+	return array(
+		'type'     => 'postType',
+		'slug'     => $model->slug,
+		'label'    => $model->name,
+		'template' => parse_blocks( $model->template ),
+		'fields'   => format_fields_for_export( $fields ),
+	);
+}
+
+/**
+ * Formats the fields for export.
+ *
+ * @param array $fields The raw fields data.
+ * @return array The formatted fields for export.
+ */
+function format_fields_for_export( $fields ) {
+	$formatted_fields = array();
+	foreach ( $fields as $field ) {
+		$formatted_fields[] = array(
+			'slug' => $field,
+			// TODO: have UI in place for adding label, type, description, and required.
+		);
+	}
+	return $formatted_fields;
+}
+
+function handle_zip_download() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( 'You do not have sufficient permissions to access this page.' );
+	}
+
+	check_admin_referer( 'download_content_models_zip', 'download_zip_nonce' );
+
+	$content_models = get_posts(
+		array(
+			'post_type'   => 'content_model',
+			'numberposts' => -1,
+		)
+	);
+
+	$all_models_json = array();
+
+	foreach ( $content_models as $model ) {
+		$json_data                            = generate_json_for_model( $model );
+		$all_models_json[ $model->post_name ] = $json_data;
+	}
+
+	$zip_file = create_zip_file( $all_models_json );
+
+	if ( $zip_file ) {
+		$zip_url = wp_get_attachment_url( $zip_file );
+		wp_safe_redirect( $zip_url );
+		exit;
+	} else {
+		wp_die( 'Failed to create ZIP file' );
+	}
+}
+
+function create_zip_file( $all_models_json ) {
+	$upload_dir   = wp_upload_dir();
+	$zip_filename = 'content_models_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
+	$zip_filepath = $upload_dir['path'] . '/' . $zip_filename;
+
+	$zip = new ZipArchive();
+	if ( true !== $zip->open( $zip_filepath, ZipArchive::CREATE ) ) {
+		return false;
+	}
+
+	foreach ( $all_models_json as $model_slug => $model_json ) {
+		$zip->addFromString( $model_slug . '.json', wp_json_encode( $model_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
+	}
+
+	$zip->close();
+
+	$filetype   = wp_check_filetype( $zip_filename, null );
+	$attachment = array(
+		'post_mime_type' => $filetype['type'],
+		'post_title'     => sanitize_file_name( $zip_filename ),
+		'post_content'   => '',
+		'post_status'    => 'inherit',
+	);
+
+	$attach_id = wp_insert_attachment( $attachment, $zip_filepath );
+	if ( 0 === $attach_id ) {
+		return false;
+	}
+
+	return $attach_id;
+}
+
+add_action( 'admin_post_download_content_models_zip', 'handle_zip_download' );
