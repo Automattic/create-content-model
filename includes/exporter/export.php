@@ -11,8 +11,8 @@
 function add_export_submenu_page() {
 	add_submenu_page(
 		'edit.php?post_type=content_model',
-		'Export Content Models',
-		'Export',
+		__( 'Export Content Models', 'create-content-model' ),
+		__( 'Export', 'create-content-model' ),
 		'manage_options',
 		'export-content-models',
 		'render_export_page'
@@ -37,18 +37,18 @@ function render_export_page() {
 function render_export_ui() {
 	?>
 	<div class="wrap">
-		<h1>Export Content Models</h1>
+		<h1><?php echo esc_html__( 'Export Content Models', 'create-content-model' ); ?></h1>
 		<form method="post" action="">
 			<?php wp_nonce_field( 'export_content_models', 'export_nonce' ); ?>
-			<p>Click the button below to display the JSON for all Content Models.</p>
-			<input type="submit" name="export_content_models" class="button button-primary" value="Display Content Models JSON">
+			 <p><?php echo esc_html__( 'Click the button below to display the JSON for all Content Models.', 'create-content-model' ); ?></p>
+			<input type="submit" name="export_content_models" class="button button-primary" value="<?php echo esc_attr__( 'Display Content Models JSON', 'create-content-model' ); ?>">
 		</form>
 		
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<?php wp_nonce_field( 'download_content_models_zip', 'download_zip_nonce' ); ?>
 			<input type="hidden" name="action" value="download_content_models_zip">
-			<p>Click the button below to download a ZIP file containing all Content Models.</p>
-			<input type="submit" name="download_content_models_zip" class="button button-secondary" value="Download ZIP file">
+			<p><?php echo esc_html__( 'Click the button below to download a ZIP file containing all Content Models.', 'create-content-model' ); ?></p>
+			<input type="submit" name="download_content_models_zip" class="button button-secondary" value="<?php echo esc_attr__( 'Download ZIP file', 'create-content-model' ); ?>">
 		</form>
 	</div>
 	<?php
@@ -58,20 +58,13 @@ function render_export_ui() {
  * Preview the JSON export.
  */
 function preview_json_export() {
-	$content_models = get_registered_content_models();
+	$all_models_json = generate_all_models_json();
 
-	$all_models_json = array();
-
-	foreach ( $content_models as $model ) {
-		$json_data                       = generate_json_for_model( $model );
-		$all_models_json[ $model->slug ] = $json_data;
-	}
-
-	echo '<h2>Content Models JSON</h2>';
+	echo '<h2>' . esc_html__( 'Content Models JSON', 'create-content-model' ) . '</h2>';
 	echo '<pre style="background-color: #f4f4f4; padding: 15px; overflow: auto; max-height: 500px;">';
 	echo esc_html( wp_json_encode( $all_models_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
 	echo '</pre>';
-	echo '<h2>Content Models JSON Minified</h2>';
+	echo '<h2>' . esc_html__( 'Content Models JSON Minified', 'create-content-model' ) . '</h2>';
 	echo '<pre style="background-color: #f4f4f4; padding: 15px; overflow: auto; max-height: 500px;">';
 	echo esc_html( wp_json_encode( $all_models_json, JSON_UNESCAPED_UNICODE ) );
 	echo '</pre>';
@@ -87,6 +80,7 @@ function generate_json_for_model( $model ) {
 	$fields = get_content_model_custom_fields( $model );
 	return array(
 		'type'     => 'postType',
+		'postType' => $model->slug,
 		'slug'     => $model->slug,
 		'label'    => $model->name,
 		'template' => parse_blocks( $model->template ),
@@ -111,36 +105,41 @@ function format_fields_for_export( $fields ) {
 	return $formatted_fields;
 }
 
+/**
+ * Generates JSON data for all registered content models.
+ *
+ * @return array An associative array of content models' JSON data.
+ */
+function generate_all_models_json() {
+    $content_models = get_registered_content_models();
+    $all_models_json = array();
+
+    foreach ( $content_models as $model ) {
+        $json_data = generate_json_for_model( $model );
+        $all_models_json[ $model->slug ] = $json_data;
+    }
+
+    return $all_models_json;
+}
+
 function handle_zip_download() {
-	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( 'You do not have sufficient permissions to access this page.' );
-	}
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'create-content-model' ) );
+    }
 
-	check_admin_referer( 'download_content_models_zip', 'download_zip_nonce' );
+    check_admin_referer( 'download_content_models_zip', 'download_zip_nonce' );
 
-	$content_models = get_posts(
-		array(
-			'post_type'   => 'content_model',
-			'numberposts' => -1,
-		)
-	);
+    $all_models_json = generate_all_models_json();
 
-	$all_models_json = array();
+    $zip_file = create_zip_file( $all_models_json );
 
-	foreach ( $content_models as $model ) {
-		$json_data                            = generate_json_for_model( $model );
-		$all_models_json[ $model->post_name ] = $json_data;
-	}
-
-	$zip_file = create_zip_file( $all_models_json );
-
-	if ( $zip_file ) {
-		$zip_url = wp_get_attachment_url( $zip_file );
-		wp_safe_redirect( $zip_url );
-		exit;
-	} else {
-		wp_die( 'Failed to create ZIP file' );
-	}
+    if ( $zip_file ) {
+        $zip_url = wp_get_attachment_url( $zip_file );
+        wp_safe_redirect( $zip_url );
+        exit;
+    } else {
+        wp_die( esc_html__( 'Failed to create ZIP file', 'create-content-model' ) );
+    }
 }
 
 function create_zip_file( $all_models_json ) {
@@ -154,7 +153,7 @@ function create_zip_file( $all_models_json ) {
 	}
 
 	foreach ( $all_models_json as $model_slug => $model_json ) {
-		$zip->addFromString( $model_slug . '.json', wp_json_encode( $model_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
+		$zip->addFromString( $model_slug . '.json', wp_json_encode( $model_json, JSON_UNESCAPED_UNICODE ) );
 	}
 
 	$zip->close();
