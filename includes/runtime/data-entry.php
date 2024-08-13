@@ -312,7 +312,16 @@ function _replace_attribute( $attribute_metadata, $attribute_value, $markup ) {
 
 	foreach ( $matches as $match ) {
 		if ( $match instanceof \DOMElement ) {
-			$match->setAttribute( $attribute_metadata['attribute'], $attribute_value );
+			$attribute = $attribute_metadata['attribute'];
+			$value     = $match->getAttribute( $attribute );
+
+			if ( 'class' === $attribute ) {
+				$value .= ' ' . $attribute_value;
+			} else {
+				$value = $attribute_value;
+			}
+
+			$match->setAttribute( $attribute, $value );
 		}
 	}
 
