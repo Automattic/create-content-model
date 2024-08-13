@@ -35,21 +35,34 @@ function render_export_page() {
  * Renders the export UI.
  */
 function render_export_ui() {
+	$all_models_json = generate_all_models_json();
+	$has_models      = ! empty( $all_models_json );
+
 	?>
 	<div class="wrap">
 		<h1><?php echo esc_html__( 'Export Content Models', 'create-content-model' ); ?></h1>
+		<?php
+		if ( isset( $_GET['error'] ) && 'no_models' === $_GET['error'] && check_admin_referer( 'export_error_nonce', 'export_error_nonce' ) ) {
+			echo '<div class="notice notice-error"><p>' . esc_html__( 'No content models available. Please create a content model before exporting.', 'create-content-model' ) . '</p></div>';
+		}
+		?>
 		<form method="post" action="">
 			<?php wp_nonce_field( 'export_content_models', 'export_nonce' ); ?>
-			 <p><?php echo esc_html__( 'Click the button below to display the JSON for all Content Models.', 'create-content-model' ); ?></p>
-			<input type="submit" name="export_content_models" class="button button-primary" value="<?php echo esc_attr__( 'Display Content Models JSON', 'create-content-model' ); ?>">
+			<p><?php echo esc_html__( 'Click the button below to display the JSON for all Content Models.', 'create-content-model' ); ?></p>
+			<input type="submit" name="export_content_models" class="button button-primary" value="<?php echo esc_attr__( 'Display Content Models JSON', 'create-content-model' ); ?>" <?php disabled( ! $has_models ); ?>>
 		</form>
 		
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<?php wp_nonce_field( 'download_content_models_zip', 'download_zip_nonce' ); ?>
 			<input type="hidden" name="action" value="download_content_models_zip">
 			<p><?php echo esc_html__( 'Click the button below to download a ZIP file containing all Content Models.', 'create-content-model' ); ?></p>
-			<input type="submit" name="download_content_models_zip" class="button button-secondary" value="<?php echo esc_attr__( 'Download ZIP file', 'create-content-model' ); ?>">
+			<input type="submit" name="download_content_models_zip" class="button button-secondary" value="<?php echo esc_attr__( 'Download ZIP file', 'create-content-model' ); ?>" <?php disabled( ! $has_models ); ?>>
 		</form>
+		<?php
+		if ( ! $has_models ) {
+			echo '<p class="description">' . esc_html__( 'No content models available. Please create a content model before exporting.', 'create-content-model' ) . '</p>';
+		}
+		?>
 	</div>
 	<?php
 }
@@ -111,35 +124,48 @@ function format_fields_for_export( $fields ) {
  * @return array An associative array of content models' JSON data.
  */
 function generate_all_models_json() {
-    $content_models = get_registered_content_models();
-    $all_models_json = array();
+	$content_models  = get_registered_content_models();
+	$all_models_json = array();
 
-    foreach ( $content_models as $model ) {
-        $json_data = generate_json_for_model( $model );
-        $all_models_json[ $model->slug ] = $json_data;
-    }
+	foreach ( $content_models as $model ) {
+		$json_data                       = generate_json_for_model( $model );
+		$all_models_json[ $model->slug ] = $json_data;
+	}
 
-    return $all_models_json;
+	return $all_models_json;
 }
 
 function handle_zip_download() {
-    if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'create-content-model' ) );
-    }
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'create-content-model' ) );
+	}
 
-    check_admin_referer( 'download_content_models_zip', 'download_zip_nonce' );
+	check_admin_referer( 'download_content_models_zip', 'download_zip_nonce' );
 
-    $all_models_json = generate_all_models_json();
+	$all_models_json = generate_all_models_json();
 
-    $zip_file = create_zip_file( $all_models_json );
+	if ( empty( $all_models_json ) ) {
+		// No content models found, display an error message to the user
+		$redirect_url = add_query_arg(
+			array(
+				'error'              => 'no_models',
+				'export_error_nonce' => wp_create_nonce( 'export_error_nonce' ),
+			),
+			wp_get_referer()
+		);
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
 
-    if ( $zip_file ) {
-        $zip_url = wp_get_attachment_url( $zip_file );
-        wp_safe_redirect( $zip_url );
-        exit;
-    } else {
-        wp_die( esc_html__( 'Failed to create ZIP file', 'create-content-model' ) );
-    }
+	$zip_file = create_zip_file( $all_models_json );
+
+	if ( $zip_file ) {
+		$zip_url = wp_get_attachment_url( $zip_file );
+		wp_safe_redirect( $zip_url );
+		exit;
+	} else {
+		wp_die( esc_html__( 'Failed to create ZIP file', 'create-content-model' ) );
+	}
 }
 
 function create_zip_file( $all_models_json ) {
