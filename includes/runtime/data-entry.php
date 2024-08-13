@@ -79,39 +79,28 @@ function _find_meta_fields( $blocks ) {
 		$binding = $block['attrs']['metadata']['contentModelBinding'] ?? array();
 
 		foreach ( $binding as $attribute => $field ) {
+			// post_content is not a meta attribute.
 			if ( 'post_content' === $field ) {
 				continue;
 			}
 
+			// Serialize all inner blocks from Group.
 			if ( 'core/group' === $block['blockName'] ) {
 				$acc[ $field ] = serialize_blocks( $block['innerBlocks'] );
 				continue;
 			}
 
-			if ( 'content' === $attribute ) {
-				$acc[ $field ] = _get_content( $block['innerHTML'] );
-				continue;
-			}
-
+			// If the bound attribute is present in the block attributes, use that.
 			if ( isset( $block['attrs'][ $attribute ] ) ) {
 				$acc[ $field ] = $block['attrs'][ $attribute ];
-				continue;
+			} else {
+				// Extract meta field value from the block's markup.
+				$meta_value_from_markup = _extract_attribute_value_from_block_markup( $block, $attribute );
+
+				if ( $meta_value_from_markup ) {
+					$acc[ $field ] = $meta_value_from_markup;
+				}
 			}
-
-			$block_metadata   = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
-			$block_attributes = $block_metadata->get_attributes();
-
-			$source = $block_attributes[ $attribute ]['source'] ?? null;
-
-			if ( ! $source ) {
-				continue;
-			}
-
-			if ( 'attribute' === $block_attributes[ $attribute ]['source'] ) {
-				$acc[ $field ] = _extract_attribute( $block_attributes[ $attribute ], $block['innerHTML'] );
-			}
-
-			// TODO: Support rich-text.
 		}
 
 		if ( ! empty( $block['innerBlocks'] ) ) {
@@ -244,6 +233,30 @@ function get_content_model_slugs() {
 }
 
 /**
+ * Extracts the value of an attribute from the innerHTML of a block.
+ *
+ * @param array  $block The block.
+ * @param string $attribute The attribute name.
+ *
+ * @return mixed|null The value of the attribute, or null if not found.
+ */
+function _extract_attribute_value_from_block_markup( $block, $attribute ) {
+	$registered_block = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
+
+	if ( ! $registered_block ) {
+		return null;
+	}
+
+	$allowed_attributes = $registered_block->get_attributes();
+
+	if ( ! isset( $allowed_attributes[ $attribute ]['source'] ) ) {
+		return null;
+	}
+
+	return _extract_attribute( $allowed_attributes[ $attribute ], $block['innerHTML'] );
+}
+
+/**
  * Extract attribute value from the markup.
  *
  * @param array  $attribute_metadata The attribute metadata from the block.json file.
@@ -261,32 +274,23 @@ function _extract_attribute( $attribute_metadata, $markup ) {
 
 	foreach ( $matches as $match ) {
 		if ( $match instanceof \DOMElement ) {
-			return $match->getAttribute( $attribute_metadata['attribute'] );
+			if ( 'attribute' === $attribute_metadata['source'] ) {
+				return $match->getAttribute( $attribute_metadata['attribute'] );
+			}
+
+			return implode(
+				'',
+				array_map(
+					// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+					fn( $node ) => $node->ownerDocument->saveXML( $node ),
+					// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+					iterator_to_array( $match->childNodes ),
+				)
+			);
 		}
 	}
-}
 
-
-/**
- * Get the HTML from within the root node.
- *
- * @param string $markup The markup.
- *
- * @return string The HTML.
- */
-function _get_content( $markup ) {
-	$dom = new DOMDocument();
-	$dom->loadXML( $markup, LIBXML_NOXMLDECL );
-
-	return implode(
-		'',
-		array_map(
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			fn( $node ) => $node->ownerDocument->saveXML( $node ),
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			iterator_to_array( $dom->firstChild->childNodes ),
-		)
-	);
+	return null;
 }
 
 /**
