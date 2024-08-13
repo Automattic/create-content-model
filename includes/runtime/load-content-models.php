@@ -88,14 +88,20 @@ function _get_custom_fields( $blocks ) {
 		$binding = $block['attrs']['metadata']['contentModelBinding'] ?? array();
 
 		foreach ( $binding as $attribute => $field ) {
+			// Ignore element identifier.
+			if ( '__block_variation_name' === $attribute ) {
+				continue;
+			}
+
 			if ( 'post_content' === $field ) {
 				continue;
 			}
 
 			$custom_field = (object) array(
-				'block_name' => $block['blockName'],
-				'attribute'  => $attribute,
-				'field'      => $field,
+				'block_variation_name' => $binding['__block_variation_name'],
+				'block_name'           => $block['blockName'],
+				'attribute'            => $attribute,
+				'field'                => $field,
 			);
 
 			$acc[] = $custom_field;

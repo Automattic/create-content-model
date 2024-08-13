@@ -76,9 +76,14 @@ function _find_meta_fields( $blocks ) {
 	$acc = array();
 
 	foreach ( $blocks as $block ) {
-		$binding = $block['attrs']['metadata']['contentModelBinding'] ?? array();
+		$bindings = $block['attrs']['metadata']['contentModelBinding'] ?? array();
 
-		foreach ( $binding as $attribute => $field ) {
+		foreach ( $bindings as $attribute => $field ) {
+			// Ignore element identifier.
+			if ( '__block_variation_name' === $attribute ) {
+				continue;
+			}
+
 			// post_content is not a meta attribute.
 			if ( 'post_content' === $field ) {
 				continue;
@@ -151,6 +156,11 @@ function hydrate_blocks_with_content( $blocks ) {
 		}
 
 		foreach ( $binding as $attribute => $field ) {
+			// Ignore element identifier.
+			if ( '__block_variation_name' === $attribute ) {
+				continue;
+			}
+
 			if ( 'post_content' === $field ) {
 				$content = get_the_content();
 			} else {

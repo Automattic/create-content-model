@@ -59,6 +59,17 @@ function registerContentAreaInspector( wp ) {
 								},
 								[
 									wp.element.createElement( TextControl, {
+										key: 'block_variation_name',
+										label: 'Block variation name',
+										required: true,
+										value: getBinding(
+											'__block_variation_name'
+										),
+										onChange: setBinding(
+											'__block_variation_name'
+										),
+									} ),
+									wp.element.createElement( TextControl, {
 										key: 'content',
 										label: 'content',
 										value: getBinding( 'content' ),
@@ -88,6 +99,16 @@ function registerContentAreaInspector( wp ) {
 							PanelBody,
 							{ title: 'Attribute Bindings', initialOpen: true },
 							[
+								wp.element.createElement( TextControl, {
+									key: 'block_variation_name',
+									label: 'Block variation name',
+									value: getBinding(
+										'__block_variation_name'
+									),
+									onChange: setBinding(
+										'__block_variation_name'
+									),
+								} ),
 								...supportedAttributes.map(
 									( attributeKey ) => {
 										return wp.element.createElement(
