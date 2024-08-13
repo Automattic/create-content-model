@@ -21,7 +21,7 @@ function register_content_model_template_block() {
 		'render_callback' => function () {
 			global $post;
 
-			if ( ! $post ) {
+			if ( empty( $post ) ) {
 				return __( 'This will render the content model template for the current content model.' );
 			}
 

@@ -27,7 +27,7 @@ add_action(
 			foreach ( $meta_fields as $meta_field ) {
 				register_post_meta(
 					$content_model->slug,
-					$meta_field,
+					$meta_field->field,
 					array(
 						'show_in_rest' => true,
 						'single'       => true,
@@ -65,8 +65,15 @@ function get_registered_content_models() {
  * @param object $content_model The content model.
  */
 function get_content_model_custom_fields( $content_model ) {
-	$blocks = parse_blocks( $content_model->template );
-	return _get_custom_fields( $blocks );
+	static $custom_fields = array();
+
+	if ( ! isset( $custom_fields[ $content_model->slug ] ) ) {
+		$blocks = parse_blocks( $content_model->template );
+
+		$custom_fields[ $content_model->slug ] = _get_custom_fields( $blocks );
+	}
+
+	return $custom_fields[ $content_model->slug ];
 }
 
 /**
@@ -78,14 +85,26 @@ function _get_custom_fields( $blocks ) {
 	$acc = array();
 
 	foreach ( $blocks as $block ) {
-		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
+		$binding = $block['attrs']['metadata']['contentModelBinding'] ?? array();
 
-		if ( 'post_content' === $binding ) {
-			continue;
-		}
+		foreach ( $binding as $attribute => $field ) {
+			// Ignore element identifier.
+			if ( '__block_variation_name' === $attribute ) {
+				continue;
+			}
 
-		if ( ! is_null( $binding ) ) {
-			$acc[] = $binding;
+			if ( 'post_content' === $field ) {
+				continue;
+			}
+
+			$custom_field = (object) array(
+				'block_variation_name' => $binding['__block_variation_name'],
+				'block_name'           => $block['blockName'],
+				'attribute'            => $attribute,
+				'field'                => $field,
+			);
+
+			$acc[] = $custom_field;
 		}
 
 		if ( ! empty( $block['innerBlocks'] ) ) {
