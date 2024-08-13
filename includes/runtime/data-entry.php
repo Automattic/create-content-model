@@ -89,11 +89,7 @@ function _find_meta_fields( $blocks ) {
 			}
 
 			if ( 'content' === $attribute ) {
-				// TODO: Use DOMDocument.
-				$inner_html = trim( $block['innerHTML'] );
-				$inner_html = preg_replace( '/^<p>|<\/p>$/', '', $inner_html );
-
-				$acc[ $field ] = $inner_html;
+				$acc[ $field ] = _get_content( $block['innerHTML'] );
 				continue;
 			}
 
@@ -262,6 +258,29 @@ function _extract_attribute( $attribute_metadata, $markup ) {
 			return $match->getAttribute( $attribute_metadata['attribute'] );
 		}
 	}
+}
+
+
+/**
+ * Get the HTML from within the root node.
+ *
+ * @param string $markup The markup.
+ *
+ * @return string The HTML.
+ */
+function _get_content( $markup ) {
+	$dom = new DOMDocument();
+	$dom->loadHTML( $markup, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+
+	return implode(
+		'',
+		array_map(
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			fn( $node ) => $node->ownerDocument->saveHTML( $node ),
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			iterator_to_array( $dom->firstChild->childNodes ),
+		)
+	);
 }
 
 /**
