@@ -162,10 +162,9 @@ function hydrate_blocks_with_content( $blocks ) {
 				continue;
 			}
 
-			// TODO: Check if source is rich-text!
-			if ( 'content' === $attribute ) {
-				$blocks[ $index ]['innerBlocks'] = parse_blocks( $content );
-
+			// Inflate the stored blocks into Group.
+			if ( 'core/group' === $block['blockName'] ) {
+				$blocks[ $index ]['innerBlocks']  = parse_blocks( $content );
 				$blocks[ $index ]['innerHTML']    = inject_content_into_block_markup( $content, $blocks[ $index ]['innerHTML'] );
 				$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );
 
@@ -180,12 +179,10 @@ function hydrate_blocks_with_content( $blocks ) {
 				continue;
 			}
 
-			if ( 'attribute' === $block_attributes[ $attribute ]['source'] ) {
-				$blocks[ $index ]['innerHTML']    = _replace_attribute( $block_attributes[ $attribute ], $content, $blocks[ $index ]['innerHTML'] );
-				$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );
-			}
+			$inner_html = _replace_attribute( $block_attributes[ $attribute ], $content, $blocks[ $index ]['innerHTML'] );
 
-			// TODO: Support rich-text.
+			$blocks[ $index ]['innerHTML']    = $inner_html;
+			$blocks[ $index ]['innerContent'] = array( $inner_html );
 		}
 	}
 
@@ -312,19 +309,44 @@ function _replace_attribute( $attribute_metadata, $attribute_value, $markup ) {
 
 	foreach ( $matches as $match ) {
 		if ( $match instanceof \DOMElement ) {
-			$attribute = $attribute_metadata['attribute'];
-			$value     = $match->getAttribute( $attribute );
+			if ( 'attribute' === $attribute_metadata['source'] ) {
+				$attribute = $attribute_metadata['attribute'];
+				$value     = $match->getAttribute( $attribute );
 
-			if ( 'class' === $attribute ) {
-				$value .= ' ' . $attribute_value;
+				if ( 'class' === $attribute ) {
+					$value .= ' ' . $attribute_value;
+				} else {
+					$value = $attribute_value;
+				}
+
+				$match->setAttribute( $attribute, $value );
 			} else {
-				$value = $attribute_value;
+				_replace_node_inner_html( $match, $attribute_value );
 			}
-
-			$match->setAttribute( $attribute, $value );
 		}
 	}
 
 	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	return $dom->saveXML( $dom->documentElement, LIBXML_NOXMLDECL );
+}
+
+/**
+ * Replace node inner HTML.
+ *
+ * @param \DOMElement $node The HTML node.
+ * @param string      $html The desired inner HMTL.
+ *
+ * @return void
+ */
+function _replace_node_inner_html( $node, $html ) {
+	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+	$fragment = $node->ownerDocument->createDocumentFragment();
+	$fragment->appendXML( $html );
+
+	while ( $node->hasChildNodes() ) {
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$node->removeChild( $node->firstChild );
+	}
+
+	$node->appendChild( $fragment );
 }
