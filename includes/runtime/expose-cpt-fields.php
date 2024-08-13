@@ -14,28 +14,31 @@ add_filter( 'get_block_type_variations', 'register_block_variations', 10, 2 );
  * @param WP_Block_Type $block_type The block type.
  */
 function register_block_variations( $variations, $block_type ) {
-	if ( 'core/paragraph' === $block_type->name ) {
-		foreach ( get_registered_content_models() as $content_model ) {
-			foreach ( get_content_model_custom_fields( $content_model ) as $custom_field ) {
-				$variations[] = array(
-					'name'       => $custom_field,
-					'title'      => ucwords( $custom_field ),
-					'category'   => $content_model->slug . '-fields',
-					'icon'       => 'book-alt',
-					'attributes' => array(
-						'metadata' => array(
-							'bindings' => array(
-								'content' => array(
-									'source' => 'core/post-meta',
-									'args'   => array(
-										'key' => $custom_field,
-									),
+	foreach ( get_registered_content_models() as $content_model ) {
+		// TODO: Group by block type.
+		foreach ( get_content_model_custom_fields( $content_model ) as $custom_field ) {
+			if ( $block_type->name !== $custom_field->block_name ) {
+				continue;
+			}
+
+			$variations[] = array(
+				'name'       => $custom_field->field,
+				'title'      => ucwords( $custom_field->field ),
+				'category'   => $content_model->slug . '-fields',
+				'icon'       => 'book-alt',
+				'attributes' => array(
+					'metadata' => array(
+						'bindings' => array(
+							$custom_field->attribute => array(
+								'source' => 'core/post-meta',
+								'args'   => array(
+									'key' => $custom_field->field,
 								),
 							),
 						),
 					),
-				);
-			}
+				),
+			);
 		}
 	}
 

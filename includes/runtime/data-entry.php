@@ -45,10 +45,12 @@ function redirect_content_areas( $post_id, $post ) {
  */
 function _find_post_content( $blocks ) {
 	foreach ( $blocks as $block ) {
-		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
+		$binding = $block['attrs']['metadata']['contentModelBinding'] ?? array();
 
-		if ( 'post_content' === $binding ) {
-			return serialize_blocks( $block['innerBlocks'] );
+		foreach ( array_values( $binding ) as $field ) {
+			if ( 'post_content' === $field ) {
+				return serialize_blocks( $block['innerBlocks'] );
+			}
 		}
 
 		if ( ! empty( $block['innerBlocks'] ) ) {
@@ -74,15 +76,40 @@ function _find_meta_fields( $blocks ) {
 	$acc = array();
 
 	foreach ( $blocks as $block ) {
-		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
+		$binding = $block['attrs']['metadata']['contentModelBinding'] ?? array();
 
-		if ( 'post_content' === $binding ) {
-			continue;
-		}
+		foreach ( $binding as $attribute => $field ) {
+			if ( 'post_content' === $field ) {
+				continue;
+			}
 
-		if ( ! is_null( $binding ) ) {
-			$acc[ $binding ] = serialize_blocks( $block['innerBlocks'] );
-			continue;
+			if ( 'core/group' === $block['blockName'] ) {
+				$acc[ $field ] = serialize_blocks( $block['innerBlocks'] );
+				continue;
+			}
+
+			if ( 'content' === $attribute ) {
+				// TODO: Use DOMDocument.
+				$inner_html = trim( $block['innerHTML'] );
+				$inner_html = preg_replace( '/^<p>|<\/p>$/', '', $inner_html );
+
+				$acc[ $field ] = $inner_html;
+				continue;
+			}
+
+			if ( isset( $block['attrs'][ $attribute ] ) ) {
+				$acc[ $field ] = $block['attrs'][ $attribute ];
+				continue;
+			}
+
+			$block_metadata   = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
+			$block_attributes = $block_metadata->get_attributes();
+
+			if ( 'attribute' === $block_attributes[ $attribute ]['source'] ) {
+				$acc[ $field ] = _extract_attribute( $block_attributes[ $attribute ], $block['innerHTML'] );
+			}
+
+			// TODO: Support rich-text.
 		}
 
 		if ( ! empty( $block['innerBlocks'] ) ) {
@@ -122,31 +149,53 @@ function hydrate_template_with_content( $post ) {
  */
 function hydrate_blocks_with_content( $blocks ) {
 	foreach ( $blocks as $index => $block ) {
-		$binding = $block['attrs']['metadata']['data-types/binding'] ?? null;
+		$binding = $block['attrs']['metadata']['contentModelBinding'] ?? null;
 
 		if ( is_null( $binding ) ) {
 			if ( ! empty( $block['innerBlocks'] ) ) {
-				$blocks[ $index ]['innerBlocks'] = hydrate_blocks_with_content( $block['innerBlocks'] );
+				$blocks[ $index ]['innerBlocks'] = hydrate_blocks_with_content( $blocks[ $index ]['innerBlocks'] );
 			}
 
 			continue;
 		}
 
-		if ( 'post_content' === $binding ) {
-			$content = get_the_content();
-		} else {
-			$content = get_post_meta( get_the_ID(), $binding, true );
+		foreach ( $binding as $attribute => $field ) {
+			if ( 'post_content' === $field ) {
+				$content = get_the_content();
+			} else {
+				$content = get_post_meta( get_the_ID(), $field, true );
+			}
+
+			// If can't find the corresponding content, do not try to inject it.
+			if ( ! $content ) {
+				continue;
+			}
+
+			// TODO: Check if source is rich-text!
+			if ( 'content' === $attribute ) {
+				$blocks[ $index ]['innerBlocks'] = parse_blocks( $content );
+
+				$blocks[ $index ]['innerHTML']    = inject_content_into_block_markup( $content, $blocks[ $index ]['innerHTML'] );
+				$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );
+
+				continue;
+			}
+
+			$block_metadata   = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
+			$block_attributes = $block_metadata->get_attributes();
+
+			if ( ! isset( $block_attributes[ $attribute ]['source'] ) ) {
+				$blocks[ $index ]['attrs'][ $attribute ] = $content;
+				continue;
+			}
+
+			if ( 'attribute' === $block_attributes[ $attribute ]['source'] ) {
+				$blocks[ $index ]['innerHTML']    = _replace_attribute( $block_attributes[ $attribute ], $content, $blocks[ $index ]['innerHTML'] );
+				$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );
+			}
+
+			// TODO: Support rich-text.
 		}
-
-		// If can't find the corresponding content, do not try to inject it.
-		if ( ! $content ) {
-			continue;
-		}
-
-		$blocks[ $index ]['innerBlocks'] = parse_blocks( $content );
-
-		$blocks[ $index ]['innerHTML']    = inject_content_into_block_markup( $content, $block['innerHTML'] );
-		$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );
 	}
 
 	return $blocks;
@@ -174,13 +223,15 @@ function get_content_model_template( $content_model_slug ) {
 function inject_content_into_block_markup( $content, $block_markup ) {
 	$p = new WP_HTML_Tag_Processor( $block_markup );
 	$p->next_tag();
-	$p2 = new WP_HTML_Tag_Processor( '<div>' );
+	$outer_tag = strtolower( $p->get_tag() );
+
+	$p2 = new WP_HTML_Tag_Processor( "<{$outer_tag}>" );
 	$p2->next_tag();
 	foreach ( $p->get_attribute_names_with_prefix( '' ) ?? array() as $attribute ) {
 		$p2->set_attribute( $attribute, $p->get_attribute( $attribute ) );
 	}
 
-	return $p2->get_updated_html() . $content . '</div>';
+	return $p2->get_updated_html() . $content . "</{$outer_tag}>";
 }
 
 /**
@@ -188,4 +239,53 @@ function inject_content_into_block_markup( $content, $block_markup ) {
  */
 function get_content_model_slugs() {
 	return array_map( fn( $content_model ) => $content_model->slug, get_registered_content_models() );
+}
+
+/**
+ * Extract attribute value from the markup.
+ *
+ * @param array  $attribute_metadata The attribute metadata from the block.json file.
+ * @param string $markup The markup.
+ *
+ * @return mixed|null The attribute value.
+ */
+function _extract_attribute( $attribute_metadata, $markup ) {
+	$dom = new DOMDocument();
+	$dom->loadHTML( $markup, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+
+	$xpath = new DOMXPath( $dom );
+
+	$matches = $xpath->query( '//' . $attribute_metadata['selector'] );
+
+	foreach ( $matches as $match ) {
+		if ( $match instanceof \DOMElement ) {
+			return $match->getAttribute( $attribute_metadata['attribute'] );
+		}
+	}
+}
+
+/**
+ * Replace attribute value in the markup.
+ *
+ * @param array  $attribute_metadata The attribute metadata from the block.json file.
+ * @param mixed  $attribute_value The attribute value.
+ * @param string $markup The markup.
+ *
+ * @return string The updated markup.
+ */
+function _replace_attribute( $attribute_metadata, $attribute_value, $markup ) {
+	$dom = new DOMDocument();
+	$dom->loadHTML( $markup, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+
+	$xpath = new DOMXPath( $dom );
+
+	$matches = $xpath->query( '//' . $attribute_metadata['selector'] );
+
+	foreach ( $matches as $match ) {
+		if ( $match instanceof \DOMElement ) {
+			$match->setAttribute( $attribute_metadata['attribute'], $attribute_value );
+		}
+	}
+
+	return $dom->saveHTML();
 }
