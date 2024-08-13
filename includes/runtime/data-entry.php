@@ -275,7 +275,8 @@ function _extract_attribute( $attribute_metadata, $markup ) {
  */
 function _replace_attribute( $attribute_metadata, $attribute_value, $markup ) {
 	$dom = new DOMDocument();
-	$dom->loadHTML( $markup, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+	$dom->loadXML( $markup, LIBXML_NOXMLDECL );
 
 	$xpath = new DOMXPath( $dom );
 
@@ -287,5 +288,6 @@ function _replace_attribute( $attribute_metadata, $attribute_value, $markup ) {
 		}
 	}
 
-	return $dom->saveHTML();
+	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+	return $dom->saveXML( $dom->documentElement, LIBXML_NOXMLDECL );
 }
