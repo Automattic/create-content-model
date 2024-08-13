@@ -60,7 +60,7 @@ function render_export_ui() {
 		</form>
 		<?php
 		if ( ! $has_models ) {
-			echo '<p class="description">' . esc_html__( 'No content models available. Please create a content model before exporting.', 'create-content-model' ) . '</p>';
+			echo '<div class="notice notice-error"><p>' . esc_html__( 'No content models available. Please create a content model before exporting.', 'create-content-model' ) . '</p></div>';
 		}
 		?>
 	</div>
