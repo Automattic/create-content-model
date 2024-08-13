@@ -101,6 +101,12 @@ function _find_meta_fields( $blocks ) {
 			$block_metadata   = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
 			$block_attributes = $block_metadata->get_attributes();
 
+			$source = $block_attributes[ $attribute ]['source'] ?? null;
+
+			if ( ! $source ) {
+				continue;
+			}
+
 			if ( 'attribute' === $block_attributes[ $attribute ]['source'] ) {
 				$acc[ $field ] = _extract_attribute( $block_attributes[ $attribute ], $block['innerHTML'] );
 			}
@@ -247,7 +253,7 @@ function get_content_model_slugs() {
  */
 function _extract_attribute( $attribute_metadata, $markup ) {
 	$dom = new DOMDocument();
-	$dom->loadHTML( $markup, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+	$dom->loadXML( $markup, LIBXML_NOXMLDECL );
 
 	$xpath = new DOMXPath( $dom );
 
@@ -270,13 +276,13 @@ function _extract_attribute( $attribute_metadata, $markup ) {
  */
 function _get_content( $markup ) {
 	$dom = new DOMDocument();
-	$dom->loadHTML( $markup, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+	$dom->loadXML( $markup, LIBXML_NOXMLDECL );
 
 	return implode(
 		'',
 		array_map(
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			fn( $node ) => $node->ownerDocument->saveHTML( $node ),
+			fn( $node ) => $node->ownerDocument->saveXML( $node ),
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			iterator_to_array( $dom->firstChild->childNodes ),
 		)
@@ -294,7 +300,6 @@ function _get_content( $markup ) {
  */
 function _replace_attribute( $attribute_metadata, $attribute_value, $markup ) {
 	$dom = new DOMDocument();
-	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	$dom->loadXML( $markup, LIBXML_NOXMLDECL );
 
 	$xpath = new DOMXPath( $dom );
