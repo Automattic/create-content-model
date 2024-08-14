@@ -5,6 +5,8 @@
  * @package data-types
  */
 
+add_action( 'init', 'register_content_model_template_block' );
+
 /**
  * Register a block that represents the content model template.
  */

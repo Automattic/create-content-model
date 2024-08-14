@@ -109,5 +109,3 @@ function register_field_categories( $categories ) {
 
 	return $categories;
 }
-
-add_action( 'init', 'register_content_model_template_block' );
