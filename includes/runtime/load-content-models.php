@@ -45,18 +45,22 @@ add_action(
  * Get all registered content models.
  */
 function get_registered_content_models() {
-	$content_models = get_posts( array( 'post_type' => 'content_model' ) );
+	static $content_models = null;
 
-	return array_map(
-		function ( $content_model ) {
-			return (object) array(
-				'slug'     => $content_model->post_name,
-				'name'     => $content_model->post_title,
-				'template' => $content_model->post_content,
-			);
-		},
-		$content_models
-	);
+	if ( ! $content_models ) {
+		$content_models = array_map(
+			function ( $content_model ) {
+				return (object) array(
+					'slug'     => $content_model->post_name,
+					'name'     => $content_model->post_title,
+					'template' => $content_model->post_content,
+				);
+			},
+			get_posts( array( 'post_type' => 'content_model' ) )
+		);
+	}
+
+	return $content_models;
 }
 
 /**
@@ -98,10 +102,8 @@ function _get_custom_fields( $blocks ) {
 			}
 
 			$custom_field = (object) array(
-				'block_variation_name' => $binding['__block_variation_name'],
-				'block_name'           => $block['blockName'],
-				'attribute'            => $attribute,
-				'field'                => $field,
+				'attribute' => $attribute,
+				'field'     => $field,
 			);
 
 			$acc[] = $custom_field;
