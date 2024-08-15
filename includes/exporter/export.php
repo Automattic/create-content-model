@@ -86,18 +86,17 @@ function preview_json_export() {
 /**
  * Generates the JSON data for a single content model.
  *
- * @param WP_Post $model The content model post object.
+ * @param Content_Model $model The content model post object.
  * @return array The JSON data structure.
  */
 function generate_json_for_model( $model ) {
-	$fields = get_content_model_custom_fields( $model );
 	return array(
 		'type'     => 'postType',
 		'postType' => $model->slug,
 		'slug'     => $model->slug,
-		'label'    => $model->name,
-		'template' => parse_blocks( $model->template ),
-		'fields'   => format_fields_for_export( $fields ),
+		'label'    => $model->title,
+		'template' => $model->template,
+		'fields'   => format_fields_for_export( $model->get_meta_fields() ),
 	);
 }
 
@@ -111,7 +110,8 @@ function format_fields_for_export( $fields ) {
 	$formatted_fields = array();
 	foreach ( $fields as $field ) {
 		$formatted_fields[] = array(
-			'slug' => $field,
+			'slug' => $field['slug'],
+			'type' => $field['type'],
 			// TODO: have UI in place for adding label, type, description, and required.
 		);
 	}
@@ -124,7 +124,7 @@ function format_fields_for_export( $fields ) {
  * @return array An associative array of content models' JSON data.
  */
 function generate_all_models_json() {
-	$content_models  = get_registered_content_models();
+	$content_models  = Content_Model_Manager::get_instance()->get_content_models();
 	$all_models_json = array();
 
 	foreach ( $content_models as $model ) {
