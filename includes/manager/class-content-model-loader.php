@@ -62,6 +62,18 @@ class Content_Model_Loader {
 				'public'       => true,
 				'show_in_menu' => true,
 				'show_in_rest' => true,
+				'supports'     => array( 'title', 'editor', 'custom-fields' ),
+			)
+		);
+
+		register_post_meta(
+			Content_Model_Manager::POST_TYPE_NAME,
+			'fields',
+			array(
+				'type'         => 'object',
+				'single'       => false,
+				'show_in_rest' => true,
+				'default'      => array(),
 			)
 		);
 	}
