@@ -102,6 +102,16 @@ class Content_Model_Loader {
 					'v1',
 					true
 				);
+
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'build/manager/fields-ui.asset.php';
+
+				wp_enqueue_script(
+					'data-types/fields-ui',
+					CONTENT_MODEL_PLUGIN_URL . '/build/manager/fields-ui.js',
+					$asset_file['dependencies'],
+					$asset_file['version'],
+					true
+				);
 			}
 		);
 	}
