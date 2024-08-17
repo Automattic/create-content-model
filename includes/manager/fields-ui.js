@@ -95,7 +95,12 @@ const FieldsList = () => {
 					<FieldRow key={ field.slug } field={ field } />
 				) ) }
 
-				<EditFieldForm />
+				<EditFieldForm
+					save={ ( formData ) => {
+						console.log( 'Save', formData );
+						setFields( [ ...fields, formData ] );
+					} }
+				/>
 			</VStack>
 		</>
 	);
@@ -155,7 +160,23 @@ const FieldRow = ( { field } ) => {
 	);
 };
 
-const EditFieldForm = () => {
+const EditFieldForm = ( {
+	save = () => {},
+	defaultFormData = {
+		label: '',
+		slug: '',
+		description: '',
+		type: '',
+		required: false,
+	},
+} ) => {
+	const [ formData, setFormData ] = useState( defaultFormData );
+
+	const saveForm = () => {
+		save( formData );
+		setFormData( defaultFormData );
+	};
+
 	return (
 		<>
 			<Card>
@@ -163,21 +184,44 @@ const EditFieldForm = () => {
 					<h3>{ __( 'Add Field' ) }</h3>
 				</CardHeader>
 				<CardBody>
-					<TextControl label={ __( 'Label' ) } value="" />
-					<TextControl label={ __( 'Slug' ) } value="" />
-					<TextControl label={ __( 'Description' ) } value="" />
+					<TextControl
+						label={ __( 'Label' ) }
+						value={ formData.label }
+						onChange={ ( value ) =>
+							setFormData( { ...formData, label: value } )
+						}
+					/>
+					<TextControl
+						label={ __( 'Slug' ) }
+						value={ formData.slug }
+						onChange={ ( value ) =>
+							setFormData( { ...formData, slug: value } )
+						}
+					/>
+					<TextControl
+						label={ __( 'Description' ) }
+						value={ formData.description }
+						onChange={ ( value ) =>
+							setFormData( { ...formData, description: value } )
+						}
+					/>
 					<SelectControl
 						label={ __( 'Field Type' ) }
-						value=""
+						value={ formData.type }
 						options={ [
 							{ label: __( 'Text' ), value: 'text' },
 							{ label: __( 'Textarea' ), value: 'textarea' },
 							{ label: __( 'Image' ), value: 'image' },
 						] }
+						onChange={ ( value ) =>
+							setFormData( { ...formData, type: value } )
+						}
 					/>
 					{ /* <CheckboxControl label={ __( 'Required' ) } checked={ false } /> */ }
 
-					<Button variant="primary">{ __( 'Add Field' ) }</Button>
+					<Button variant="primary" onClick={ saveForm }>
+						{ __( 'Add Field' ) }
+					</Button>
 				</CardBody>
 			</Card>
 		</>

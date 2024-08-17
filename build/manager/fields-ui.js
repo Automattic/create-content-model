@@ -223,7 +223,12 @@ const FieldsList = () => {
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalVStack, null, fields.map(field => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldRow, {
     key: field.slug,
     field: field
-  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(EditFieldForm, null)));
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(EditFieldForm, {
+    save: formData => {
+      console.log('Save', formData);
+      setFields([...fields, formData]);
+    }
+  })));
 };
 const FieldInput = ({
   field,
@@ -269,19 +274,45 @@ const FieldRow = ({
     isDisabled: true
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("small", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("em", null, field.description))));
 };
-const EditFieldForm = () => {
+const EditFieldForm = ({
+  save = () => {},
+  defaultFormData = {
+    label: '',
+    slug: '',
+    description: '',
+    type: '',
+    required: false
+  }
+}) => {
+  const [formData, setFormData] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useState)(defaultFormData);
+  const saveForm = () => {
+    save(formData);
+    setFormData(defaultFormData);
+  };
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Card, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CardHeader, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", null, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Add Field'))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CardBody, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Label'),
-    value: ""
+    value: formData.label,
+    onChange: value => setFormData({
+      ...formData,
+      label: value
+    })
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Slug'),
-    value: ""
+    value: formData.slug,
+    onChange: value => setFormData({
+      ...formData,
+      slug: value
+    })
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Description'),
-    value: ""
+    value: formData.description,
+    onChange: value => setFormData({
+      ...formData,
+      description: value
+    })
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Field Type'),
-    value: "",
+    value: formData.type,
     options: [{
       label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Text'),
       value: 'text'
@@ -291,9 +322,14 @@ const EditFieldForm = () => {
     }, {
       label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Image'),
       value: 'image'
-    }]
+    }],
+    onChange: value => setFormData({
+      ...formData,
+      type: value
+    })
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
-    variant: "primary"
+    variant: "primary",
+    onClick: saveForm
   }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Add Field')))));
 };
 (0,_wordpress_plugins__WEBPACK_IMPORTED_MODULE_1__.registerPlugin)('create-content-model-page-settings', {
