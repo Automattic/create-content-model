@@ -6,9 +6,9 @@ import {
 	TextControl,
 	TextareaControl,
 	SelectControl,
-	CheckboxControl,
 	__experimentalVStack as VStack,
 	CardHeader,
+	CardFooter,
 	Card,
 	CardBody,
 } from '@wordpress/components';
@@ -16,25 +16,44 @@ import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
 
+/**
+ * Our base plugin component.
+ * @returns CreateContentModelPageSettings
+ */
 const CreateContentModelPageSettings = function () {
 	const [ isOpen, setOpen ] = useState( false );
+
+	const [ meta, setMeta ] = useEntityProp(
+		'postType',
+		'content_model',
+		'meta'
+	);
+
+	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
+	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
+
+	// Open and close the modal.
 	const openModal = () => setOpen( true );
 	const closeModal = () => setOpen( false );
-
-	// Get the current post meta.
-	const [ meta, setMeta ] = useEntityProp( 'postType', 'post', 'meta' );
-
-	console.log( meta ?? 'No meta' );
 
 	return (
 		<PluginDocumentSettingPanel
 			name="create-content-model-page-settings"
-			title={ __( 'Fields UI' ) }
+			title={ __( 'Custom Fields' ) }
 			className="create-content-model-page-settings"
 		>
-			<Button variant="secondary" onClick={ openModal }>
-				{ __( 'Manage Fields' ) }
-			</Button>
+			<VStack>
+				<Card>
+					{ fields.map( ( field ) => (
+						<CardBody key={ field.slug } size="small">
+							{ field.label }
+						</CardBody>
+					) ) }
+				</Card>
+				<Button variant="secondary" onClick={ openModal }>
+					{ __( 'Manage Fields' ) }
+				</Button>
+			</VStack>
 			{ isOpen && (
 				<Modal
 					title={ __( 'Manage Fields' ) }
@@ -48,45 +67,25 @@ const CreateContentModelPageSettings = function () {
 	);
 };
 
+/**
+ * Display the list of fields inside the modal.
+ * @returns FieldsList
+ */
 const FieldsList = () => {
-	// Via https://contentmodelingp2.wordpress.com/2024/08/07/decision-time-proposals-for-json-representation-and-cpt-template/
-	const [ fields, setFields ] = useState( [
-		{
-			slug: 'image',
-			label: 'Image',
-			type: 'image',
-			description: 'Image of the event.',
-			required: true,
-		},
-		{
-			slug: 'location',
-			label: 'Location',
-			type: 'text',
-			description: 'Location of the event.',
-			required: true,
-		},
-		{
-			slug: 'date',
-			label: 'Date',
-			type: 'text',
-			description: 'Date of the event.',
-			required: true,
-		},
-		{
-			slug: 'time',
-			label: 'Time',
-			type: 'text',
-			description: 'Start time of the event.',
-			required: true,
-		},
-		{
-			slug: 'details',
-			label: 'Event Details',
-			type: 'textarea',
-			description: 'Detailed information about the event.',
-			required: false,
-		},
-	] );
+	const [ meta, setMeta ] = useEntityProp(
+		'postType',
+		'content_model',
+		'meta'
+	);
+
+	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
+	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
+
+	// Save the fields back to the meta.
+	const setFields = ( newFields ) => {
+		console.log( 'Set Fields:', newFields );
+		setMeta( { fields: JSON.stringify( newFields ) } );
+	};
 
 	return (
 		<>
@@ -106,6 +105,30 @@ const FieldsList = () => {
 	);
 };
 
+/**
+ * Display a row for a field.
+ * @param {Object} field
+ * @returns FieldRow
+ */
+const FieldRow = ( { field } ) => {
+	return (
+		<>
+			<div>
+				<FieldInput field={ field } isDisabled />
+				<small>
+					<em>{ field.description }</em>
+				</small>
+			</div>
+		</>
+	);
+};
+
+/**
+ * Display the input for a field.
+ * @param {Object} field
+ * @param {boolean} isDisabled
+ * @returns FieldInput
+ */
 const FieldInput = ( { field, isDisabled = false } ) => {
 	switch ( field.type ) {
 		case 'image':
@@ -147,27 +170,20 @@ const FieldInput = ( { field, isDisabled = false } ) => {
 	}
 };
 
-const FieldRow = ( { field } ) => {
-	return (
-		<>
-			<div>
-				<FieldInput field={ field } isDisabled />
-				<small>
-					<em>{ field.description }</em>
-				</small>
-			</div>
-		</>
-	);
-};
-
+/**
+ * Display a form to edit a field.
+ * @param {Object} props
+ * @param {Function} props.save
+ * @param {Object} props.defaultFormData (to be updated with the field data for editing)
+ * @returns EditFieldForm
+ */
 const EditFieldForm = ( {
 	save = () => {},
 	defaultFormData = {
 		label: '',
 		slug: '',
 		description: '',
-		type: '',
-		required: false,
+		type: 'text',
 	},
 } ) => {
 	const [ formData, setFormData ] = useState( defaultFormData );
@@ -217,17 +233,18 @@ const EditFieldForm = ( {
 							setFormData( { ...formData, type: value } )
 						}
 					/>
-					{ /* <CheckboxControl label={ __( 'Required' ) } checked={ false } /> */ }
-
-					<Button variant="primary" onClick={ saveForm }>
-						{ __( 'Add Field' ) }
-					</Button>
 				</CardBody>
+				<CardFooter>
+					<Button variant="secondary" onClick={ saveForm }>
+						{ __( 'Save' ) }
+					</Button>
+				</CardFooter>
 			</Card>
 		</>
 	);
 };
 
+// Register the plugin.
 registerPlugin( 'create-content-model-page-settings', {
 	render: CreateContentModelPageSettings,
 } );

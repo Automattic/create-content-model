@@ -70,10 +70,15 @@ class Content_Model_Loader {
 			Content_Model_Manager::POST_TYPE_NAME,
 			'fields',
 			array(
-				'type'         => 'object',
-				'single'       => false,
-				'show_in_rest' => true,
-				'default'      => array(),
+				'type'              => 'string',
+				'single'            => true,
+				'sanitize_callback' => '',
+				'default'           => '[]',
+				'show_in_rest'      => array(
+					'schema ' => array(
+						'type' => 'string',
+					),
+				),
 			)
 		);
 	}

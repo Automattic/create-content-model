@@ -166,60 +166,55 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+/**
+ * Our base plugin component.
+ * @returns CreateContentModelPageSettings
+ */
 const CreateContentModelPageSettings = function () {
   const [isOpen, setOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useState)(false);
+  const [meta, setMeta] = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_5__.useEntityProp)('postType', 'content_model', 'meta');
+
+  // Saving the fields as serialized JSON because I was tired of fighting the REST API.
+  const fields = meta?.fields ? JSON.parse(meta.fields) : [];
+
+  // Open and close the modal.
   const openModal = () => setOpen(true);
   const closeModal = () => setOpen(false);
-
-  // Get the current post meta.
-  const [meta, setMeta] = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_5__.useEntityProp)('postType', 'post', 'meta');
-  console.log(meta !== null && meta !== void 0 ? meta : 'No meta');
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_editor__WEBPACK_IMPORTED_MODULE_2__.PluginDocumentSettingPanel, {
     name: "create-content-model-page-settings",
-    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Fields UI'),
+    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Custom Fields'),
     className: "create-content-model-page-settings"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalVStack, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Card, null, fields.map(field => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CardBody, {
+    key: field.slug,
+    size: "small"
+  }, field.label))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
     variant: "secondary",
     onClick: openModal
-  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Manage Fields')), isOpen && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Modal, {
+  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Manage Fields'))), isOpen && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Modal, {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Manage Fields'),
     isFullScreen: true,
     onRequestClose: closeModal
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldsList, null)));
 };
+
+/**
+ * Display the list of fields inside the modal.
+ * @returns FieldsList
+ */
 const FieldsList = () => {
-  // Via https://contentmodelingp2.wordpress.com/2024/08/07/decision-time-proposals-for-json-representation-and-cpt-template/
-  const [fields, setFields] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useState)([{
-    slug: 'image',
-    label: 'Image',
-    type: 'image',
-    description: 'Image of the event.',
-    required: true
-  }, {
-    slug: 'location',
-    label: 'Location',
-    type: 'text',
-    description: 'Location of the event.',
-    required: true
-  }, {
-    slug: 'date',
-    label: 'Date',
-    type: 'text',
-    description: 'Date of the event.',
-    required: true
-  }, {
-    slug: 'time',
-    label: 'Time',
-    type: 'text',
-    description: 'Start time of the event.',
-    required: true
-  }, {
-    slug: 'details',
-    label: 'Event Details',
-    type: 'textarea',
-    description: 'Detailed information about the event.',
-    required: false
-  }]);
+  const [meta, setMeta] = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_5__.useEntityProp)('postType', 'content_model', 'meta');
+
+  // Saving the fields as serialized JSON because I was tired of fighting the REST API.
+  const fields = meta?.fields ? JSON.parse(meta.fields) : [];
+
+  // Save the fields back to the meta.
+  const setFields = newFields => {
+    console.log('Set Fields:', newFields);
+    setMeta({
+      fields: JSON.stringify(newFields)
+    });
+  };
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalVStack, null, fields.map(field => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldRow, {
     key: field.slug,
     field: field
@@ -230,6 +225,27 @@ const FieldsList = () => {
     }
   })));
 };
+
+/**
+ * Display a row for a field.
+ * @param {Object} field
+ * @returns FieldRow
+ */
+const FieldRow = ({
+  field
+}) => {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldInput, {
+    field: field,
+    isDisabled: true
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("small", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("em", null, field.description))));
+};
+
+/**
+ * Display the input for a field.
+ * @param {Object} field
+ * @param {boolean} isDisabled
+ * @returns FieldInput
+ */
 const FieldInput = ({
   field,
   isDisabled = false
@@ -266,22 +282,21 @@ const FieldInput = ({
       break;
   }
 };
-const FieldRow = ({
-  field
-}) => {
-  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldInput, {
-    field: field,
-    isDisabled: true
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("small", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("em", null, field.description))));
-};
+
+/**
+ * Display a form to edit a field.
+ * @param {Object} props
+ * @param {Function} props.save
+ * @param {Object} props.defaultFormData (to be updated with the field data for editing)
+ * @returns EditFieldForm
+ */
 const EditFieldForm = ({
   save = () => {},
   defaultFormData = {
     label: '',
     slug: '',
     description: '',
-    type: '',
-    required: false
+    type: 'text'
   }
 }) => {
   const [formData, setFormData] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useState)(defaultFormData);
@@ -327,11 +342,13 @@ const EditFieldForm = ({
       ...formData,
       type: value
     })
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
-    variant: "primary",
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CardFooter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+    variant: "secondary",
     onClick: saveForm
-  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Add Field')))));
+  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Save')))));
 };
+
+// Register the plugin.
 (0,_wordpress_plugins__WEBPACK_IMPORTED_MODULE_1__.registerPlugin)('create-content-model-page-settings', {
   render: CreateContentModelPageSettings
 });
