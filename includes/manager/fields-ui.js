@@ -8,8 +8,6 @@ import {
 	TextareaControl,
 	SelectControl,
 	__experimentalVStack as VStack,
-	CardHeader,
-	CardFooter,
 	Card,
 	CardBody,
 	__experimentalGrid as Grid,
@@ -24,7 +22,8 @@ import { chevronUp, chevronDown, edit, trash } from '@wordpress/icons';
  * @returns CreateContentModelPageSettings
  */
 const CreateContentModelPageSettings = function () {
-	const [ isOpen, setOpen ] = useState( false );
+	const [ isFieldsOpen, setFieldsOpen ] = useState( false );
+	const [ isAddNewOpen, setAddNewOpen ] = useState( false );
 
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
@@ -34,10 +33,6 @@ const CreateContentModelPageSettings = function () {
 
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
-
-	// Open and close the modal.
-	const openModal = () => setOpen( true );
-	const closeModal = () => setOpen( false );
 
 	return (
 		<PluginDocumentSettingPanel
@@ -53,17 +48,47 @@ const CreateContentModelPageSettings = function () {
 						</CardBody>
 					) ) }
 				</Card>
-				<Button variant="secondary" onClick={ openModal }>
+
+				<Button
+					variant="secondary"
+					onClick={ () => setFieldsOpen( true ) }
+				>
 					{ __( 'Manage Fields' ) }
 				</Button>
+				<Button
+					variant="secondary"
+					onClick={ () => setAddNewOpen( true ) }
+				>
+					{ __( 'Add Field' ) }
+				</Button>
 			</VStack>
-			{ isOpen && (
+			{ isFieldsOpen && (
 				<Modal
 					title={ __( 'Manage Fields' ) }
 					size="large"
-					onRequestClose={ closeModal }
+					onRequestClose={ () => setFieldsOpen( false ) }
 				>
 					<FieldsList />
+				</Modal>
+			) }
+			{ isAddNewOpen && (
+				<Modal
+					title={ __( 'Add New Field' ) }
+					size="large"
+					onRequestClose={ () => setAddNewOpen( false ) }
+				>
+					<EditFieldForm
+						save={ ( formData ) => {
+							console.log( 'Save', formData );
+							setMeta( {
+								fields: JSON.stringify( [
+									...fields,
+									formData,
+								] ),
+							} );
+							setAddNewOpen( false );
+						} }
+					/>
 				</Modal>
 			) }
 		</PluginDocumentSettingPanel>
@@ -111,13 +136,6 @@ const FieldsList = () => {
 						deleteField={ deleteField }
 					/>
 				) ) }
-
-				<EditFieldForm
-					save={ ( formData ) => {
-						console.log( 'Save', formData );
-						setFields( [ ...fields, formData ] );
-					} }
-				/>
 			</VStack>
 		</>
 	);
@@ -251,53 +269,45 @@ const EditFieldForm = ( {
 
 	return (
 		<>
-			<Card>
-				<CardHeader>
-					<h3>{ __( 'Add Field' ) }</h3>
-				</CardHeader>
-				<CardBody>
-					<Grid columns={ 3 }>
-						<TextControl
-							label={ __( 'Label' ) }
-							value={ formData.label }
-							onChange={ ( value ) =>
-								setFormData( { ...formData, label: value } )
-							}
-						/>
-						<TextControl
-							label={ __( 'Slug' ) }
-							value={ formData.slug }
-							onChange={ ( value ) =>
-								setFormData( { ...formData, slug: value } )
-							}
-						/>
-						<SelectControl
-							label={ __( 'Field Type' ) }
-							value={ formData.type }
-							options={ [
-								{ label: __( 'Text' ), value: 'text' },
-								{ label: __( 'Textarea' ), value: 'textarea' },
-								{ label: __( 'Image' ), value: 'image' },
-							] }
-							onChange={ ( value ) =>
-								setFormData( { ...formData, type: value } )
-							}
-						/>
-					</Grid>
-					<TextControl
-						label={ __( 'Field Description (optional)' ) }
-						value={ formData.description }
-						onChange={ ( value ) =>
-							setFormData( { ...formData, description: value } )
-						}
-					/>
-				</CardBody>
-				<CardFooter>
-					<Button variant="secondary" onClick={ saveForm }>
-						{ __( 'Save' ) }
-					</Button>
-				</CardFooter>
-			</Card>
+			<Grid columns={ 3 }>
+				<TextControl
+					label={ __( 'Label' ) }
+					value={ formData.label }
+					onChange={ ( value ) =>
+						setFormData( { ...formData, label: value } )
+					}
+				/>
+				<TextControl
+					label={ __( 'Slug' ) }
+					value={ formData.slug }
+					onChange={ ( value ) =>
+						setFormData( { ...formData, slug: value } )
+					}
+				/>
+				<SelectControl
+					label={ __( 'Field Type' ) }
+					value={ formData.type }
+					options={ [
+						{ label: __( 'Text' ), value: 'text' },
+						{ label: __( 'Textarea' ), value: 'textarea' },
+						{ label: __( 'Image' ), value: 'image' },
+					] }
+					onChange={ ( value ) =>
+						setFormData( { ...formData, type: value } )
+					}
+				/>
+			</Grid>
+			<TextControl
+				label={ __( 'Field Description (optional)' ) }
+				value={ formData.description }
+				onChange={ ( value ) =>
+					setFormData( { ...formData, description: value } )
+				}
+			/>
+
+			<Button variant="secondary" onClick={ saveForm }>
+				{ __( 'Save' ) }
+			</Button>
 		</>
 	);
 };

@@ -1574,15 +1574,12 @@ __webpack_require__.r(__webpack_exports__);
  * @returns CreateContentModelPageSettings
  */
 const CreateContentModelPageSettings = function () {
-  const [isOpen, setOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useState)(false);
+  const [isFieldsOpen, setFieldsOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useState)(false);
+  const [isAddNewOpen, setAddNewOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useState)(false);
   const [meta, setMeta] = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_5__.useEntityProp)('postType', contentModelFields.postType, 'meta');
 
   // Saving the fields as serialized JSON because I was tired of fighting the REST API.
   const fields = meta?.fields ? JSON.parse(meta.fields) : [];
-
-  // Open and close the modal.
-  const openModal = () => setOpen(true);
-  const closeModal = () => setOpen(false);
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_editor__WEBPACK_IMPORTED_MODULE_2__.PluginDocumentSettingPanel, {
     name: "create-content-model-page-settings",
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Custom Fields'),
@@ -1592,12 +1589,27 @@ const CreateContentModelPageSettings = function () {
     size: "small"
   }, field.label))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
     variant: "secondary",
-    onClick: openModal
-  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Manage Fields'))), isOpen && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Modal, {
+    onClick: () => setFieldsOpen(true)
+  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Manage Fields')), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+    variant: "secondary",
+    onClick: () => setAddNewOpen(true)
+  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Add Field'))), isFieldsOpen && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Modal, {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Manage Fields'),
     size: "large",
-    onRequestClose: closeModal
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldsList, null)));
+    onRequestClose: () => setFieldsOpen(false)
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldsList, null)), isAddNewOpen && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Modal, {
+    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Add New Field'),
+    size: "large",
+    onRequestClose: () => setAddNewOpen(false)
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(EditFieldForm, {
+    save: formData => {
+      console.log('Save', formData);
+      setMeta({
+        fields: JSON.stringify([...fields, formData])
+      });
+      setAddNewOpen(false);
+    }
+  })));
 };
 
 /**
@@ -1632,12 +1644,7 @@ const FieldsList = () => {
     field: field,
     editField: editField,
     deleteField: deleteField
-  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(EditFieldForm, {
-    save: formData => {
-      console.log('Save', formData);
-      setFields([...fields, formData]);
-    }
-  })));
+  }))));
 };
 
 /**
@@ -1743,7 +1750,7 @@ const EditFieldForm = ({
     save(formData);
     setFormData(defaultFormData);
   };
-  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Card, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CardHeader, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", null, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Add Field'))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CardBody, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalGrid, {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalGrid, {
     columns: 3
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Label'),
@@ -1783,10 +1790,10 @@ const EditFieldForm = ({
       ...formData,
       description: value
     })
-  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CardFooter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
     variant: "secondary",
     onClick: saveForm
-  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Save')))));
+  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Save')));
 };
 
 // Register the plugin.
