@@ -11,7 +11,8 @@
         "start": "wp-scripts start",
         "build": "wp-scripts build",
         "preplugin-zip": "npm run build",
-        "plugin-zip": "wp-scripts plugin-zip"
+        "plugin-zip": "wp-scripts plugin-zip",
+        "standalone-plugin-zip": "bash -c 'cd \"$(git rev-parse --show-toplevel)\" && (cd includes && zip -r ../create-content-model-standalone.zip runtime && cd exporter/template && zip -r ../../../create-content-model-standalone.zip *)'"
     },
     "files": [
         "create-content-model.php",
