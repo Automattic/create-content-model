@@ -90,11 +90,26 @@ const FieldsList = () => {
 		setMeta( { fields: JSON.stringify( newFields ) } );
 	};
 
+	const deleteField = ( field ) => {
+		console.log( 'Delete Field:', field );
+		const newFields = fields.filter( ( f ) => f.slug !== field.slug );
+		setFields( newFields );
+	};
+
+	const editField = ( field ) => {
+		console.log( 'Edit Field:', field );
+	};
+
 	return (
 		<>
 			<VStack spacing={ 16 }>
 				{ fields.map( ( field ) => (
-					<FieldRow key={ field.slug } field={ field } />
+					<FieldRow
+						key={ field.slug }
+						field={ field }
+						editField={ editField }
+						deleteField={ deleteField }
+					/>
 				) ) }
 
 				<EditFieldForm
@@ -113,17 +128,29 @@ const FieldsList = () => {
  * @param {Object} field
  * @returns FieldRow
  */
-const FieldRow = ( { field } ) => {
+const FieldRow = ( { field, deleteField, editField } ) => {
+	const handleDeleteField = () => {
+		if (
+			! confirm( __( 'Are you sure you want to delete this field?' ) )
+		) {
+			return;
+		}
+		deleteField( field );
+	};
+
+	const handleEditField = () => {
+		editField( field );
+	};
 	return (
 		<>
-			<Grid columns={ 5 }>
+			<Grid columns={ 4 }>
 				<div style={ { gridColumn: '1/4' } }>
 					<FieldInput field={ field } isDisabled />
 					<small>
 						<em>{ field.description }</em>
 					</small>
 				</div>
-				<div style={ { gridColumn: '4/6' } }>
+				<div style={ { gridColumn: '4/5' } }>
 					<ButtonGroup>
 						{ /* <Button
 							icon={ chevronUp }
@@ -135,17 +162,15 @@ const FieldRow = ( { field } ) => {
 							title={ __( 'Move Field Down' ) }
 							onClick={ () => console.log( 'Move Field Down' ) }
 						/> */ }
-						<Button
+						{ /* <Button
 							icon={ edit }
 							title={ __( 'Edit Field' ) }
-							onClick={ () => console.log( 'Edit Field' ) }
-							disabled={ true }
-						/>
+							onClick={ handleEditField }
+						/> */ }
 						<Button
 							icon={ trash }
 							title={ __( 'Delete Field' ) }
-							onClick={ () => console.log( 'Delete Field' ) }
-							disabled={ true }
+							onClick={ handleDeleteField }
 						/>
 					</ButtonGroup>
 				</div>

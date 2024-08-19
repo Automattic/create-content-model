@@ -2,57 +2,6 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./node_modules/@wordpress/icons/build-module/library/edit.js":
-/*!********************************************************************!*\
-  !*** ./node_modules/@wordpress/icons/build-module/library/edit.js ***!
-  \********************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _pencil__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./pencil */ "./node_modules/@wordpress/icons/build-module/library/pencil.js");
-/**
- * Internal dependencies
- */
-
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_pencil__WEBPACK_IMPORTED_MODULE_0__["default"]);
-//# sourceMappingURL=edit.js.map
-
-/***/ }),
-
-/***/ "./node_modules/@wordpress/icons/build-module/library/pencil.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/@wordpress/icons/build-module/library/pencil.js ***!
-  \**********************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/primitives */ "@wordpress/primitives");
-/* harmony import */ var _wordpress_primitives__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-/**
- * WordPress dependencies
- */
-
-
-const pencil = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.SVG, {
-  xmlns: "http://www.w3.org/2000/svg",
-  viewBox: "0 0 24 24",
-  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.Path, {
-    d: "m19 7-3-3-8.5 8.5-1 4 4-1L19 7Zm-7 11.5H5V20h7v-1.5Z"
-  })
-});
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (pencil);
-//# sourceMappingURL=pencil.js.map
-
-/***/ }),
-
 /***/ "./node_modules/@wordpress/icons/build-module/library/trash.js":
 /*!*********************************************************************!*\
   !*** ./node_modules/@wordpress/icons/build-module/library/trash.js ***!
@@ -1610,8 +1559,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_core_data__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_core_data__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/edit.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/trash.js");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/trash.js");
 
 
 
@@ -1669,11 +1617,21 @@ const FieldsList = () => {
       fields: JSON.stringify(newFields)
     });
   };
+  const deleteField = field => {
+    console.log('Delete Field:', field);
+    const newFields = fields.filter(f => f.slug !== field.slug);
+    setFields(newFields);
+  };
+  const editField = field => {
+    console.log('Edit Field:', field);
+  };
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalVStack, {
     spacing: 16
   }, fields.map(field => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldRow, {
     key: field.slug,
-    field: field
+    field: field,
+    editField: editField,
+    deleteField: deleteField
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(EditFieldForm, {
     save: formData => {
       console.log('Save', formData);
@@ -1688,10 +1646,21 @@ const FieldsList = () => {
  * @returns FieldRow
  */
 const FieldRow = ({
-  field
+  field,
+  deleteField,
+  editField
 }) => {
+  const handleDeleteField = () => {
+    if (!confirm((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Are you sure you want to delete this field?'))) {
+      return;
+    }
+    deleteField(field);
+  };
+  const handleEditField = () => {
+    editField(field);
+  };
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalGrid, {
-    columns: 5
+    columns: 4
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     style: {
       gridColumn: '1/4'
@@ -1701,18 +1670,12 @@ const FieldRow = ({
     isDisabled: true
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("small", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("em", null, field.description))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     style: {
-      gridColumn: '4/6'
+      gridColumn: '4/5'
     }
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ButtonGroup, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
     icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_7__["default"],
-    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Edit Field'),
-    onClick: () => console.log('Edit Field'),
-    disabled: true
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
-    icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_8__["default"],
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Delete Field'),
-    onClick: () => console.log('Delete Field'),
-    disabled: true
+    onClick: handleDeleteField
   })))));
 };
 
