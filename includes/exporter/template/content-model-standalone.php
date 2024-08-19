@@ -12,27 +12,27 @@
  * Domain Path: /languages
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-define('CMS_VERSION', '1.0.0');
-define('CMS_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('CMS_PLUGIN_URL', plugin_dir_url(__FILE__));
+define( 'CMS_VERSION', '1.0.0' );
+define( 'CMS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'CMS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 require_once CMS_PLUGIN_DIR . 'class-content-model-initializer.php';
 
 function cms_init() {
-    $post_types_dir = CMS_PLUGIN_DIR . 'post-types/';
-    $json_files = glob($post_types_dir . '*.json');
-    
-    $initializer = new Content_Model_Initializer($json_files);
-    $initializer->initialize();
+	$post_types_dir = CMS_PLUGIN_DIR . 'post-types/';
+	$json_files     = glob( $post_types_dir . '*.json' );
+
+	$initializer = new Content_Model_Initializer( $json_files );
+	$initializer->initialize();
 }
 
-add_action('plugins_loaded', 'cms_init');
+add_action( 'plugins_loaded', 'cms_init' );
 
 // Include the runtime files
 // Used in the runtime
-define('CONTENT_MODEL_PLUGIN_URL', plugin_dir_url(__FILE__));
+define( 'CONTENT_MODEL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 require_once CMS_PLUGIN_DIR . 'runtime/0-load.php';
