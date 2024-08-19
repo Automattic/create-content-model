@@ -65,6 +65,8 @@ final class Content_Model_Block {
 
 		add_filter( 'get_block_type_variations', array( $this, 'register_block_variation' ), 10, 2 );
 
+		add_filter( 'block_variation_attributes', array( $this, 'hydrate_block_variation_attributes' ), 10, 2 );
+
 		if ( $this->should_render_group_variation() ) {
 			add_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99, 2 );
 		}
@@ -85,6 +87,15 @@ final class Content_Model_Block {
 
 			$this->bindings[ $attribute ] = $value;
 		}
+	}
+
+	/**
+	 * Retrieves the block variation name.
+	 *
+	 * @return string The block name.
+	 */
+	public function get_block_variation_name() {
+		return $this->block_variation_name;
 	}
 
 	/**
@@ -130,7 +141,13 @@ final class Content_Model_Block {
 			'name'       => '__' . $this->block_variation_slug . '/' . $block_type->name,
 			'title'      => $this->block_variation_name,
 			'category'   => $this->content_model->slug . '-fields',
-			'attributes' => array(),
+			'attributes' => array(
+				'metadata' => array(
+					'contentModelBinding' => array(
+						'__block_variation_name' => $this->block_variation_name,
+					),
+				),
+			),
 		);
 
 		if ( 'core/group' === $this->block_name ) {
@@ -147,15 +164,9 @@ final class Content_Model_Block {
 				),
 			);
 
-			$variation['attributes']['metadata'] = array(
-				'contentModelBinding' => array(
-					'content' => $this->get_binding( 'content' ),
-				),
-			);
+			$variation['attributes']['metadata']['contentModelBinding']['content'] = $this->get_binding( 'content' );
 		} else {
-			$variation['attributes']['metadata'] = array(
-				'bindings' => $this->map_bindings_to_block_bindings(),
-			);
+			$variation['attributes']['metadata']['bindings'] = $this->map_bindings_to_block_bindings();
 		}
 
 		$variations[] = $variation;
@@ -198,6 +209,31 @@ final class Content_Model_Block {
 	 */
 	private function should_render_group_variation() {
 		return 'core/group' === $this->block_name && null !== $this->get_binding( 'content' );
+	}
+
+	/**
+	 * Replaces the variation attributes in the block with the ones from the content model template.
+	 *
+	 * @param array  $block_attributes The block attributes from the incoming block variation.
+	 * @param string $block_variation_name The incoming block variation name.
+	 *
+	 * @return array The replaced attributes from the block variation.
+	 */
+	public function hydrate_block_variation_attributes( $block_attributes, $block_variation_name ) {
+		if ( $block_variation_name !== $this->block_variation_name ) {
+			return $block_attributes;
+		}
+
+		if ( 'core/group' === $this->block_name ) {
+			$block_attributes['metadata']['contentModelBinding'] = array_merge(
+				$this->get_bindings(),
+				array( '__block_variation_name' => $block_variation_name )
+			);
+		} else {
+			$block_attributes['metadata']['bindings'] = $this->map_bindings_to_block_bindings();
+		}
+
+		return $block_attributes;
 	}
 
 	/**
