@@ -2,6 +2,7 @@ import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import {
 	Button,
+	ButtonGroup,
 	Modal,
 	TextControl,
 	TextareaControl,
@@ -11,10 +12,12 @@ import {
 	CardFooter,
 	Card,
 	CardBody,
+	__experimentalGrid as Grid,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
+import { chevronUp, chevronDown, edit, trash } from '@wordpress/icons';
 
 /**
  * Our base plugin component.
@@ -57,7 +60,7 @@ const CreateContentModelPageSettings = function () {
 			{ isOpen && (
 				<Modal
 					title={ __( 'Manage Fields' ) }
-					isFullScreen
+					size="large"
 					onRequestClose={ closeModal }
 				>
 					<FieldsList />
@@ -89,7 +92,7 @@ const FieldsList = () => {
 
 	return (
 		<>
-			<VStack>
+			<VStack spacing={ 16 }>
 				{ fields.map( ( field ) => (
 					<FieldRow key={ field.slug } field={ field } />
 				) ) }
@@ -113,12 +116,40 @@ const FieldsList = () => {
 const FieldRow = ( { field } ) => {
 	return (
 		<>
-			<div>
-				<FieldInput field={ field } isDisabled />
-				<small>
-					<em>{ field.description }</em>
-				</small>
-			</div>
+			<Grid columns={ 5 }>
+				<div style={ { gridColumn: '1/4' } }>
+					<FieldInput field={ field } isDisabled />
+					<small>
+						<em>{ field.description }</em>
+					</small>
+				</div>
+				<div style={ { gridColumn: '4/6' } }>
+					<ButtonGroup>
+						{ /* <Button
+							icon={ chevronUp }
+							title={ __( 'Move Field Up' ) }
+							onClick={ () => console.log( 'Move Field Up' ) }
+						/>
+						<Button
+							icon={ chevronDown }
+							title={ __( 'Move Field Down' ) }
+							onClick={ () => console.log( 'Move Field Down' ) }
+						/> */ }
+						<Button
+							icon={ edit }
+							title={ __( 'Edit Field' ) }
+							onClick={ () => console.log( 'Edit Field' ) }
+							disabled={ true }
+						/>
+						<Button
+							icon={ trash }
+							title={ __( 'Delete Field' ) }
+							onClick={ () => console.log( 'Delete Field' ) }
+							disabled={ true }
+						/>
+					</ButtonGroup>
+				</div>
+			</Grid>
 		</>
 	);
 };
@@ -200,37 +231,39 @@ const EditFieldForm = ( {
 					<h3>{ __( 'Add Field' ) }</h3>
 				</CardHeader>
 				<CardBody>
+					<Grid columns={ 3 }>
+						<TextControl
+							label={ __( 'Label' ) }
+							value={ formData.label }
+							onChange={ ( value ) =>
+								setFormData( { ...formData, label: value } )
+							}
+						/>
+						<TextControl
+							label={ __( 'Slug' ) }
+							value={ formData.slug }
+							onChange={ ( value ) =>
+								setFormData( { ...formData, slug: value } )
+							}
+						/>
+						<SelectControl
+							label={ __( 'Field Type' ) }
+							value={ formData.type }
+							options={ [
+								{ label: __( 'Text' ), value: 'text' },
+								{ label: __( 'Textarea' ), value: 'textarea' },
+								{ label: __( 'Image' ), value: 'image' },
+							] }
+							onChange={ ( value ) =>
+								setFormData( { ...formData, type: value } )
+							}
+						/>
+					</Grid>
 					<TextControl
-						label={ __( 'Label' ) }
-						value={ formData.label }
-						onChange={ ( value ) =>
-							setFormData( { ...formData, label: value } )
-						}
-					/>
-					<TextControl
-						label={ __( 'Slug' ) }
-						value={ formData.slug }
-						onChange={ ( value ) =>
-							setFormData( { ...formData, slug: value } )
-						}
-					/>
-					<TextControl
-						label={ __( 'Description' ) }
+						label={ __( 'Field Description (optional)' ) }
 						value={ formData.description }
 						onChange={ ( value ) =>
 							setFormData( { ...formData, description: value } )
-						}
-					/>
-					<SelectControl
-						label={ __( 'Field Type' ) }
-						value={ formData.type }
-						options={ [
-							{ label: __( 'Text' ), value: 'text' },
-							{ label: __( 'Textarea' ), value: 'textarea' },
-							{ label: __( 'Image' ), value: 'image' },
-						] }
-						onChange={ ( value ) =>
-							setFormData( { ...formData, type: value } )
 						}
 					/>
 				</CardBody>

@@ -3,13 +3,13 @@
     "version": "1.0.0",
     "main": ".prettierrc.js",
     "scripts": {
-		"build": "wp-scripts build",
+        "build": "wp-scripts build",
         "prepare": "husky",
         "dev-server": "npx @wp-now/wp-now start --wp=nightly --skip-browser --blueprint=dev.json",
         "format": "wp-scripts format",
         "lint:css": "wp-scripts lint-style",
         "lint:js": "wp-scripts lint-js",
-		"start": "wp-scripts start"
+        "start": "wp-scripts start"
     },
     "keywords": [],
     "author": "",
@@ -37,5 +37,8 @@
         "*.scss": [
             "npm run lint:css"
         ]
+    },
+    "dependencies": {
+        "@wordpress/icons": "^10.5.0"
     }
 }
