@@ -110,13 +110,23 @@ class Content_Model_Loader {
 
 				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'build/manager/fields-ui.asset.php';
 
-				wp_enqueue_script(
+				wp_register_script(
 					'data-types/fields-ui',
 					CONTENT_MODEL_PLUGIN_URL . '/build/manager/fields-ui.js',
 					$asset_file['dependencies'],
 					$asset_file['version'],
 					true
 				);
+
+				wp_localize_script(
+					'data-types/fields-ui',
+					'contentModelFields',
+					array(
+						'postType' => Content_Model_Manager::POST_TYPE_NAME,
+					)
+				);
+
+				wp_enqueue_script( 'data-types/fields-ui' );
 			}
 		);
 	}

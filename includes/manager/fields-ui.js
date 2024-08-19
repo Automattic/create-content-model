@@ -28,7 +28,7 @@ const CreateContentModelPageSettings = function () {
 
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
-		'content_model',
+		contentModelFields.postType,
 		'meta'
 	);
 
