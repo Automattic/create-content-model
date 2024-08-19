@@ -47,6 +47,7 @@ class Content_Model_Loader {
 
 		$this->register_post_type();
 		$this->maybe_enqueue_the_attribute_binder();
+		$this->maybe_enqueue_the_fields_ui();
 	}
 
 	/**
@@ -107,6 +108,28 @@ class Content_Model_Loader {
 					'v1',
 					true
 				);
+			}
+		);
+	}
+
+
+
+	/**
+	 * Conditionally enqueues the fields UI script for the block editor.
+	 *
+	 * Checks if the current post is of the correct type before enqueueing the script.
+	 *
+	 * @return void
+	 */
+	private function maybe_enqueue_the_fields_ui() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
+					return;
+				}
 
 				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'build/manager/fields-ui.asset.php';
 
