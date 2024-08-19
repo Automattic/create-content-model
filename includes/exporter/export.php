@@ -110,9 +110,9 @@ function format_fields_for_export( $fields ) {
 	$formatted_fields = array();
 	foreach ( $fields as $field ) {
 		$formatted_fields[] = array(
-			'slug' => $field['slug'],
+			'slug' => sanitize_key( $field['slug'] ),
 			'type' => $field['type'],
-			// TODO: have UI in place for adding label, type, description, and required.
+			'label' => $field['slug'],
 		);
 	}
 	return $formatted_fields;
