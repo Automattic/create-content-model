@@ -174,6 +174,7 @@ const FieldInput = ( { field, isDisabled = false, value, saveChanges } ) => {
 			return (
 				<TextControl
 					label={ field.label }
+					type={ field.type }
 					readOnly={ isDisabled }
 					value={ value }
 					onChange={ ( value ) => saveChanges( field.slug, value ) }

@@ -284,6 +284,7 @@ const FieldInput = ({
     default:
       return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
         label: field.label,
+        type: field.type,
         readOnly: isDisabled,
         value: value,
         onChange: value => saveChanges(field.slug, value)

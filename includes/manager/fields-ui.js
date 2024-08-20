@@ -17,7 +17,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { chevronUp, chevronDown, edit, trash } from '@wordpress/icons';
+import { chevronUp, chevronDown, edit, trash, plus } from '@wordpress/icons';
 
 /**
  * Our base plugin component.
@@ -42,29 +42,38 @@ const CreateContentModelPageSettings = function () {
 			title={ __( 'Custom Fields' ) }
 			className="create-content-model-page-settings"
 		>
-			<VStack>
-				<ItemGroup isBordered isSeparated>
-					{ fields.map( ( field ) => (
-						<Item key={ field.slug } size="small">
-							{ field.label }
-							<code>{ field.slug }</code>
-						</Item>
-					) ) }
-				</ItemGroup>
-
+			<ItemGroup isBordered isSeparated>
+				{ fields.map( ( field ) => (
+					<Item key={ field.slug } size="small">
+						{ field.label }
+						<code>{ field.slug }</code>
+					</Item>
+				) ) }
+			</ItemGroup>
+			<div
+				style={ {
+					textAlign: 'right',
+				} }
+			>
 				<Button
-					variant="secondary"
-					onClick={ () => setFieldsOpen( true ) }
-				>
-					{ __( 'Manage Fields' ) }
-				</Button>
-				<Button
-					variant="secondary"
+					icon={ plus }
 					onClick={ () => setAddNewOpen( true ) }
-				>
-					{ __( 'Add Field' ) }
-				</Button>
-			</VStack>
+					label={ __( 'Add Field' ) }
+					style={ {
+						background: '#1e1e1e',
+						borderRadius: '2px',
+						color: '#fff',
+						height: '24px',
+						minWidth: '24px',
+						borderRadius: '0',
+					} }
+				/>
+			</div>
+
+			<Button variant="secondary" onClick={ () => setFieldsOpen( true ) }>
+				{ __( 'Manage Fields' ) }
+			</Button>
+
 			{ isFieldsOpen && (
 				<Modal
 					title={ __( 'Manage Fields' ) }
@@ -241,7 +250,11 @@ const FieldInput = ( { field, isDisabled = false } ) => {
 
 		default:
 			return (
-				<TextControl label={ field.label } readOnly={ isDisabled } />
+				<TextControl
+					label={ field.label }
+					type={ field.type }
+					readOnly={ isDisabled }
+				/>
 			);
 			break;
 	}
@@ -293,6 +306,7 @@ const EditFieldForm = ( {
 					options={ [
 						{ label: __( 'Text' ), value: 'text' },
 						{ label: __( 'Textarea' ), value: 'textarea' },
+						{ label: __( 'URL' ), value: 'url' },
 						{ label: __( 'Image' ), value: 'image' },
 					] }
 					onChange={ ( value ) =>
