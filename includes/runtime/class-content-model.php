@@ -39,6 +39,14 @@ final class Content_Model {
 	 */
 	public $blocks = array();
 
+
+	/**
+	 * Holds the fields of the content model.
+	 *
+	 * @var array
+	 */
+	public $fields = array();
+
 	/**
 	 * Initializes the Content_Model instance with the given WP_Post object.
 	 *
@@ -54,7 +62,9 @@ final class Content_Model {
 
 		// TODO: Not load this eagerly.
 		$this->blocks = $this->inflate_template_blocks( $this->template );
+		$this->fields = json_decode( get_post_meta( $content_model_post->ID, 'fields', true ), true );
 		$this->register_meta_fields();
+		$this->maybe_enqueue_the_fields_ui();
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
 
@@ -134,6 +144,24 @@ final class Content_Model {
 						'type'         => $block_attribute_type,
 					)
 				);
+			}
+		}
+
+		if ( ! empty( $this->fields ) ) {
+			foreach ( $this->fields as $field ) {
+				do_action( 'qm/debug', $field );
+				register_post_meta(
+					$this->slug,
+					$field['slug'],
+					array(
+						'description'  => $field['description'],
+						'show_in_rest' => true,
+						'single'       => true,
+						'type'         => 'string', // todo: support other types.
+						'default'      => $field['default'] ?? '',
+					)
+				);
+
 			}
 		}
 	}
@@ -247,5 +275,47 @@ final class Content_Model {
 		$data_hydrator = new Content_Model_Data_Hydrator( $this->template );
 
 		$post->post_content = serialize_blocks( $data_hydrator->hydrate() );
+	}
+
+
+		/**
+		 * Conditionally enqueues the fields UI script for the block editor.
+		 *
+		 * Checks if the current post is of the correct type before enqueueing the script.
+		 *
+		 * @return void
+		 */
+	private function maybe_enqueue_the_fields_ui() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || $this->slug !== $post->post_type ) {
+					return;
+				}
+
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'build/runtime/fields-ui.asset.php';
+
+				wp_register_script(
+					'data-types/fields-ui',
+					CONTENT_MODEL_PLUGIN_URL . '/build/runtime/fields-ui.js',
+					$asset_file['dependencies'],
+					$asset_file['version'],
+					true
+				);
+
+				wp_localize_script(
+					'data-types/fields-ui',
+					'contentModelFields',
+					array(
+						'postType' => $this->slug,
+						'fields'   => $this->fields,
+					)
+				);
+
+				wp_enqueue_script( 'data-types/fields-ui' );
+			}
+		);
 	}
 }

@@ -1617,7 +1617,7 @@ const CreateContentModelPageSettings = function () {
  * @returns FieldsList
  */
 const FieldsList = () => {
-  const [meta, setMeta] = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_5__.useEntityProp)('postType', 'content_model', 'meta');
+  const [meta, setMeta] = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_5__.useEntityProp)('postType', contentModelFields.postType, 'meta');
 
   // Saving the fields as serialized JSON because I was tired of fighting the REST API.
   const fields = meta?.fields ? JSON.parse(meta.fields) : [];

@@ -5,6 +5,7 @@ var config = {
 	entry: {
 		...defaultConfig.entry(),
 		'./manager/fields-ui': './includes/manager/fields-ui.js',
+		'./runtime/fields-ui': './includes/runtime/fields-ui.js',
 	},
 };
 
