@@ -15,6 +15,16 @@
     "author": "",
     "license": "ISC",
     "description": "",
+    "dependencies": {
+        "@wordpress/block-editor": "^14.0.0",
+        "@wordpress/blocks": "^13.5.0",
+        "@wordpress/components": "^28.5.0",
+        "@wordpress/compose": "^7.5.0",
+        "@wordpress/data": "^10.5.0",
+        "@wordpress/hooks": "^4.5.0",
+        "@wordpress/i18n": "^5.5.0",
+        "@wordpress/server-side-render": "^5.5.0"
+    },
     "devDependencies": {
         "@wordpress/eslint-plugin": "^20.0.0",
         "@wordpress/prettier-config": "^4.3.0",
@@ -38,10 +48,5 @@
         "*.scss": [
             "npm run lint:css"
         ]
-    },
-    "dependencies": {
-        "@wordpress/blocks": "^13.5.0",
-        "@wordpress/hooks": "^4.5.0",
-        "@wordpress/server-side-render": "^5.5.0"
     }
 }
