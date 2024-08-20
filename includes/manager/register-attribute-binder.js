@@ -115,6 +115,6 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 
 addFilter(
 	'editor.BlockEdit',
-	'data-types/attribute-binder',
+	'content-model/attribute-binder',
 	withAttributeBinder
 );

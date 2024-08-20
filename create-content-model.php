@@ -4,7 +4,7 @@
  * Description: Create content models in WP Admin.
  * Version: 1.0
  *
- * @package data-types
+ * @package content-model
  */
 
 declare( strict_types = 1 );
