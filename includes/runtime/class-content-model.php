@@ -59,7 +59,7 @@ final class Content_Model {
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
 
 		add_action( 'save_post', array( $this, 'extract_fields_from_blocks' ), 99, 2 );
-		add_action( 'the_post', array( $this, 'hydrate_template_with_content' ) );
+		add_action( 'the_post', array( $this, 'hydrate_cpt_template_with_content' ) );
 
 		add_filter( 'get_post_metadata', array( $this, 'cast_meta_field_types' ), 10, 3 );
 	}
@@ -239,7 +239,7 @@ final class Content_Model {
 	 *
 	 * @param WP_Post $post The current post.
 	 */
-	public function hydrate_template_with_content( $post ) {
+	public function hydrate_cpt_template_with_content( $post ) {
 		if ( $this->slug !== $post->post_type ) {
 			return;
 		}

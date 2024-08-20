@@ -63,10 +63,10 @@ function registerContentAreaInspector( wp ) {
 										label: 'Block variation name',
 										required: true,
 										value: getBinding(
-											'__block_variation_name'
+											window.BLOCK_VARIATION_NAME_ATTR
 										),
 										onChange: setBinding(
-											'__block_variation_name'
+											window.BLOCK_VARIATION_NAME_ATTR
 										),
 									} ),
 									wp.element.createElement( TextControl, {
@@ -103,10 +103,10 @@ function registerContentAreaInspector( wp ) {
 									key: 'block_variation_name',
 									label: 'Block variation name',
 									value: getBinding(
-										'__block_variation_name'
+										window.BLOCK_VARIATION_NAME_ATTR
 									),
 									onChange: setBinding(
-										'__block_variation_name'
+										window.BLOCK_VARIATION_NAME_ATTR
 									),
 								} ),
 								...supportedAttributes.map(

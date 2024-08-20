@@ -90,6 +90,12 @@ class Content_Model_Loader {
 					'v1',
 					true
 				);
+
+				wp_add_inline_script(
+					'data-types/attribute-binder',
+					'window.BLOCK_VARIATION_NAME_ATTR = "' . Content_Model_Block::BLOCK_VARIATION_NAME_ATTR . '";',
+					'before'
+				);
 			}
 		);
 	}
