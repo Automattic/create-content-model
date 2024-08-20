@@ -7,16 +7,36 @@
         "dev-server": "npx @wp-now/wp-now start --wp=nightly --skip-browser --blueprint=dev.json",
         "format": "wp-scripts format",
         "lint:css": "wp-scripts lint-style",
-        "lint:js": "wp-scripts lint-js"
+        "lint:js": "wp-scripts lint-js",
+        "start": "wp-scripts start",
+        "build": "wp-scripts build",
+        "preplugin-zip": "npm run build",
+        "plugin-zip": "wp-scripts plugin-zip"
     },
+    "files": [
+        "create-content-model.php",
+        "includes/**/*.php",
+        "includes/**/dist"
+    ],
     "keywords": [],
     "author": "",
     "license": "ISC",
     "description": "",
+    "dependencies": {
+        "@wordpress/block-editor": "^14.0.0",
+        "@wordpress/blocks": "^13.5.0",
+        "@wordpress/components": "^28.5.0",
+        "@wordpress/compose": "^7.5.0",
+        "@wordpress/data": "^10.5.0",
+        "@wordpress/hooks": "^4.5.0",
+        "@wordpress/i18n": "^5.5.0",
+        "@wordpress/server-side-render": "^5.5.0"
+    },
     "devDependencies": {
         "@wordpress/eslint-plugin": "^20.0.0",
         "@wordpress/prettier-config": "^4.3.0",
         "@wordpress/scripts": "^27.9.0",
+        "glob": "^11.0.0",
         "husky": "^9.1.4",
         "prettier": "npm:wp-prettier@^3.0.3"
     },

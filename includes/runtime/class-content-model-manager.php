@@ -134,11 +134,13 @@ class Content_Model_Manager {
 		add_action(
 			'enqueue_block_editor_assets',
 			function () {
+				$register_content_model_template_block = include CONTENT_MODEL_PLUGIN_PATH . '/includes/runtime/dist/register-content-model-template-block.asset.php';
+
 				wp_enqueue_script(
 					Content_Model_Manager::BLOCK_NAME,
-					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/type-template-inserter.js',
-					array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post', 'wp-i18n' ),
-					'v1',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/register-content-model-template-block.js',
+					$register_content_model_template_block['dependencies'],
+					$register_content_model_template_block['version'],
 					true
 				);
 

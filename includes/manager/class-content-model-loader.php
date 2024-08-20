@@ -83,16 +83,18 @@ class Content_Model_Loader {
 					return;
 				}
 
+				$register_attribute_binder_js = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/register-attribute-binder.asset.php';
+
 				wp_enqueue_script(
-					'data-types/attribute-binder',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/attribute-binder.js',
-					array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' ),
-					'v1',
+					'content-model/attribute-binder',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/register-attribute-binder.js',
+					$register_attribute_binder_js['dependencies'],
+					$register_attribute_binder_js['version'],
 					true
 				);
 
 				wp_add_inline_script(
-					'data-types/attribute-binder',
+					'content-model/attribute-binder',
 					'window.BLOCK_VARIATION_NAME_ATTR = "' . Content_Model_Block::BLOCK_VARIATION_NAME_ATTR . '";',
 					'before'
 				);
