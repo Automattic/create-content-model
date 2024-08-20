@@ -186,6 +186,10 @@ __webpack_require__.r(__webpack_exports__);
  */
 const CreateContentModelPageSettings = function () {
   const [isFieldsOpen, setFieldsOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_7__.useState)(false);
+  const fields = contentModelFields.fields;
+  if (!fields) {
+    return null;
+  }
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_editor__WEBPACK_IMPORTED_MODULE_2__.PluginDocumentSettingPanel, {
     name: "create-content-model-page-settings",
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Custom Fields'),

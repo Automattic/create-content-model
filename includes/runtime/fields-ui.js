@@ -22,6 +22,12 @@ import { useState } from '@wordpress/element';
 const CreateContentModelPageSettings = function () {
 	const [ isFieldsOpen, setFieldsOpen ] = useState( false );
 
+	const fields = contentModelFields.fields;
+
+	if ( ! fields ) {
+		return null;
+	}
+
 	return (
 		<PluginDocumentSettingPanel
 			name="create-content-model-page-settings"
