@@ -185,7 +185,7 @@ class Content_Model_Manager {
 				$blocks[ $index ]['attrs'] = apply_filters(
 					'block_variation_attributes',
 					$blocks[ $index ]['attrs'],
-					$tentative_block->get_block_variation_name()
+					$tentative_block
 				);
 			}
 		}
