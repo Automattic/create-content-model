@@ -40,6 +40,8 @@
         ]
     },
     "dependencies": {
-        "@wordpress/hooks": "^4.5.0"
+        "@wordpress/blocks": "^13.5.0",
+        "@wordpress/hooks": "^4.5.0",
+        "@wordpress/server-side-render": "^5.5.0"
     }
 }
