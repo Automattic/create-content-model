@@ -8,7 +8,9 @@ import {
 	__experimentalVStack as VStack,
 	Card,
 	CardBody,
+	CardFooter,
 } from '@wordpress/components';
+import { MediaPlaceholder } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
@@ -122,11 +124,37 @@ const FieldInput = ( { field, isDisabled = false, value, saveChanges } ) => {
 					>
 						{ field.label }
 					</label>
-					<div style={ { display: 'block' } }>
-						<Button variant="secondary" disabled={ isDisabled }>
-							{ __( 'Upload Image' ) }
-						</Button>
-					</div>
+					{ value && (
+						<Card>
+							<CardBody>
+								<img
+									src={ value }
+									alt={ field.label }
+									style={ { width: '100%' } }
+								/>
+							</CardBody>
+							<CardFooter>
+								<Button
+									isDestructive
+									onClick={ () =>
+										saveChanges( field.slug, '' )
+									}
+								>
+									{ __( 'Remove Image' ) }
+								</Button>
+							</CardFooter>
+						</Card>
+					) }
+					{ ! value && (
+						<MediaPlaceholder
+							allowedTypes={ [ 'image' ] }
+							accept="image"
+							multiple={ false }
+							onSelect={ ( value ) =>
+								saveChanges( field.slug, value.url )
+							}
+						/>
+					) }
 				</>
 			);
 			break;
