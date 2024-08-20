@@ -11,6 +11,9 @@ declare( strict_types = 1 );
  * Represents a block from a content model template.
  */
 final class Content_Model_Block {
+	public const BLOCK_VARIATION_NAME_ATTR = '__block_variation_name';
+	private const CONTENT_MODEL_SLUG_ATTR  = '__content_model_slug';
+
 	/**
 	 * The block name.
 	 *
@@ -55,15 +58,20 @@ final class Content_Model_Block {
 	public function __construct( array $block, Content_Model $content_model = null ) {
 		$this->block_name    = $block['blockName'];
 		$this->content_model = $content_model;
-		$bindings            = $block['attrs']['metadata']['contentModelBinding'] ?? array();
 
+		$bindings = $block['attrs']['metadata']['contentModelBinding'] ?? array();
 		$this->register_bindings( $bindings );
 
-		if ( ! $this->content_model ) {
+		/**
+		 * If not instanciated directly by a content model, do not register hooks.
+		 */
+		if ( ! $content_model ) {
 			return;
 		}
 
 		add_filter( 'get_block_type_variations', array( $this, 'register_block_variation' ), 10, 2 );
+
+		add_filter( 'block_variation_attributes', array( $this, 'hydrate_block_variation_attributes' ), 10, 2 );
 
 		if ( $this->should_render_group_variation() ) {
 			add_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99, 2 );
@@ -77,14 +85,40 @@ final class Content_Model_Block {
 	 */
 	private function register_bindings( $bindings ) {
 		foreach ( $bindings as $attribute => $value ) {
-			if ( '__block_variation_name' === $attribute ) {
+			if ( self::BLOCK_VARIATION_NAME_ATTR === $attribute ) {
 				$this->block_variation_name = $value;
 				$this->block_variation_slug = sanitize_title_with_dashes( $value );
 				continue;
 			}
 
+			if ( self::CONTENT_MODEL_SLUG_ATTR === $attribute ) {
+				if ( ! $this->content_model ) {
+					$this->content_model = Content_Model_Manager::get_instance()->get_content_model_by_slug( $value );
+				}
+
+				continue;
+			}
+
 			$this->bindings[ $attribute ] = $value;
 		}
+	}
+
+	/**
+	 * Retrieves the block variation name.
+	 *
+	 * @return string The block name.
+	 */
+	public function get_block_variation_name() {
+		return $this->block_variation_name;
+	}
+
+	/**
+	 * Retrieves the content model instance associated with this block.
+	 *
+	 * @return Content_Model The content model instance.
+	 */
+	public function get_content_model() {
+		return $this->content_model;
 	}
 
 	/**
@@ -130,7 +164,14 @@ final class Content_Model_Block {
 			'name'       => '__' . $this->block_variation_slug . '/' . $block_type->name,
 			'title'      => $this->block_variation_name,
 			'category'   => $this->content_model->slug . '-fields',
-			'attributes' => array(),
+			'attributes' => array(
+				'metadata' => array(
+					'contentModelBinding' => array(
+						self::CONTENT_MODEL_SLUG_ATTR   => $this->content_model->slug,
+						self::BLOCK_VARIATION_NAME_ATTR => $this->block_variation_name,
+					),
+				),
+			),
 		);
 
 		if ( 'core/group' === $this->block_name ) {
@@ -147,15 +188,9 @@ final class Content_Model_Block {
 				),
 			);
 
-			$variation['attributes']['metadata'] = array(
-				'contentModelBinding' => array(
-					'content' => $this->get_binding( 'content' ),
-				),
-			);
+			$variation['attributes']['metadata']['contentModelBinding']['content'] = $this->get_binding( 'content' );
 		} else {
-			$variation['attributes']['metadata'] = array(
-				'bindings' => $this->map_bindings_to_block_bindings(),
-			);
+			$variation['attributes']['metadata']['bindings'] = $this->map_bindings_to_block_bindings();
 		}
 
 		$variations[] = $variation;
@@ -198,6 +233,38 @@ final class Content_Model_Block {
 	 */
 	private function should_render_group_variation() {
 		return 'core/group' === $this->block_name && null !== $this->get_binding( 'content' );
+	}
+
+	/**
+	 * Replaces the variation attributes in the block with the ones from the content model template.
+	 *
+	 * @param array               $block_attributes The block attributes from the incoming block variation.
+	 * @param Content_Model_Block $block_variation The incoming block variation.
+	 *
+	 * @return array The replaced attributes from the block variation.
+	 */
+	public function hydrate_block_variation_attributes( $block_attributes, $block_variation ) {
+		if ( $block_variation->get_block_variation_name() !== $this->block_variation_name ) {
+			return $block_attributes;
+		}
+
+		if ( $block_variation->get_content_model() !== $this->content_model ) {
+			return $block_attributes;
+		}
+
+		if ( 'core/group' === $this->block_name ) {
+			$block_attributes['metadata']['contentModelBinding'] = array_merge(
+				$this->get_bindings(),
+				array(
+					self::BLOCK_VARIATION_NAME_ATTR => $this->block_variation_name,
+					self::CONTENT_MODEL_SLUG_ATTR   => $this->content_model->slug,
+				)
+			);
+		} else {
+			$block_attributes['metadata']['bindings'] = $this->map_bindings_to_block_bindings();
+		}
+
+		return $block_attributes;
 	}
 
 	/**
