@@ -294,11 +294,11 @@ final class Content_Model {
 					return;
 				}
 
-				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'build/runtime/fields-ui.asset.php';
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/fields-ui.asset.php';
 
 				wp_register_script(
 					'data-types/fields-ui',
-					CONTENT_MODEL_PLUGIN_URL . '/build/runtime/fields-ui.js',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/fields-ui.js',
 					$asset_file['dependencies'],
 					$asset_file['version'],
 					true

@@ -139,11 +139,11 @@ class Content_Model_Loader {
 					return;
 				}
 
-				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'build/manager/fields-ui.asset.php';
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/manager/dist/fields-ui.asset.php';
 
 				wp_register_script(
 					'data-types/fields-ui',
-					CONTENT_MODEL_PLUGIN_URL . '/build/manager/fields-ui.js',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/fields-ui.js',
 					$asset_file['dependencies'],
 					$asset_file['version'],
 					true
