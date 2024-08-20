@@ -11,6 +11,8 @@ import {
 	Card,
 	CardBody,
 	__experimentalGrid as Grid,
+	__experimentalItemGroup as ItemGroup,
+	__experimentalItem as Item,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
@@ -41,13 +43,14 @@ const CreateContentModelPageSettings = function () {
 			className="create-content-model-page-settings"
 		>
 			<VStack>
-				<Card>
+				<ItemGroup isBordered isSeparated>
 					{ fields.map( ( field ) => (
-						<CardBody key={ field.slug } size="small">
+						<Item key={ field.slug } size="small">
 							{ field.label }
-						</CardBody>
+							<code>{ field.slug }</code>
+						</Item>
 					) ) }
-				</Card>
+				</ItemGroup>
 
 				<Button
 					variant="secondary"
