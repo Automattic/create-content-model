@@ -49,7 +49,9 @@ class Content_Model_Data_Hydrator {
 				continue;
 			}
 
-			foreach ( $content_model_block->get_bindings() as $attribute => $field ) {
+			foreach ( $content_model_block->get_bindings() as $attribute => $binding ) {
+				$field = $binding['args']['key'];
+
 				if ( 'post_content' === $field ) {
 					$content = get_the_content();
 				} else {
@@ -82,6 +84,8 @@ class Content_Model_Data_Hydrator {
 				$blocks[ $index ]['innerHTML']    = $inner_html;
 				$blocks[ $index ]['innerContent'] = array( $inner_html );
 			}
+
+			$blocks[ $index ]['attrs'] = apply_filters( 'hydrate_block_attributes', $blocks[ $index ]['attrs'] );
 		}
 
 		return $blocks;

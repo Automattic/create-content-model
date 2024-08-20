@@ -6,10 +6,20 @@ import { select } from '@wordpress/data';
 
 // https://github.com/WordPress/WordPress/blob/master/wp-includes/class-wp-block.php#L246-L251
 const SUPPORTED_BLOCK_ATTRIBUTES = {
+	'core/group': [ 'content' ],
 	'core/paragraph': [ 'content' ],
 	'core/heading': [ 'content' ],
 	'core/image': [ 'id', 'url', 'title', 'alt' ],
 	'core/button': [ 'url', 'text', 'linkTarget', 'rel' ],
+};
+
+const getBindingObject = ( { key } ) => {
+	return {
+		source: key === 'post_content' ? 'core/post-content' : 'core/post-meta',
+		args: {
+			key: key.trim(),
+		},
+	};
 };
 
 const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
@@ -17,59 +27,29 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		const { attributes, setAttributes, name } = props;
 
 		const getBinding = ( attribute ) => {
-			return attributes.metadata?.contentModelBinding?.[ attribute ];
+			return attributes.metadata?.bindings?.[ attribute ]?.args?.key;
 		};
 
 		const setBinding = ( attribute ) => {
-			return ( value ) => {
+			return ( key ) => {
 				const newAttributes = {
 					...attributes,
 					metadata: {
 						...( attributes.metadata ?? {} ),
-						contentModelBinding: {
-							...( attributes.metadata?.contentModelBinding ??
-								{} ),
-							[ attribute ]: value,
+						bindings: {
+							...( attributes.metadata?.bindings ?? {} ),
+							[ attribute ]: getBindingObject( { key } ),
 						},
 					},
 				};
 
-				if ( ! value.trim() ) {
-					delete newAttributes.metadata.contentModelBinding[
-						attribute
-					];
+				if ( ! key ) {
+					delete newAttributes.metadata.bindings[ attribute ];
 				}
 
 				setAttributes( newAttributes );
 			};
 		};
-
-		if ( name === 'core/group' ) {
-			return (
-				<>
-					<InspectorControls>
-						<PanelBody title="Attribute Bindings" initialOpen>
-							<TextControl
-								label="Block variation name"
-								required
-								value={ getBinding(
-									window.BLOCK_VARIATION_NAME_ATTR
-								) }
-								onChange={ setBinding(
-									window.BLOCK_VARIATION_NAME_ATTR
-								) }
-							/>
-							<TextControl
-								label="content"
-								value={ getBinding( 'content' ) }
-								onChange={ setBinding( 'content' ) }
-							/>
-						</PanelBody>
-					</InspectorControls>
-					<BlockEdit { ...props } />
-				</>
-			);
-		}
 
 		const { getBlockType } = select( 'core/blocks' );
 		const selectedBlockType = getBlockType( name );
@@ -88,12 +68,32 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 						<TextControl
 							label="Block variation name"
 							required
-							value={ getBinding(
-								window.BLOCK_VARIATION_NAME_ATTR
-							) }
-							onChange={ setBinding(
-								window.BLOCK_VARIATION_NAME_ATTR
-							) }
+							value={
+								attributes.metadata?.[
+									window.BLOCK_VARIATION_NAME_ATTR
+								]
+							}
+							onChange={ ( newName ) => {
+								const newAttributes = {
+									metadata: {
+										...( attributes.metadata ?? {} ),
+										[ window.BLOCK_VARIATION_NAME_ATTR ]:
+											newName,
+									},
+								};
+
+								if (
+									! newAttributes.metadata[
+										window.BLOCK_VARIATION_NAME_ATTR
+									].trim()
+								) {
+									delete newAttributes.metadata[
+										window.BLOCK_VARIATION_NAME_ATTR
+									];
+								}
+
+								setAttributes( newAttributes );
+							} }
 						/>
 						{ supportedAttributes.map( ( attributeKey ) => {
 							return (

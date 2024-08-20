@@ -19,13 +19,22 @@ class Content_Model_Data_Extractor {
 	private $blocks;
 
 	/**
+	 * The bound blocks from the content model template.
+	 *
+	 * @var array
+	 */
+	private $bound_blocks;
+
+	/**
 	 * Initializes the Content_Model_Data_Extractor instance with the given blocks.
 	 *
 	 * @param array $blocks The blocks to initialize with.
+	 * @param array $bound_blocks The bound blocks from the content model.
 	 * @return void
 	 */
-	public function __construct( $blocks ) {
-		$this->blocks = $blocks;
+	public function __construct( $blocks, $bound_blocks ) {
+		$this->blocks       = $blocks;
+		$this->bound_blocks = $bound_blocks;
 	}
 
 	/**
@@ -39,10 +48,19 @@ class Content_Model_Data_Extractor {
 		$blocks ??= $this->blocks;
 
 		foreach ( $blocks as $block ) {
-			$content_model_block = new Content_Model_Block( $block );
+			$content_model_block  = new Content_Model_Block( $block );
+			$block_variation_name = $content_model_block->get_block_variation_name();
 
-			if ( 'post_content' === $content_model_block->get_binding( 'content' ) ) {
-				return serialize_blocks( $block['innerBlocks'] );
+			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			/** @var Content_Model_Block|null $bound_block */
+			$bound_block = $this->bound_blocks[ $block_variation_name ] ?? null;
+
+			if ( $bound_block ) {
+				$content_binding = $bound_block->get_binding( 'content' );
+
+				if ( 'post_content' === $content_binding['args']['key'] ) {
+					return serialize_blocks( $block['innerBlocks'] );
+				}
 			}
 
 			if ( ! empty( $block['innerBlocks'] ) ) {
@@ -70,29 +88,40 @@ class Content_Model_Data_Extractor {
 		$acc = array();
 
 		foreach ( $blocks as $block ) {
-			$content_model_block = new Content_Model_Block( $block );
+			$content_model_block  = new Content_Model_Block( $block );
+			$block_variation_name = $content_model_block->get_block_variation_name();
 
-			foreach ( $content_model_block->get_bindings() as $attribute => $field ) {
-				// post_content is not a meta attribute.
-				if ( 'post_content' === $field ) {
-					continue;
-				}
+			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			/** @var Content_Model_Block|null $bound_block */
+			$bound_block = $this->bound_blocks[ $block_variation_name ] ?? null;
 
-				// Serialize all inner blocks from Group.
-				if ( 'core/group' === $block['blockName'] ) {
-					$acc[ $field ] = serialize_blocks( $block['innerBlocks'] );
-					continue;
-				}
+			if ( $bound_block && ! empty( $bound_block->get_bindings() ) ) {
+				$bindings = $bound_block->get_bindings();
 
-				// If the bound attribute is present in the block attributes, use that.
-				if ( isset( $block['attrs'][ $attribute ] ) ) {
-					$acc[ $field ] = $block['attrs'][ $attribute ];
-				} else {
-					// Extract meta field value from the block's markup.
-					$meta_value_from_markup = $this->extract_attribute_value_from_block_markup( $block, $attribute );
+				foreach ( $bindings as $attribute => $binding ) {
+					$field = $binding['args']['key'];
 
-					if ( $meta_value_from_markup ) {
-						$acc[ $field ] = $meta_value_from_markup;
+					// post_content is not a meta attribute.
+					if ( 'post_content' === $field ) {
+						continue;
+					}
+
+					// Serialize all inner blocks from Group.
+					if ( 'core/group' === $block['blockName'] ) {
+						$acc[ $field ] = serialize_blocks( $block['innerBlocks'] );
+						continue;
+					}
+
+					// If the bound attribute is present in the block attributes, use that.
+					if ( isset( $block['attrs'][ $attribute ] ) ) {
+						$acc[ $field ] = $block['attrs'][ $attribute ];
+					} else {
+						// Extract meta field value from the block's markup.
+						$meta_value_from_markup = $this->extract_attribute_value_from_block_markup( $block, $attribute );
+
+						if ( $meta_value_from_markup ) {
+							$acc[ $field ] = $meta_value_from_markup;
+						}
 					}
 				}
 			}
