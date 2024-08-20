@@ -83,11 +83,13 @@ class Content_Model_Loader {
 					return;
 				}
 
+				$attribute_binder_js = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/attribute-binder.asset.php';
+
 				wp_enqueue_script(
 					'data-types/attribute-binder',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/attribute-binder.js',
-					array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' ),
-					'v1',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/attribute-binder.js',
+					$attribute_binder_js['dependencies'],
+					$attribute_binder_js['version'],
 					true
 				);
 
