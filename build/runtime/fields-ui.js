@@ -173,20 +173,14 @@ __webpack_require__.r(__webpack_exports__);
  */
 const CreateContentModelPageSettings = function () {
   const [isFieldsOpen, setFieldsOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useState)(false);
-  const [meta, setMeta] = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_5__.useEntityProp)('postType', contentModelFields.postType, 'meta');
-  const fields = contentModelFields.fields ? contentModelFields.fields : [];
-  console.log(meta);
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_editor__WEBPACK_IMPORTED_MODULE_2__.PluginDocumentSettingPanel, {
     name: "create-content-model-page-settings",
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Custom Fields'),
     className: "create-content-model-page-settings"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalVStack, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Card, null, fields.map(field => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CardBody, {
-    key: field.slug,
-    size: "small"
-  }, field.label))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalVStack, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldsList, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
     variant: "secondary",
     onClick: () => setFieldsOpen(true)
-  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Edit All Fields'))), isFieldsOpen && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Modal, {
+  }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Expand Fields'))), isFieldsOpen && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Modal, {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Manage Fields'),
     size: "large",
     onRequestClose: () => setFieldsOpen(false)
@@ -200,7 +194,7 @@ const CreateContentModelPageSettings = function () {
 const FieldsList = () => {
   const fields = contentModelFields.fields;
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalVStack, {
-    spacing: 16
+    spacing: 8
   }, fields.map(field => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(FieldRow, {
     key: field.slug,
     field: field

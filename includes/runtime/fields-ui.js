@@ -20,16 +20,6 @@ import { useState } from '@wordpress/element';
 const CreateContentModelPageSettings = function () {
 	const [ isFieldsOpen, setFieldsOpen ] = useState( false );
 
-	const [ meta, setMeta ] = useEntityProp(
-		'postType',
-		contentModelFields.postType,
-		'meta'
-	);
-
-	const fields = contentModelFields.fields ? contentModelFields.fields : [];
-
-	console.log( meta );
-
 	return (
 		<PluginDocumentSettingPanel
 			name="create-content-model-page-settings"
@@ -37,19 +27,13 @@ const CreateContentModelPageSettings = function () {
 			className="create-content-model-page-settings"
 		>
 			<VStack>
-				<Card>
-					{ fields.map( ( field ) => (
-						<CardBody key={ field.slug } size="small">
-							{ field.label }
-						</CardBody>
-					) ) }
-				</Card>
+				<FieldsList />
 
 				<Button
 					variant="secondary"
 					onClick={ () => setFieldsOpen( true ) }
 				>
-					{ __( 'Edit All Fields' ) }
+					{ __( 'Expand Fields' ) }
 				</Button>
 			</VStack>
 			{ isFieldsOpen && (
@@ -74,7 +58,7 @@ const FieldsList = () => {
 
 	return (
 		<>
-			<VStack spacing={ 16 }>
+			<VStack spacing={ 8 }>
 				{ fields.map( ( field ) => (
 					<FieldRow key={ field.slug } field={ field } />
 				) ) }

@@ -149,7 +149,6 @@ final class Content_Model {
 
 		if ( ! empty( $this->fields ) ) {
 			foreach ( $this->fields as $field ) {
-				do_action( 'qm/debug', $field );
 				register_post_meta(
 					$this->slug,
 					$field['slug'],
