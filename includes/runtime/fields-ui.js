@@ -90,6 +90,7 @@ const parseBlocks = ( blocks, setEditMode ) => {
 					templateLock: 'contentOnly',
 				},
 			} );
+			setEditMode( block.clientId, 'disabled' );
 		} else if (
 			SUPPORTED_BLOCKS.includes( block.name ) &&
 			block.attributes.metadata?.bindings
