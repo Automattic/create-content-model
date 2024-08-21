@@ -15,8 +15,6 @@ import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState, useEffect } from '@wordpress/element';
 import { dispatch, useSelect } from '@wordpress/data';
-import { addFilter } from '@wordpress/hooks';
-import { createHigherOrderComponent } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 
@@ -83,11 +81,18 @@ const SUPPORTED_BLOCKS = [
 
 const parseBlocks = ( blocks, setEditMode ) => {
 	blocks.forEach( ( block ) => {
-		console.log( 'Checking block', block.attributes );
-		if (
-			( SUPPORTED_BLOCKS.includes( block.name ) &&
-				block.attributes.metadata?.bindings ) ||
-			block.innerBlocks.length > 0
+		if ( block.innerBlocks.length > 0 ) {
+			// setEditMode( block.clientId, '' );
+			dispatch( 'core/block-editor' ).updateBlock( block.clientId, {
+				...block,
+				attributes: {
+					...block.attributes,
+					templateLock: 'contentOnly',
+				},
+			} );
+		} else if (
+			SUPPORTED_BLOCKS.includes( block.name ) &&
+			block.attributes.metadata?.bindings
 		) {
 			setEditMode( block.clientId, '' );
 		} else {
