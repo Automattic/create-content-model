@@ -11,8 +11,8 @@ declare( strict_types = 1 );
  * Represents a block from a content model template.
  */
 final class Content_Model_Block {
-	public const BLOCK_VARIATION_NAME_ATTR = '__block_variation_name';
-	private const CONTENT_MODEL_SLUG_ATTR  = '__content_model_slug';
+	public const BLOCK_VARIATION_NAME_ATTR = 'name';
+	public const CONTENT_MODEL_SLUG_ATTR   = 'content_model_slug';
 
 	/**
 	 * The block name.
@@ -59,8 +59,22 @@ final class Content_Model_Block {
 		$this->block_name    = $block['blockName'];
 		$this->content_model = $content_model;
 
-		$bindings = $block['attrs']['metadata']['contentModelBinding'] ?? array();
-		$this->register_bindings( $bindings );
+		$metadata = $block['attrs']['metadata'] ?? array();
+
+		if ( empty( $metadata[ self::BLOCK_VARIATION_NAME_ATTR ] ) ) {
+			return;
+		}
+
+		$this->block_variation_name = $metadata[ self::BLOCK_VARIATION_NAME_ATTR ];
+		$this->block_variation_slug = sanitize_title_with_dashes( $this->block_variation_name );
+
+		if ( ! $this->content_model && ! empty( $metadata[ self::CONTENT_MODEL_SLUG_ATTR ] ) ) {
+			$content_model_slug = $metadata[ self::CONTENT_MODEL_SLUG_ATTR ];
+
+			$this->content_model = Content_Model_Manager::get_instance()->get_content_model_by_slug( $content_model_slug );
+		}
+
+		$this->bindings = $metadata['bindings'] ?? array();
 
 		/**
 		 * If not instanciated directly by a content model, do not register hooks.
@@ -75,31 +89,6 @@ final class Content_Model_Block {
 
 		if ( $this->should_render_group_variation() ) {
 			add_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99, 2 );
-		}
-	}
-
-	/**
-	 * Registers the bindings for the Content_Model_Block instance.
-	 *
-	 * @param array $bindings The bindings to register.
-	 */
-	private function register_bindings( $bindings ) {
-		foreach ( $bindings as $attribute => $value ) {
-			if ( self::BLOCK_VARIATION_NAME_ATTR === $attribute ) {
-				$this->block_variation_name = $value;
-				$this->block_variation_slug = sanitize_title_with_dashes( $value );
-				continue;
-			}
-
-			if ( self::CONTENT_MODEL_SLUG_ATTR === $attribute ) {
-				if ( ! $this->content_model ) {
-					$this->content_model = Content_Model_Manager::get_instance()->get_content_model_by_slug( $value );
-				}
-
-				continue;
-			}
-
-			$this->bindings[ $attribute ] = $value;
 		}
 	}
 
@@ -166,16 +155,16 @@ final class Content_Model_Block {
 			'category'   => $this->content_model->slug . '-fields',
 			'attributes' => array(
 				'metadata' => array(
-					'contentModelBinding' => array(
-						self::CONTENT_MODEL_SLUG_ATTR   => $this->content_model->slug,
-						self::BLOCK_VARIATION_NAME_ATTR => $this->block_variation_name,
-					),
+					self::BLOCK_VARIATION_NAME_ATTR => $this->block_variation_name,
+					self::CONTENT_MODEL_SLUG_ATTR   => $this->content_model->slug,
 				),
 			),
 		);
 
 		if ( 'core/group' === $this->block_name ) {
-			if ( ! $this->get_binding( 'content' ) ) {
+			$content_binding = $this->get_binding( 'content' );
+
+			if ( ! $content_binding ) {
 				return $variations;
 			}
 
@@ -183,47 +172,17 @@ final class Content_Model_Block {
 				array(
 					'core/paragraph',
 					array(
-						'content' => $this->get_binding( 'content' ),
+						'content' => $content_binding['args']['key'],
 					),
 				),
 			);
-
-			$variation['attributes']['metadata']['contentModelBinding']['content'] = $this->get_binding( 'content' );
-		} else {
-			$variation['attributes']['metadata']['bindings'] = $this->map_bindings_to_block_bindings();
 		}
+
+		$variation['attributes']['metadata']['bindings'] = $this->get_bindings();
 
 		$variations[] = $variation;
 
 		return $variations;
-	}
-
-	/**
-	 * Maps content model bindings to block bindings.
-	 *
-	 * Iterates over the content model bindings and creates an array of block bindings.
-	 * Each block binding contains the source and arguments for the binding, conforming
-	 * to the Block Bindings API.
-	 *
-	 * @return array An array of block bindings.
-	 */
-	private function map_bindings_to_block_bindings() {
-		$block_bindings = array();
-
-		foreach ( $this->get_bindings() as $attribute => $binding ) {
-			if ( 'post_content' === $binding ) {
-				continue;
-			}
-
-			$block_bindings[ $attribute ] = array(
-				'source' => 'core/post-meta',
-				'args'   => array(
-					'key' => $binding,
-				),
-			);
-		}
-
-		return $block_bindings;
 	}
 
 	/**
@@ -252,17 +211,14 @@ final class Content_Model_Block {
 			return $block_attributes;
 		}
 
-		if ( 'core/group' === $this->block_name ) {
-			$block_attributes['metadata']['contentModelBinding'] = array_merge(
-				$this->get_bindings(),
-				array(
-					self::BLOCK_VARIATION_NAME_ATTR => $this->block_variation_name,
-					self::CONTENT_MODEL_SLUG_ATTR   => $this->content_model->slug,
-				)
-			);
-		} else {
-			$block_attributes['metadata']['bindings'] = $this->map_bindings_to_block_bindings();
-		}
+		$block_attributes['metadata'] = array_merge(
+			$block_attributes['metadata'] ?? array(),
+			array(
+				self::BLOCK_VARIATION_NAME_ATTR => $this->block_variation_name,
+				self::CONTENT_MODEL_SLUG_ATTR   => $this->content_model->slug,
+				'bindings'                      => $this->get_bindings(),
+			)
+		);
 
 		return $block_attributes;
 	}
@@ -289,10 +245,12 @@ final class Content_Model_Block {
 			return $pre_render;
 		}
 
-		if ( 'post_content' === $content_binding ) {
+		$field = $content_binding['args']['key'];
+
+		if ( 'post_content' === $field ) {
 			$content = get_the_content();
 		} else {
-			$content = get_post_meta( get_the_ID(), $content_binding, true );
+			$content = get_post_meta( get_the_ID(), $field, true );
 		}
 
 		if ( ! $content ) {

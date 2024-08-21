@@ -113,7 +113,7 @@ final class Content_Model {
 				continue;
 			}
 
-			$acc[] = $content_model_block;
+			$acc[ $content_model_block->get_block_variation_name() ] = $content_model_block;
 		}
 
 		return $acc;
@@ -125,9 +125,11 @@ final class Content_Model {
 	 * @return void
 	 */
 	private function register_meta_fields() {
-		foreach ( $this->blocks as $block ) {
-			foreach ( $block->get_bindings() as $attribute => $meta_field ) {
-				if ( 'post_content' === $meta_field ) {
+		foreach ( $this->blocks as $block_variation_name => $block ) {
+			foreach ( $block->get_bindings() as $attribute => $binding ) {
+				$field = $binding['args']['key'];
+
+				if ( 'post_content' === $field ) {
 					continue;
 				}
 
@@ -137,7 +139,7 @@ final class Content_Model {
 
 				register_post_meta(
 					$this->slug,
-					$meta_field,
+					$field,
 					array(
 						'show_in_rest' => true,
 						'single'       => true,
@@ -248,7 +250,7 @@ final class Content_Model {
 
 		$blocks = parse_blocks( wp_unslash( $post->post_content ) );
 
-		$data_extractor = new Content_Model_Data_Extractor( $blocks );
+		$data_extractor = new Content_Model_Data_Extractor( $blocks, $this->blocks );
 
 		wp_update_post(
 			array(
@@ -272,8 +274,23 @@ final class Content_Model {
 		}
 
 		$data_hydrator = new Content_Model_Data_Hydrator( $this->template );
-
+		add_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
 		$post->post_content = serialize_blocks( $data_hydrator->hydrate() );
+		remove_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
+	}
+
+	/**
+	 * We need to remove the bindings in data entry mode, otherwise it's not
+	 * possible to modify the bound attributes.
+	 *
+	 * @param array $attrs The block attributes.
+	 *
+	 * @return array The block attributes.
+	 */
+	public function remove_bindings_from_attributes( $attrs ) {
+		unset( $attrs['metadata']['bindings'] );
+
+		return $attrs;
 	}
 
 
