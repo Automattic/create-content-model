@@ -168,6 +168,43 @@ function handle_zip_download() {
 	}
 }
 
+function include_nested_files( $zip, $base_path, $folder ) {
+	$files = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $base_path . $folder ), RecursiveIteratorIterator::SELF_FIRST );
+
+	foreach ( $files as $file ) {
+		$path = str_replace( $base_path, '', $file->getPathname() );
+
+		if ( is_dir( $file ) ) {
+			$zip->addEmptyDir( $path );
+		} else {
+			$is_js_src = str_ends_with( $path, '.js' ) && ! str_contains( $path, 'dist' );
+
+			if ( $is_js_src ) {
+				continue;
+			}
+
+			$zip->addFile( $file->getPathname(), $path );
+		}
+	}
+}
+
+function replace_content_model_plugin_file_version() {
+	$plugin_data = get_plugin_data( CONTENT_MODEL_PLUGIN_FILE, false, false );
+	$plugin_file = file_get_contents( CONTENT_MODEL_PLUGIN_PATH . 'create-content-model.php' );
+
+	$original_version = $plugin_data['Version'];
+	$updated_version  = $plugin_data['Version'] . '-' . time();
+
+	$plugin_file = str_replace( "Version: $original_version", "Version: $updated_version", $plugin_file );
+
+	$original_plugin_name = $plugin_data['Name'];
+	$updated_plugin_name  = 'Content Models';
+
+	$plugin_file = str_replace( "Plugin Name: $original_plugin_name", "Plugin Name: $updated_plugin_name", $plugin_file );
+
+	return $plugin_file;
+}
+
 function create_zip_file( $all_models_json ) {
 	$upload_dir   = wp_upload_dir();
 	$zip_filename = 'content_models_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
@@ -178,8 +215,13 @@ function create_zip_file( $all_models_json ) {
 		return false;
 	}
 
+	$zip->addFromString( 'create-content-model.php', replace_content_model_plugin_file_version() );
+
+	include_nested_files( $zip, CONTENT_MODEL_PLUGIN_PATH, 'includes/runtime' );
+	include_nested_files( $zip, CONTENT_MODEL_PLUGIN_PATH . 'includes/exporter/template/', '' );
+
 	foreach ( $all_models_json as $model_slug => $model_json ) {
-		$zip->addFromString( $model_slug . '.json', wp_json_encode( $model_json, JSON_UNESCAPED_UNICODE ) );
+		$zip->addFromString( 'post-types/' . $model_slug . '.json', wp_json_encode( $model_json, JSON_UNESCAPED_UNICODE ) );
 	}
 
 	$zip->close();

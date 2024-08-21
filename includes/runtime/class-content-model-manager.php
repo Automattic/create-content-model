@@ -84,10 +84,10 @@ class Content_Model_Manager {
 	 * @return void
 	 */
 	private function register_content_models() {
-		$content_model_names = $this->get_content_models_from_database();
+		$content_models = self::get_content_models_from_database();
 
-		foreach ( $content_model_names as $content_model_name ) {
-			$this->content_models[] = new Content_Model( $content_model_name );
+		foreach ( $content_models as $content_model ) {
+			$this->content_models[] = new Content_Model( $content_model );
 		}
 	}
 
@@ -96,7 +96,7 @@ class Content_Model_Manager {
 	 *
 	 * @return WP_Post[] An array of WP_Post objects representing the registered content models.
 	 */
-	private function get_content_models_from_database() {
+	public static function get_content_models_from_database() {
 		return get_posts( array( 'post_type' => self::POST_TYPE_NAME ) );
 	}
 
