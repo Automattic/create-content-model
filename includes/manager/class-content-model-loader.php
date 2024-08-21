@@ -88,6 +88,7 @@ class Content_Model_Loader {
 				'public'             => true,
 				'publicly_queryable' => false,
 				'menu_position'      => 60,
+				'menu_icon'          => 'dashicons-edit',
 				'show_in_menu'       => true,
 				'show_in_rest'       => true,
 				'supports'           => array( 'title', 'editor', 'custom-fields' ),
