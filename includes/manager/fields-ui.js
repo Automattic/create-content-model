@@ -33,77 +33,102 @@ const CreateContentModelPageSettings = function () {
 		'meta'
 	);
 
+	const [ slug, setSlug ] = useEntityProp(
+		'postType',
+		contentModelFields.postType,
+		'slug'
+	);
+
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
 	return (
-		<PluginDocumentSettingPanel
-			name="create-content-model-page-settings"
-			title={ __( 'Custom Fields' ) }
-			className="create-content-model-page-settings"
-		>
-			<ItemGroup isBordered isSeparated>
-				{ fields.map( ( field ) => (
-					<Item key={ field.slug } size="small">
-						{ field.label }
-						<code>{ field.slug }</code>
-					</Item>
-				) ) }
-			</ItemGroup>
-			<div
-				style={ {
-					textAlign: 'right',
-				} }
+		<>
+			<PluginDocumentSettingPanel
+				name="create-content-model-post-settings"
+				title={ __( 'Post Type' ) }
+				className="create-content-model-post-settings"
 			>
-				<Button
-					icon={ plus }
-					onClick={ () => setAddNewOpen( true ) }
-					label={ __( 'Add Field' ) }
-					style={ {
-						background: '#1e1e1e',
-						borderRadius: '2px',
-						color: '#fff',
-						height: '24px',
-						minWidth: '24px',
-						borderRadius: '0',
-					} }
+				<TextControl
+					label={ __( 'Slug' ) }
+					value={ slug }
+					onChange={ ( value ) => setSlug( value ) }
+					help={ __(
+						'Warning: Changing the slug will break existing content.'
+					) }
 				/>
-			</div>
-
-			<Button variant="secondary" onClick={ () => setFieldsOpen( true ) }>
-				{ __( 'Manage Fields' ) }
-			</Button>
-
-			{ isFieldsOpen && (
-				<Modal
-					title={ __( 'Manage Fields' ) }
-					size="large"
-					onRequestClose={ () => setFieldsOpen( false ) }
+			</PluginDocumentSettingPanel>
+			<PluginDocumentSettingPanel
+				name="create-content-model-field-settings"
+				title={ __( 'Custom Fields' ) }
+				className="create-content-model-field-settings"
+			>
+				<ItemGroup isBordered isSeparated>
+					{ fields.map( ( field ) => (
+						<Item key={ field.slug } size="small">
+							{ field.label }
+							<code>{ field.slug }</code>
+						</Item>
+					) ) }
+				</ItemGroup>
+				<div
+					style={ {
+						textAlign: 'right',
+					} }
 				>
-					<FieldsList />
-				</Modal>
-			) }
-			{ isAddNewOpen && (
-				<Modal
-					title={ __( 'Add New Field' ) }
-					size="large"
-					onRequestClose={ () => setAddNewOpen( false ) }
-				>
-					<EditFieldForm
-						save={ ( formData ) => {
-							console.log( 'Save', formData );
-							setMeta( {
-								fields: JSON.stringify( [
-									...fields,
-									formData,
-								] ),
-							} );
-							setAddNewOpen( false );
+					<Button
+						icon={ plus }
+						onClick={ () => setAddNewOpen( true ) }
+						label={ __( 'Add Field' ) }
+						style={ {
+							background: '#1e1e1e',
+							borderRadius: '2px',
+							color: '#fff',
+							height: '24px',
+							minWidth: '24px',
+							borderRadius: '0',
 						} }
 					/>
-				</Modal>
-			) }
-		</PluginDocumentSettingPanel>
+				</div>
+
+				<Button
+					variant="secondary"
+					onClick={ () => setFieldsOpen( true ) }
+				>
+					{ __( 'Manage Fields' ) }
+				</Button>
+
+				{ isFieldsOpen && (
+					<Modal
+						title={ __( 'Manage Fields' ) }
+						size="large"
+						onRequestClose={ () => setFieldsOpen( false ) }
+					>
+						<FieldsList />
+					</Modal>
+				) }
+				{ isAddNewOpen && (
+					<Modal
+						title={ __( 'Add New Field' ) }
+						size="large"
+						onRequestClose={ () => setAddNewOpen( false ) }
+					>
+						<EditFieldForm
+							save={ ( formData ) => {
+								console.log( 'Save', formData );
+								setMeta( {
+									fields: JSON.stringify( [
+										...fields,
+										formData,
+									] ),
+								} );
+								setAddNewOpen( false );
+							} }
+						/>
+					</Modal>
+				) }
+			</PluginDocumentSettingPanel>
+		</>
 	);
 };
 
