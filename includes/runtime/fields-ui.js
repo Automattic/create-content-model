@@ -13,7 +13,12 @@ import {
 import { MediaPlaceholder } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
+import { dispatch, useSelect } from '@wordpress/data';
+import { addFilter } from '@wordpress/hooks';
+import { createHigherOrderComponent } from '@wordpress/compose';
+import { useDispatch } from '@wordpress/data';
+import { store as blockEditorStore } from '@wordpress/block-editor';
 
 /**
  * Our base plugin component.
@@ -24,9 +29,20 @@ const CreateContentModelPageSettings = function () {
 
 	const fields = contentModelFields.fields;
 
+	const blocks = wp.data.select( 'core/block-editor' ).getBlocks();
+
+	const { setBlockEditingMode } = useDispatch( blockEditorStore );
+
 	if ( ! fields ) {
 		return null;
 	}
+
+	useEffect( () => {
+		if ( blocks.length > 0 ) {
+			console.log( 'Parsing blocks', blocks );
+			parseBlocks( blocks, setBlockEditingMode );
+		}
+	}, [ blocks, setBlockEditingMode ] );
 
 	return (
 		<PluginDocumentSettingPanel
@@ -55,6 +71,33 @@ const CreateContentModelPageSettings = function () {
 			) }
 		</PluginDocumentSettingPanel>
 	);
+};
+
+const SUPPORTED_BLOCKS = [
+	'core/group',
+	'core/paragraph',
+	'core/heading',
+	'core/image',
+	'core/button',
+];
+
+const parseBlocks = ( blocks, setEditMode ) => {
+	blocks.forEach( ( block ) => {
+		console.log( 'Checking block', block.attributes );
+		if (
+			( SUPPORTED_BLOCKS.includes( block.name ) &&
+				block.attributes.metadata?.bindings ) ||
+			block.innerBlocks.length > 0
+		) {
+			setEditMode( block.clientId, '' );
+		} else {
+			setEditMode( block.clientId, 'disabled' );
+		}
+
+		if ( block.innerBlocks ) {
+			parseBlocks( block.innerBlocks, setEditMode );
+		}
+	} );
 };
 
 /**

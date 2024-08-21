@@ -126,6 +126,7 @@ final class Content_Model {
 	 */
 	private function register_meta_fields() {
 		foreach ( $this->blocks as $block_variation_name => $block ) {
+			do_action( 'qm/debug', $block_variation_name );
 			foreach ( $block->get_bindings() as $attribute => $binding ) {
 				$field = $binding['args']['key'];
 
@@ -133,9 +134,10 @@ final class Content_Model {
 					continue;
 				}
 
-				$block_metadata       = WP_Block_Type_Registry::get_instance()->get_registered( $block->get_block_name() );
-				$block_attributes     = $block_metadata->get_attributes();
-				$block_attribute_type = $block_attributes[ $attribute ]['type'] ?? 'string';
+				$block_metadata   = WP_Block_Type_Registry::get_instance()->get_registered( $block->get_block_name() );
+				$block_attributes = $block_metadata->get_attributes();
+				// $block_attribute_type = $block_attributes[ $attribute ]['type'] ?? 'string';
+				$block_attribute_type = 'string';
 
 				register_post_meta(
 					$this->slug,
@@ -144,6 +146,7 @@ final class Content_Model {
 						'show_in_rest' => true,
 						'single'       => true,
 						'type'         => $block_attribute_type,
+						'default'      => $field,
 					)
 				);
 			}
@@ -274,9 +277,9 @@ final class Content_Model {
 		}
 
 		$data_hydrator = new Content_Model_Data_Hydrator( $this->template );
-		add_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
+		// add_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
 		$post->post_content = serialize_blocks( $data_hydrator->hydrate() );
-		remove_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
+		// remove_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
 	}
 
 	/**
