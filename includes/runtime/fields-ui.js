@@ -81,7 +81,19 @@ const SUPPORTED_BLOCKS = [
 
 const parseBlocks = ( blocks, setEditMode ) => {
 	blocks.forEach( ( block ) => {
-		if ( block.innerBlocks.length > 0 ) {
+		if (
+			block.innerBlocks.length > 0 &&
+			block.attributes.metadata?.bindings
+		) {
+			// dispatch( 'core/block-editor' ).updateBlock( block.clientId, {
+			// 	...block,
+			// 	attributes: {
+			// 		...block.attributes,
+			// 		templateLock: 'contentOnly',
+			// 	},
+			// } );
+			setEditMode( block.clientId, '' );
+		} else if ( block.innerBlocks.length > 0 ) {
 			// setEditMode( block.clientId, '' );
 			dispatch( 'core/block-editor' ).updateBlock( block.clientId, {
 				...block,
