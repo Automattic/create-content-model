@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "main": ".prettierrc.js",
     "scripts": {
+        "build": "wp-scripts build",
         "prepare": "husky",
         "dev-server": "npx @wp-now/wp-now start --wp=nightly --skip-browser --blueprint=dev.json",
         "format": "wp-scripts format",
@@ -55,5 +56,8 @@
         "*.scss": [
             "npm run lint:css"
         ]
+    },
+    "dependencies": {
+        "@wordpress/icons": "^10.5.0"
     }
 }

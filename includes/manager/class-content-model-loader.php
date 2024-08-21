@@ -47,6 +47,7 @@ class Content_Model_Loader {
 
 		$this->register_post_type();
 		$this->maybe_enqueue_the_attribute_binder();
+		$this->maybe_enqueue_the_fields_ui();
 	}
 
 	/**
@@ -62,6 +63,23 @@ class Content_Model_Loader {
 				'public'       => true,
 				'show_in_menu' => true,
 				'show_in_rest' => true,
+				'supports'     => array( 'title', 'editor', 'custom-fields' ),
+			)
+		);
+
+		register_post_meta(
+			Content_Model_Manager::POST_TYPE_NAME,
+			'fields',
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'sanitize_callback' => '',
+				'default'           => '[]',
+				'show_in_rest'      => array(
+					'schema ' => array(
+						'type' => 'string',
+					),
+				),
 			)
 		);
 	}
@@ -98,6 +116,48 @@ class Content_Model_Loader {
 					'window.BLOCK_VARIATION_NAME_ATTR = "' . Content_Model_Block::BLOCK_VARIATION_NAME_ATTR . '";',
 					'before'
 				);
+			}
+		);
+	}
+
+
+
+	/**
+	 * Conditionally enqueues the fields UI script for the block editor.
+	 *
+	 * Checks if the current post is of the correct type before enqueueing the script.
+	 *
+	 * @return void
+	 */
+	private function maybe_enqueue_the_fields_ui() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
+					return;
+				}
+
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/manager/dist/fields-ui.asset.php';
+
+				wp_register_script(
+					'data-types/fields-ui',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/fields-ui.js',
+					$asset_file['dependencies'],
+					$asset_file['version'],
+					true
+				);
+
+				wp_localize_script(
+					'data-types/fields-ui',
+					'contentModelFields',
+					array(
+						'postType' => Content_Model_Manager::POST_TYPE_NAME,
+					)
+				);
+
+				wp_enqueue_script( 'data-types/fields-ui' );
 			}
 		);
 	}
