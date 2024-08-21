@@ -50,20 +50,20 @@ final class Content_Model {
 	/**
 	 * Initializes the Content_Model instance with the given WP_Post object.
 	 *
-	 * @param WP_Post $content_model_post The WP_Post object representing the content model.
+	 * @param WP_Post|array $data The WP_Post object or array of data representing the content model.
 	 * @return void
 	 */
-	public function __construct( WP_Post $content_model_post ) {
-		$this->slug     = $content_model_post->post_name;
-		$this->title    = $content_model_post->post_title;
-		$this->template = parse_blocks( $content_model_post->post_content );
-
-		$this->register_post_type();
+	public function __construct( $data ) {
+		if ( $data instanceof WP_Post ) {
+			$this->init_from_post( $data );
+		} elseif ( is_array( $data ) ) {
+			$this->init_from_array( $data );
+		} else {
+			throw new InvalidArgumentException( 'Invalid data type provided to Content_Model constructor' );
+		}
 
 		// TODO: Not load this eagerly.
 		$this->blocks = $this->inflate_template_blocks( $this->template );
-		$this->fields = json_decode( get_post_meta( $content_model_post->ID, 'fields', true ), true );
-		$this->register_meta_fields();
 		$this->maybe_enqueue_the_fields_ui();
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
@@ -74,12 +74,29 @@ final class Content_Model {
 		add_filter( 'get_post_metadata', array( $this, 'cast_meta_field_types' ), 10, 3 );
 	}
 
+	private function init_from_post( WP_Post $content_model_post ) {
+		$this->slug     = $content_model_post->post_name;
+		$this->title    = $content_model_post->post_title;
+		$this->template = parse_blocks( $content_model_post->post_content );
+		$this->fields   = json_decode( get_post_meta( $content_model_post->ID, 'fields', true ), true );
+		$this->register_post_type();
+		$this->register_meta_fields();
+	}
+
+	private function init_from_array( array $data ) {
+		$this->slug     = $data['postType'] ?? '';
+		$this->title    = $data['label'] ?? '';
+		$this->template = $data['template'] ?? array();
+		add_action( 'init', array( $this, 'register_post_type' ) );
+		add_action( 'init', array( $this, 'register_meta_fields' ) );
+	}
+
 	/**
 	 * Registers the custom post type for the content model.
 	 *
 	 * @return void
 	 */
-	private function register_post_type() {
+	public function register_post_type() {
 		register_post_type(
 			$this->slug,
 			array(
@@ -124,7 +141,7 @@ final class Content_Model {
 	 *
 	 * @return void
 	 */
-	private function register_meta_fields() {
+	public function register_meta_fields() {
 		foreach ( $this->blocks as $block_variation_name => $block ) {
 			foreach ( $block->get_bindings() as $attribute => $binding ) {
 				$field = $binding['args']['key'];
