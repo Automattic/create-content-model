@@ -133,10 +133,13 @@ final class Content_Model {
 					continue;
 				}
 
-				$block_metadata   = WP_Block_Type_Registry::get_instance()->get_registered( $block->get_block_name() );
-				$block_attributes = $block_metadata->get_attributes();
-				// $block_attribute_type = $block_attributes[ $attribute ]['type'] ?? 'string';
-				$block_attribute_type = 'string';
+				$block_metadata       = WP_Block_Type_Registry::get_instance()->get_registered( $block->get_block_name() );
+				$block_attributes     = $block_metadata->get_attributes();
+				$block_attribute_type = $block_attributes[ $attribute ]['type'] ?? 'string';
+				if ( 'rich-text' === $block_attribute_type ) {
+					$block_attribute_type = 'string';
+				}
+				$block_attribute_default = ( 'string' === $block_attribute_type ) ? $field : 0;
 
 				register_post_meta(
 					$this->slug,
@@ -145,7 +148,7 @@ final class Content_Model {
 						'show_in_rest' => true,
 						'single'       => true,
 						'type'         => $block_attribute_type,
-						'default'      => $field,
+						'default'      => $block_attribute_default,
 					)
 				);
 			}
@@ -161,7 +164,7 @@ final class Content_Model {
 						'show_in_rest' => true,
 						'single'       => true,
 						'type'         => 'string', // todo: support other types.
-						'default'      => $field['default'] ?? '',
+						'default'      => $field['default'] ?? $field['slug'],
 					)
 				);
 
