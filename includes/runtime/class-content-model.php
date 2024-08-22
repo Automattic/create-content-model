@@ -126,7 +126,6 @@ final class Content_Model {
 	 */
 	private function register_meta_fields() {
 		foreach ( $this->blocks as $block_variation_name => $block ) {
-			do_action( 'qm/debug', $block_variation_name );
 			foreach ( $block->get_bindings() as $attribute => $binding ) {
 				$field = $binding['args']['key'];
 

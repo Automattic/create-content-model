@@ -37,7 +37,6 @@ const CreateContentModelPageSettings = function () {
 
 	useEffect( () => {
 		if ( blocks.length > 0 ) {
-			console.log( 'Parsing blocks', blocks );
 			parseBlocks( blocks, setBlockEditingMode );
 		}
 	}, [ blocks, setBlockEditingMode ] );
