@@ -110,9 +110,10 @@ function format_fields_for_export( $fields ) {
 	$formatted_fields = array();
 	foreach ( $fields as $field ) {
 		$formatted_fields[] = array(
-			'slug'  => $field['slug'],
-			'type'  => $field['type'],
-			'label' => $field['slug'],
+			'slug'        => $field['slug'],
+			'type'        => $field['type'],
+			'label'       => $field['slug'],
+			'description' => $field['description'],
 		);
 	}
 	return $formatted_fields;
