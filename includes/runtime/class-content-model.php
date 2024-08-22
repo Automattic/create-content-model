@@ -32,21 +32,20 @@ final class Content_Model {
 	 */
 	public $template = array();
 
-
-	/**
-		* Holds the fields of the content model.
-		*
-		* @var array
-		*/
-	public $fields = array();
-
-
 	/**
 	 * Holds the bound blocks in the content model.
 	 *
 	 * @var Content_Model_Block[]
 	 */
 	public $blocks = array();
+
+
+	/**
+		 * Holds the fields of the content model.
+		 *
+		 * @var array
+		 */
+	public $fields = array();
 
 	/**
 	 * Initializes the Content_Model instance with the given WP_Post object.
