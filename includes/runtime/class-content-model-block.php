@@ -259,7 +259,7 @@ final class Content_Model_Block {
 
 		$parsed_block['innerBlocks'] = parse_blocks( $content );
 
-		$html_handler = new Content_Model_Html_Handler( $parsed_block['innerHTML'] );
+		$html_handler = new Content_Model_Html_Manipulator( $parsed_block['innerHTML'] );
 
 		$block_attribute['source']   = 'rich-text';
 		$block_attribute['selector'] = 'div';

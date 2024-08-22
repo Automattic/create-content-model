@@ -67,7 +67,7 @@ class Content_Model_Data_Hydrator {
 				if ( 'core/group' === $block['blockName'] ) {
 					$blocks[ $index ]['innerBlocks'] = parse_blocks( $content );
 
-					$html_handler = new Content_Model_Html_Handler( $block['innerHTML'] );
+					$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
 
 					$block_attribute['source']   = 'rich-text';
 					$block_attribute['selector'] = 'div';
@@ -87,7 +87,7 @@ class Content_Model_Data_Hydrator {
 					continue;
 				}
 
-				$html_handler = new Content_Model_Html_Handler( $block['innerHTML'] );
+				$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
 
 				$blocks[ $index ]['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
 				$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );

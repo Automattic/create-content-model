@@ -10,7 +10,7 @@ declare( strict_types = 1 );
 /**
  * Handles HTML associated with a block.
  */
-class Content_Model_Html_Handler {
+class Content_Model_Html_Manipulator {
 	/**
 	 * The DOM tree from the $markup.
 	 *
@@ -19,9 +19,9 @@ class Content_Model_Html_Handler {
 	private $dom;
 
 	/**
-	 * Creates an instance of the handler, with the HTML as the argument.
+	 * Creates an instance of the handler, with the HTML to be manipulated as the argument.
 	 *
-	 * @param string $markup The HTML to be analyzed.
+	 * @param string $markup The HTML to be manipulated.
 	 */
 	public function __construct( $markup ) {
 		$dom = new DOMDocument();

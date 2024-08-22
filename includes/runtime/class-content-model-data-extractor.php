@@ -161,7 +161,7 @@ class Content_Model_Data_Extractor {
 			return null;
 		}
 
-		$html_handler = new Content_Model_Html_Handler( $block['innerHTML'] );
+		$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
 
 		return $html_handler->extract_attribute( $allowed_attributes[ $attribute ] );
 	}
