@@ -41,10 +41,10 @@ final class Content_Model {
 
 
 	/**
-		 * Holds the fields of the content model.
-		 *
-		 * @var array
-		 */
+	 * Holds the fields of the content model.
+	 *
+	 * @var array
+	*/
 	public $fields = array();
 
 	/**
