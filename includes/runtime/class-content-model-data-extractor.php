@@ -59,7 +59,13 @@ class Content_Model_Data_Extractor {
 				$content_binding = $bound_block->get_binding( 'content' );
 
 				if ( 'post_content' === $content_binding['args']['key'] ) {
-					return serialize_blocks( $block['innerBlocks'] );
+					if ( ! empty( $block['innerBlocks'] ) ) {
+						return serialize_blocks( $block['innerBlocks'] );
+					}
+
+					$meta_value_from_markup = $this->extract_attribute_value_from_block_markup( $block, 'content' );
+
+					return $meta_value_from_markup;
 				}
 			}
 
@@ -155,44 +161,8 @@ class Content_Model_Data_Extractor {
 			return null;
 		}
 
-		return self::extract_attribute( $allowed_attributes[ $attribute ], $block['innerHTML'] );
-	}
+		$html_handler = new Content_Model_Html_Handler( $block['innerHTML'] );
 
-
-	/**
-	 * Extract attribute value from the markup.
-	 *
-	 * @param array  $attribute_metadata The attribute metadata from the block.json file.
-	 * @param string $markup The markup.
-	 *
-	 * @return mixed|null The attribute value.
-	 */
-	public static function extract_attribute( $attribute_metadata, $markup ) {
-		$dom = new DOMDocument();
-		$dom->loadXML( $markup, LIBXML_NOXMLDECL );
-
-		$xpath = new DOMXPath( $dom );
-
-		$matches = $xpath->query( '//' . $attribute_metadata['selector'] );
-
-		foreach ( $matches as $match ) {
-			if ( $match instanceof \DOMElement ) {
-				if ( 'attribute' === $attribute_metadata['source'] ) {
-					return $match->getAttribute( $attribute_metadata['attribute'] );
-				}
-
-				return implode(
-					'',
-					array_map(
-					// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-						fn( $node ) => $node->ownerDocument->saveXML( $node ),
-					// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-						iterator_to_array( $match->childNodes ),
-					)
-				);
-			}
-		}
-
-		return null;
+		return $html_handler->extract_attribute( $allowed_attributes[ $attribute ] );
 	}
 }
