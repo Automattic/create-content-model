@@ -275,34 +275,19 @@ final class Content_Model {
 			return;
 		}
 
-		$data_hydrator = new Content_Model_Data_Hydrator( $this->template );
-		// add_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
+		$data_hydrator      = new Content_Model_Data_Hydrator( $this->template );
 		$post->post_content = serialize_blocks( $data_hydrator->hydrate() );
-		// remove_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
 	}
+
+
 
 	/**
-	 * We need to remove the bindings in data entry mode, otherwise it's not
-	 * possible to modify the bound attributes.
+	 * Conditionally enqueues the fields UI script for the block editor.
 	 *
-	 * @param array $attrs The block attributes.
+	 * Checks if the current post is of the correct type before enqueueing the script.
 	 *
-	 * @return array The block attributes.
+	 * @return void
 	 */
-	public function remove_bindings_from_attributes( $attrs ) {
-		unset( $attrs['metadata']['bindings'] );
-
-		return $attrs;
-	}
-
-
-		/**
-		 * Conditionally enqueues the fields UI script for the block editor.
-		 *
-		 * Checks if the current post is of the correct type before enqueueing the script.
-		 *
-		 * @return void
-		 */
 	private function maybe_enqueue_the_fields_ui() {
 		add_action(
 			'enqueue_block_editor_assets',
