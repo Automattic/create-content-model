@@ -153,7 +153,6 @@ final class Content_Model {
 				);
 			}
 		}
-
 		if ( ! empty( $this->fields ) ) {
 			foreach ( $this->fields as $field ) {
 				register_post_meta(
@@ -184,8 +183,9 @@ final class Content_Model {
 
 		foreach ( $registered_meta_fields as $meta_field => $meta_field_data ) {
 			$result[] = array(
-				'slug' => $meta_field,
-				'type' => $meta_field_data['type'],
+				'slug'        => $meta_field,
+				'type'        => $meta_field_data['type'],
+				'description' => $meta_field_data['description'],
 			);
 		}
 

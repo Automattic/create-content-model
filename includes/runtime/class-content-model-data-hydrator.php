@@ -135,7 +135,7 @@ class Content_Model_Data_Hydrator {
 
 		$xpath = new DOMXPath( $dom );
 
-		$matches = $xpath->query( '//' . $attribute_metadata['selector'] );
+		$matches = $xpath->query( "//*[local-name()='" . $attribute_metadata['selector'] . "']" );
 
 		foreach ( $matches as $match ) {
 			if ( $match instanceof \DOMElement ) {
