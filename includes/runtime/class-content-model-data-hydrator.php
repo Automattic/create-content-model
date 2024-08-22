@@ -41,6 +41,11 @@ class Content_Model_Data_Hydrator {
 		foreach ( $blocks as $index => $block ) {
 			$content_model_block = new Content_Model_Block( $block );
 
+			$blocks[ $index ]['attrs']['lock'] = array(
+				'move'   => true,
+				'remove' => true,
+			);
+
 			if ( empty( $content_model_block->get_bindings() ) ) {
 				if ( ! empty( $block['innerBlocks'] ) ) {
 					$blocks[ $index ]['innerBlocks'] = $this->hydrate( $blocks[ $index ]['innerBlocks'] );

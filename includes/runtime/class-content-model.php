@@ -136,6 +136,10 @@ final class Content_Model {
 				$block_metadata       = WP_Block_Type_Registry::get_instance()->get_registered( $block->get_block_name() );
 				$block_attributes     = $block_metadata->get_attributes();
 				$block_attribute_type = $block_attributes[ $attribute ]['type'] ?? 'string';
+				if ( 'rich-text' === $block_attribute_type ) {
+					$block_attribute_type = 'string';
+				}
+				$block_attribute_default = ( 'string' === $block_attribute_type ) ? $field : 0;
 
 				register_post_meta(
 					$this->slug,
@@ -144,6 +148,7 @@ final class Content_Model {
 						'show_in_rest' => true,
 						'single'       => true,
 						'type'         => $block_attribute_type,
+						'default'      => $block_attribute_default,
 					)
 				);
 			}
@@ -158,7 +163,7 @@ final class Content_Model {
 						'show_in_rest' => true,
 						'single'       => true,
 						'type'         => 'string', // todo: support other types.
-						'default'      => $field['default'] ?? '',
+						'default'      => $field['default'] ?? $field['slug'],
 					)
 				);
 
@@ -273,33 +278,19 @@ final class Content_Model {
 			return;
 		}
 
-		$data_hydrator = new Content_Model_Data_Hydrator( $this->template );
-		add_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
+		$data_hydrator      = new Content_Model_Data_Hydrator( $this->template );
 		$post->post_content = serialize_blocks( $data_hydrator->hydrate() );
-		remove_filter( 'hydrate_block_attributes', array( $this, 'remove_bindings_from_attributes' ) );
 	}
+
+
 
 	/**
-	 * We need to remove the bindings in data entry mode, otherwise it's not
-	 * possible to modify the bound attributes.
+	 * Conditionally enqueues the fields UI script for the block editor.
 	 *
-	 * @param array $attrs The block attributes.
+	 * Checks if the current post is of the correct type before enqueueing the script.
 	 *
-	 * @return array The block attributes.
+	 * @return void
 	 */
-	public function remove_bindings_from_attributes( $attrs ) {
-		unset( $attrs['metadata']['bindings'] );
-
-		return $attrs;
-	}
-
-		/**
-		 * Conditionally enqueues the fields UI script for the block editor.
-		 *
-		 * Checks if the current post is of the correct type before enqueueing the script.
-		 *
-		 * @return void
-		 */
 	private function maybe_enqueue_the_fields_ui() {
 		add_action(
 			'enqueue_block_editor_assets',
