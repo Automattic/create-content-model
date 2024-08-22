@@ -70,7 +70,15 @@ class Content_Model_Data_Hydrator {
 
 				// Inflate the stored blocks into Group.
 				if ( 'core/group' === $block['blockName'] ) {
-					self::inject_content_into_block( $content, $blocks[ $index ] );
+					$blocks[ $index ]['innerBlocks'] = parse_blocks( $content );
+
+					$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
+
+					$block_attribute['source']   = 'rich-text';
+					$block_attribute['selector'] = 'div';
+
+					$blocks[ $index ]['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
+					$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );
 
 					continue;
 				}
@@ -84,100 +92,15 @@ class Content_Model_Data_Hydrator {
 					continue;
 				}
 
-				$inner_html = self::replace_attribute( $block_attribute, $content, $blocks[ $index ]['innerHTML'] );
+				$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
 
-				$blocks[ $index ]['innerHTML']    = $inner_html;
-				$blocks[ $index ]['innerContent'] = array( $inner_html );
+				$blocks[ $index ]['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
+				$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );
 			}
 
 			$blocks[ $index ]['attrs'] = apply_filters( 'hydrate_block_attributes', $blocks[ $index ]['attrs'] );
 		}
 
 		return $blocks;
-	}
-
-	/**
-	 * Adds the HTML and blocks (from post_content or post meta) within the block.
-	 *
-	 * @param string $content The content.
-	 * @param array  $parsed_block The parsed block.
-	 */
-	public static function inject_content_into_block( $content, &$parsed_block ) {
-		$p = new WP_HTML_Tag_Processor( $parsed_block['innerHTML'] );
-		$p->next_tag();
-		$outer_tag = strtolower( $p->get_tag() );
-
-		$p2 = new WP_HTML_Tag_Processor( "<{$outer_tag}>" );
-		$p2->next_tag();
-		foreach ( $p->get_attribute_names_with_prefix( '' ) ?? array() as $attribute ) {
-			$p2->set_attribute( $attribute, $p->get_attribute( $attribute ) );
-		}
-
-		$updated_inner_html = $p2->get_updated_html() . $content . "</{$outer_tag}>";
-
-		$parsed_block['innerBlocks']  = parse_blocks( $content );
-		$parsed_block['innerHTML']    = $updated_inner_html;
-		$parsed_block['innerContent'] = array( $updated_inner_html );
-	}
-
-	/**
-	 * Replace attribute value in the markup.
-	 *
-	 * @param array  $attribute_metadata The attribute metadata from the block.json file.
-	 * @param mixed  $attribute_value The attribute value.
-	 * @param string $markup The markup.
-	 *
-	 * @return string The updated markup.
-	 */
-	private static function replace_attribute( $attribute_metadata, $attribute_value, $markup ) {
-		$dom = new DOMDocument();
-		$dom->loadXML( $markup, LIBXML_NOXMLDECL );
-
-		$xpath = new DOMXPath( $dom );
-
-		$matches = $xpath->query( "//*[local-name()='" . $attribute_metadata['selector'] . "']" );
-
-		foreach ( $matches as $match ) {
-			if ( $match instanceof \DOMElement ) {
-				if ( 'attribute' === $attribute_metadata['source'] ) {
-					$attribute = $attribute_metadata['attribute'];
-					$value     = $match->getAttribute( $attribute );
-
-					if ( 'class' === $attribute ) {
-						$value .= ' ' . $attribute_value;
-					} else {
-						$value = $attribute_value;
-					}
-
-					$match->setAttribute( $attribute, $value );
-				} else {
-					self::replace_node_inner_html( $match, $attribute_value );
-				}
-			}
-		}
-
-		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		return $dom->saveXML( $dom->documentElement, LIBXML_NOXMLDECL );
-	}
-
-	/**
-	 * Replace node inner HTML.
-	 *
-	 * @param \DOMElement $node The HTML node.
-	 * @param string      $html The desired inner HMTL.
-	 *
-	 * @return void
-	 */
-	private static function replace_node_inner_html( $node, $html ) {
-		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$fragment = $node->ownerDocument->createDocumentFragment();
-		$fragment->appendXML( $html );
-
-		while ( $node->hasChildNodes() ) {
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			$node->removeChild( $node->firstChild );
-		}
-
-		$node->appendChild( $fragment );
 	}
 }

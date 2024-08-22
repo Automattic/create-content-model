@@ -33,7 +33,6 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		const setBinding = ( attribute ) => {
 			return ( key ) => {
 				const newAttributes = {
-					...attributes,
 					metadata: {
 						...( attributes.metadata ?? {} ),
 						bindings: {
@@ -43,7 +42,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 					},
 				};
 
-				if ( ! key ) {
+				if ( ! key.trim() ) {
 					delete newAttributes.metadata.bindings[ attribute ];
 				}
 
