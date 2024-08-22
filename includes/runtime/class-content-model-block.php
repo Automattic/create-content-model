@@ -257,7 +257,15 @@ final class Content_Model_Block {
 			return $pre_render;
 		}
 
-		Content_Model_Data_Hydrator::inject_content_into_block( $content, $parsed_block );
+		$parsed_block['innerBlocks'] = parse_blocks( $content );
+
+		$html_handler = new Content_Model_Html_Manipulator( $parsed_block['innerHTML'] );
+
+		$block_attribute['source']   = 'rich-text';
+		$block_attribute['selector'] = 'div';
+
+		$parsed_block['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
+		$parsed_block['innerContent'] = array( $parsed_block['innerHTML'] );
 
 		remove_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99 );
 
