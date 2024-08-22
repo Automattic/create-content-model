@@ -87,11 +87,13 @@ class Content_Model_Json_Initializer {
 	 */
 	private static function delete_dangling_content_models( $post_types ) {
 		$content_models = self::group_content_models_by_slug();
+		$post_types     = self::group_post_types_by_slug( $post_types );
 
-		/**
-		 * TODO: Group post_types by slug and remove from the database
-		 * the slugs that are not present in $content_models.
-		 */
+		foreach ( $content_models as $model_slug => $model ) {
+			if ( ! isset( $post_types[ $model_slug ] ) ) {
+				wp_delete_post( $model->ID, false );
+			}
+		}
 	}
 
 	/**
@@ -101,12 +103,32 @@ class Content_Model_Json_Initializer {
 	 */
 	private static function group_content_models_by_slug() {
 		$models = Content_Model_Manager::get_content_models_from_database();
-		$result = array();
 
-		foreach ( $models as $model ) {
-			$result[ $model->post_name ] = $model;
-		}
+		return array_reduce(
+			$models,
+			function ( $carry, $model ) {
+				$carry[ $model->post_name ] = $model;
+				return $carry;
+			},
+			array()
+		);
+	}
 
-		return $result;
+	/**
+	 * Groups existing post types by their slug.
+	 *
+	 * @param array $post_types The post types from the JSON files.
+	 *
+	 * @return array An array of post types, keyed by their slug.
+	 */
+	private static function group_post_types_by_slug( $post_types ) {
+		return array_reduce(
+			$post_types,
+			function ( $carry, $post_type ) {
+				$carry[ $post_type['slug'] ] = $post_type;
+				return $carry;
+			},
+			array()
+		);
 	}
 }
