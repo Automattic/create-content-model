@@ -2,3 +2,4 @@ node_modules
 debug.log
 includes/*/dist
 create-content-model.zip
+.DS_Store
