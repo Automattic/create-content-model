@@ -74,7 +74,7 @@ class Content_Model_Json_Initializer {
 
 			$post_id = wp_insert_post( $content_model_post );
 
-			// TODO: Register $post_type.fields as meta using the post ID.
+			update_post_meta( $post_id, 'fields', $post_type['fields'] );
 		}
 	}
 
