@@ -69,7 +69,14 @@ final class Content_Model {
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
 
 		add_action( 'save_post', array( $this, 'extract_fields_from_blocks' ), 99, 2 );
-		add_action( 'the_post', array( $this, 'hydrate_cpt_template_with_content' ) );
+
+		/**
+		 * We need two different hooks here because the Editor and the front-end read from different sources.
+		 *
+		 * The Editor reads the whole post, while the front-end reads only the post content.
+		 */
+		add_action( 'the_post', array( $this, 'set_hydrated_template_as_post_content' ) );
+		add_filter( 'the_content', array( $this, 'swap_post_content_with_hydrated_template' ) );
 
 		add_filter( 'get_post_metadata', array( $this, 'cast_meta_field_types' ), 10, 3 );
 	}
@@ -266,16 +273,37 @@ final class Content_Model {
 	 *
 	 * @param WP_Post $post The current post.
 	 */
-	public function hydrate_cpt_template_with_content( $post ) {
+	public function set_hydrated_template_as_post_content( $post ) {
 		if ( $this->slug !== $post->post_type ) {
 			return;
 		}
 
-		$data_hydrator      = new Content_Model_Data_Hydrator( $this->template );
-		$post->post_content = serialize_blocks( $data_hydrator->hydrate() );
+		$post->post_content = $this->get_hydrated_template();
 	}
 
+	/**
+	 * In the front-end, swap the post_content with the hydrated template.
+	 *
+	 * @param string $post_content The current post content.
+	 */
+	public function swap_post_content_with_hydrated_template( $post_content ) {
+		global $post;
 
+		if ( $this->slug !== $post->post_type ) {
+			return $post_content;
+		}
+
+		return $this->get_hydrated_template();
+	}
+
+	/**
+	 * Returns the hydrated template.
+	 */
+	private function get_hydrated_template() {
+		$data_hydrator = new Content_Model_Data_Hydrator( $this->template );
+
+		return serialize_blocks( $data_hydrator->hydrate() );
+	}
 
 	/**
 	 * Conditionally enqueues the fields UI script for the block editor.
