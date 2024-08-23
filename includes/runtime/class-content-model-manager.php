@@ -126,22 +126,21 @@ class Content_Model_Manager {
 	 * @return array The hydrated blocks.
 	 */
 	private function hydrate_block_variations( $blocks ) {
-		foreach ( $blocks as $index => $block ) {
-			if ( $block['innerBlocks'] ) {
-				$blocks[ $index ]['innerBlocks'] = $this->hydrate_block_variations( $blocks[ $index ]['innerBlocks'] );
+		return content_model_block_walker(
+			$blocks,
+			function ( $block ) {
+				$tentative_block = new Content_Model_Block( $block );
+
+				if ( ! empty( $tentative_block->get_block_variation_name() ) ) {
+					$block['attrs'] = apply_filters(
+						'block_variation_attributes',
+						$block['attrs'],
+						$tentative_block
+					);
+				}
+
+				return $block;
 			}
-
-			$tentative_block = new Content_Model_Block( $blocks[ $index ] );
-
-			if ( ! empty( $tentative_block->get_block_variation_name() ) ) {
-				$blocks[ $index ]['attrs'] = apply_filters(
-					'block_variation_attributes',
-					$blocks[ $index ]['attrs'],
-					$tentative_block
-				);
-			}
-		}
-
-		return $blocks;
+		);
 	}
 }

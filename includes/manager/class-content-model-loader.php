@@ -252,7 +252,7 @@ class Content_Model_Loader {
 		remove_action( 'save_post', array( $this, 'map_template_to_bindings_api_signature' ), 99 );
 
 		$blocks = parse_blocks( wp_unslash( $post->post_content ) );
-		$blocks = self::map_blocks_to_bindings_api_signature( $blocks );
+		$blocks = content_model_block_walker( $blocks, array( $this, 'map_block_to_bindings_api_signature' ) );
 		$blocks = serialize_blocks( $blocks );
 
 		wp_update_post(
@@ -269,36 +269,29 @@ class Content_Model_Loader {
 	 * Maps bindings from our signature to a language the bindings API can understand. This is necessary because in
 	 * content editing mode, you should be able to override the bound attribute's values.
 	 *
-	 * @param array $blocks The blocks from the template.
+	 * @param array $block The blocks from the template.
 	 *
-	 * @return array $blocks The blocks from the template.
+	 * @return array $block The blocks from the template.
 	 */
-	private static function map_blocks_to_bindings_api_signature( $blocks ) {
-		foreach ( $blocks as &$block ) {
-			if ( ! empty( $block['innerBlocks'] ) ) {
-				$block['innerBlocks'] = self::map_blocks_to_content_model_editor_signature( $block['innerBlocks'] );
-			}
+	public static function map_block_to_bindings_api_signature( $block ) {
+		$existing_bindings = $block['attrs']['metadata'][ self::BINDINGS_KEY ] ?? array();
 
-			$existing_bindings = $block['attrs']['metadata'][ self::BINDINGS_KEY ] ?? array();
-
-			if ( empty( $existing_bindings ) ) {
-				continue;
-			}
-
-			$block['attrs']['metadata']['bindings'] = array();
-
-			foreach ( $existing_bindings as $attribute => $field ) {
-				$block['attrs']['metadata']['bindings'][ $attribute ] = array(
-					'source' => 'post_content' === $field ? 'core/post-content' : 'core/post-meta',
-					'args'   => array( 'key' => $field ),
-				);
-			}
-
-			unset( $block['attrs']['metadata'][ self::BINDINGS_KEY ] );
-
+		if ( empty( $existing_bindings ) ) {
+			return $block;
 		}
 
-		return $blocks;
+		$block['attrs']['metadata']['bindings'] = array();
+
+		foreach ( $existing_bindings as $attribute => $field ) {
+			$block['attrs']['metadata']['bindings'][ $attribute ] = array(
+				'source' => 'post_content' === $field ? 'core/post-content' : 'core/post-meta',
+				'args'   => array( 'key' => $field ),
+			);
+		}
+
+		unset( $block['attrs']['metadata'][ self::BINDINGS_KEY ] );
+
+		return $block;
 	}
 
 	/**
@@ -312,7 +305,7 @@ class Content_Model_Loader {
 		}
 
 		$blocks = parse_blocks( wp_unslash( $post->post_content ) );
-		$blocks = self::map_blocks_to_content_model_editor_signature( $blocks );
+		$blocks = content_model_block_walker( $blocks, array( $this, 'map_block_to_content_model_editor_signature' ) );
 		$blocks = serialize_blocks( $blocks );
 
 		$post->post_content = $blocks;
@@ -322,32 +315,25 @@ class Content_Model_Loader {
 	 * Maps bindings from the bindings API signature to ours. This is necessary because in
 	 * content editing mode, you should be able to override the bound attribute's values.
 	 *
-	 * @param array $blocks The blocks from the template.
+	 * @param array $block The block from the template.
 	 *
-	 * @return array $blocks The blocks from the template.
+	 * @return array $block The block from the template.
 	 */
-	private static function map_blocks_to_content_model_editor_signature( $blocks ) {
-		foreach ( $blocks as &$block ) {
-			if ( ! empty( $block['innerBlocks'] ) ) {
-				$block['innerBlocks'] = self::map_blocks_to_content_model_editor_signature( $block['innerBlocks'] );
-			}
+	public static function map_block_to_content_model_editor_signature( $block ) {
+		$existing_bindings = $block['attrs']['metadata']['bindings'] ?? array();
 
-			$existing_bindings = $block['attrs']['metadata']['bindings'] ?? array();
-
-			if ( empty( $existing_bindings ) ) {
-				continue;
-			}
-
-			$block['attrs']['metadata'][ self::BINDINGS_KEY ] = array();
-
-			foreach ( $existing_bindings as $attribute => $binding ) {
-				$block['attrs']['metadata'][ self::BINDINGS_KEY ][ $attribute ] = $binding['args']['key'];
-			}
-
-			unset( $block['attrs']['metadata']['bindings'] );
-
+		if ( empty( $existing_bindings ) ) {
+			return $block;
 		}
 
-		return $blocks;
+		$block['attrs']['metadata'][ self::BINDINGS_KEY ] = array();
+
+		foreach ( $existing_bindings as $attribute => $binding ) {
+			$block['attrs']['metadata'][ self::BINDINGS_KEY ][ $attribute ] = $binding['args']['key'];
+		}
+
+		unset( $block['attrs']['metadata']['bindings'] );
+
+		return $block;
 	}
 }
