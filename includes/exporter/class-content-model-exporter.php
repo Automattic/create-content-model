@@ -71,21 +71,151 @@ class Content_Model_Exporter {
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html__( 'Export Content Models' ); ?></h1>
-			<?php if ( $show_error ) : ?>
-				<div class="notice notice-error">
-					<p><?php echo esc_html__( 'No content models available. Please create a content model before exporting.' ); ?></p>
-				</div>
-			<?php endif; ?>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<?php wp_nonce_field( 'download_content_models_zip', 'download_zip_nonce' ); ?>
-				<input type="hidden" name="action" value="download_content_models_zip">
-				<p><?php echo esc_html__( 'Click the button below to download a ZIP file containing all Content Models.' ); ?></p>
-				<input type="submit" name="download_content_models_zip" class="button button-primary" value="<?php echo esc_attr__( 'Download ZIP file' ); ?>" <?php disabled( ! $has_models ); ?>>
-			</form>
+			<?php $this->render_error_message( $show_error ); ?>
+			<?php $this->render_export_form( $has_models ); ?>
+			<?php $this->render_content_models_preview( $all_models_json ); ?>
 		</div>
 		<?php
 	}
 
+	/**
+	 * Renders the error message if there are no content models.
+	 *
+	 * @param bool $show_error Whether to show the error message.
+	 * @return void
+	 */
+	private function render_error_message( $show_error ) {
+		if ( $show_error ) :
+			?>
+			<div class="notice notice-error">
+				<p><?php echo esc_html__( 'No content models available. Please create a content model before exporting.' ); ?></p>
+			</div>
+			<?php
+		endif;
+	}
+
+	/**
+	 * Renders the export form.
+	 *
+	 * @param bool $has_models Whether there are content models to export.
+	 * @return void
+	 */
+	private function render_export_form( $has_models ) {
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<?php wp_nonce_field( 'download_content_models_zip', 'download_zip_nonce' ); ?>
+			<input type="hidden" name="action" value="download_content_models_zip">
+			<p><?php echo esc_html__( 'Click the button below to download a ZIP file containing all Content Models.' ); ?></p>
+			<input type="submit" name="download_content_models_zip" class="button button-primary" value="<?php echo esc_attr__( 'Download ZIP file' ); ?>" <?php disabled( ! $has_models ); ?>>
+		</form>
+		<?php
+	}
+
+	/**
+	 * Renders the preview of the content models.
+	 *
+	 * @param array $all_models_json The JSON data for the content models.
+	 * @return void
+	 */
+	private function render_content_models_preview( $all_models_json ) {
+		if ( ! empty( $all_models_json ) ) :
+			?>
+			<h2><?php echo esc_html__( 'Preview Content Models' ); ?></h2>
+			<div>
+				<?php foreach ( $all_models_json as $model_slug => $model_data ) : ?>
+					<div class="content-model-item">
+						<h3 class="content-model-toggle">
+							<span class="dashicons dashicons-arrow-right-alt2"></span>
+							<?php echo esc_html( $model_slug . '.json' ); ?>
+						</h3>
+						<div class="content-model-json-wrapper" style="display: none;">
+							<button class="copy-json-button" title="<?php esc_attr_e( 'Copy to clipboard' ); ?>">
+								<span class="dashicons dashicons-clipboard"></span>
+							</button>
+							<pre class="content-model-json"><?php echo esc_html( wp_json_encode( $model_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) ); ?></pre>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			</div>
+			<?php $this->enqueue_content_models_preview_assets(); ?>
+			<?php
+		endif;
+	}
+
+	/**
+	 * Enqueues the necessary CSS and JavaScript for the content model preview.
+	 *
+	 * @return void
+	 */
+	private function enqueue_content_models_preview_assets() {
+		?>
+		<style>
+			.content-model-item { margin-bottom: 10px; }
+			.content-model-toggle { cursor: pointer; user-select: none; }
+			.content-model-toggle .dashicons { transition: transform 0.3s ease; }
+			.content-model-toggle.active .dashicons { transform: rotate(90deg); }
+			.content-model-json-wrapper {
+				position: relative;
+				background-color: #282c34;
+				border-radius: 4px;
+				padding: 10px;
+				margin-top: 5px;
+			}
+			.content-model-json {
+				color: #abb2bf;
+				white-space: pre-wrap;
+				word-wrap: break-word;
+				margin: 0;
+				font-family: monospace;
+			}
+			.copy-json-button {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				display: none;
+				background: none;
+				border: none;
+				cursor: pointer;
+				padding: 0;
+				color: #fff;
+			}
+			.copy-json-button .dashicons {
+				font-size: 20px;
+			}
+			.content-model-json-wrapper:hover .copy-json-button {
+				display: block;
+			}
+		</style>
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const toggles = document.querySelectorAll('.content-model-toggle');
+				toggles.forEach(function(toggle) {
+					toggle.addEventListener('click', function() {
+						this.classList.toggle('active');
+						const jsonWrapper = this.nextElementSibling;
+						jsonWrapper.style.display = jsonWrapper.style.display === 'none' ? 'block' : 'none';
+					});
+				});
+
+				const copyButtons = document.querySelectorAll('.copy-json-button');
+				copyButtons.forEach(function(button) {
+					button.addEventListener('click', function() {
+						const json = this.nextElementSibling.textContent;
+						navigator.clipboard.writeText(json).then(function() {
+							const icon = button.querySelector('.dashicons');
+							icon.classList.remove('dashicons-clipboard');
+							icon.classList.add('dashicons-yes');
+							setTimeout(function() {
+								icon.classList.remove('dashicons-yes');
+								icon.classList.add('dashicons-clipboard');
+							}, 2000);
+						});
+					});
+				});
+			});
+		</script>
+		<?php
+	}
 
 	/**
 	 * Generates the JSON data for a single content model.
@@ -235,7 +365,7 @@ class Content_Model_Exporter {
 
 	/**
 	 * Creates a ZIP file containing the content models and necessary plugin files.
-   * This does not include content models that are not published.
+	* This does not include content models that are not published.
 	 *
 	 * @param array $all_models_json The JSON data for the content models.
 	 * @return int|false The attachment ID of the created ZIP file, or false on failure.
