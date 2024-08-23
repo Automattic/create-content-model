@@ -1,8 +1,12 @@
 import { addFilter } from '@wordpress/hooks';
+import { useCallback, useMemo, useEffect } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
 import { TextControl, PanelBody } from '@wordpress/components';
-import { select } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
+import { store as editorStore } from '@wordpress/editor';
+import { store as blocksStore } from '@wordpress/blocks';
 
 // https://github.com/WordPress/WordPress/blob/master/wp-includes/class-wp-block.php#L246-L251
 const SUPPORTED_BLOCK_ATTRIBUTES = {
@@ -22,39 +26,112 @@ const getBindingObject = ( { key } ) => {
 	};
 };
 
+const ErrorMessage = ( { children } ) => {
+	return (
+		<span style={ { color: 'var(--wp--preset--color--vivid-red)' } }>
+			{ children }
+		</span>
+	);
+};
+
 const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 	return ( props ) => {
+		const { getBlockType } = useSelect( blocksStore );
+		const { lockPostSaving, unlockPostSaving } = useDispatch( editorStore );
+
 		const { attributes, setAttributes, name } = props;
 
-		const getBinding = ( attribute ) => {
-			return attributes.metadata?.bindings?.[ attribute ]?.args?.key;
-		};
+		const getBinding = useCallback(
+			( attribute ) => {
+				return attributes.metadata?.bindings?.[ attribute ]?.args?.key;
+			},
+			[ attributes.metadata?.bindings ]
+		);
 
-		const setBinding = ( attribute ) => {
-			return ( key ) => {
-				const newAttributes = {
-					metadata: {
-						...( attributes.metadata ?? {} ),
-						bindings: {
-							...( attributes.metadata?.bindings ?? {} ),
-							[ attribute ]: getBindingObject( { key } ),
+		const setBinding = useCallback(
+			( attribute ) => {
+				return ( key ) => {
+					const newAttributes = {
+						metadata: {
+							...( attributes.metadata ?? {} ),
+							bindings: {
+								...( attributes.metadata?.bindings ?? {} ),
+								[ attribute ]: getBindingObject( { key } ),
+							},
 						},
-					},
+					};
+
+					if ( ! key.trim() ) {
+						delete newAttributes.metadata.bindings[ attribute ];
+					}
+
+					setAttributes( newAttributes );
 				};
+			},
+			[ attributes.metadata, setAttributes ]
+		);
 
-				if ( ! key.trim() ) {
-					delete newAttributes.metadata.bindings[ attribute ];
-				}
-
-				setAttributes( newAttributes );
-			};
-		};
-
-		const { getBlockType } = select( 'core/blocks' );
 		const selectedBlockType = getBlockType( name );
 
 		const supportedAttributes =
 			SUPPORTED_BLOCK_ATTRIBUTES[ selectedBlockType?.name ];
+
+		const validations = useMemo( () => {
+			const metadata = attributes.metadata ?? {};
+			const bindings = metadata.bindings ?? {};
+
+			const _validations = {};
+
+			const hasAtLeastOneBinding = Object.keys( bindings ).length > 0;
+
+			if (
+				hasAtLeastOneBinding &&
+				! metadata[ window.BLOCK_VARIATION_NAME_ATTR ]
+			) {
+				_validations[ window.BLOCK_VARIATION_NAME_ATTR ] = (
+					<ErrorMessage>
+						{ __( 'Block variation name is required' ) }
+					</ErrorMessage>
+				);
+			}
+
+			if (
+				metadata[ window.BLOCK_VARIATION_NAME_ATTR ] &&
+				! hasAtLeastOneBinding
+			) {
+				_validations[ window.BLOCK_VARIATION_NAME_ATTR ] = (
+					<ErrorMessage>
+						{ __( 'Bind at least one attribute' ) }
+					</ErrorMessage>
+				);
+			}
+
+			Object.keys( bindings ).forEach( ( attribute ) => {
+				const key = getBinding( attribute );
+
+				if ( key === 'post_content' && name !== 'core/group' ) {
+					_validations[ attribute ] = (
+						<ErrorMessage>
+							{ __(
+								'Only Group blocks can be bound to post_content'
+							) }
+						</ErrorMessage>
+					);
+				}
+			} );
+
+			return _validations;
+		}, [ attributes.metadata, getBinding, name ] );
+
+		useEffect( () => {
+			const hasValidationErrors = Object.keys( validations ).length > 0;
+
+			if ( hasValidationErrors ) {
+				lockPostSaving();
+			} else {
+				unlockPostSaving();
+			}
+		}, [ lockPostSaving, unlockPostSaving, validations ] );
 
 		if ( ! supportedAttributes ) {
 			return <BlockEdit { ...props } />;
@@ -71,6 +148,9 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 								attributes.metadata?.[
 									window.BLOCK_VARIATION_NAME_ATTR
 								]
+							}
+							help={
+								validations[ window.BLOCK_VARIATION_NAME_ATTR ]
 							}
 							onChange={ ( newName ) => {
 								const newAttributes = {
@@ -99,6 +179,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 								<TextControl
 									key={ attributeKey }
 									label={ attributeKey }
+									help={ validations[ attributeKey ] }
 									value={ getBinding( attributeKey ) }
 									onChange={ setBinding( attributeKey ) }
 								/>
