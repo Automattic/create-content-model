@@ -68,6 +68,7 @@ const AddFieldForm = ( {
 						{ label: __( 'Textarea' ), value: 'textarea' },
 						{ label: __( 'URL' ), value: 'url' },
 						{ label: __( 'Image' ), value: 'image' },
+						{ label: __( 'Number' ), value: 'number' },
 					] }
 					onChange={ ( value ) =>
 						setFormData( { ...formData, type: value } )
