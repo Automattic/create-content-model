@@ -125,21 +125,13 @@ final class Content_Model {
 	 * @return void
 	 */
 	private function register_meta_fields() {
-		foreach ( $this->blocks as $block_variation_name => $block ) {
-			foreach ( $block->get_bindings() as $attribute => $binding ) {
+		foreach ( $this->blocks as $block ) {
+			foreach ( $block->get_bindings() as $attribute_name => $binding ) {
 				$field = $binding['args']['key'];
 
 				if ( 'post_content' === $field ) {
 					continue;
 				}
-
-				$block_metadata       = WP_Block_Type_Registry::get_instance()->get_registered( $block->get_block_name() );
-				$block_attributes     = $block_metadata->get_attributes();
-				$block_attribute_type = $block_attributes[ $attribute ]['type'] ?? 'string';
-				if ( 'rich-text' === $block_attribute_type ) {
-					$block_attribute_type = 'string';
-				}
-				$block_attribute_default = ( 'string' === $block_attribute_type ) ? $field : 0;
 
 				register_post_meta(
 					$this->slug,
@@ -147,12 +139,13 @@ final class Content_Model {
 					array(
 						'show_in_rest' => true,
 						'single'       => true,
-						'type'         => $block_attribute_type,
-						'default'      => $block_attribute_default,
+						'type'         => $block->get_attribute_type( $attribute_name ),
+						'default'      => $block->get_default_value_for_attribute( $attribute_name ),
 					)
 				);
 			}
 		}
+
 		if ( ! empty( $this->fields ) ) {
 			foreach ( $this->fields as $field ) {
 				register_post_meta(

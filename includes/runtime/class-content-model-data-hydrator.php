@@ -74,8 +74,10 @@ class Content_Model_Data_Hydrator {
 
 					$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
 
-					$block_attribute['source']   = 'rich-text';
-					$block_attribute['selector'] = 'div';
+					$block_attribute = array(
+						'source'   => 'rich-text',
+						'selector' => 'div',
+					);
 
 					$blocks[ $index ]['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
 					$blocks[ $index ]['innerContent'] = array( $blocks[ $index ]['innerHTML'] );

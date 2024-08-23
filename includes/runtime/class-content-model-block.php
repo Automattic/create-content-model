@@ -43,6 +43,13 @@ final class Content_Model_Block {
 	private $bindings = array();
 
 	/**
+	 * The raw block information.
+	 *
+	 * @var array
+	 */
+	private $raw_block;
+
+	/**
 	 * The content model associated with this block.
 	 *
 	 * @var ?Content_Model
@@ -58,6 +65,7 @@ final class Content_Model_Block {
 	public function __construct( array $block, Content_Model $content_model = null ) {
 		$this->block_name    = $block['blockName'];
 		$this->content_model = $content_model;
+		$this->raw_block     = $block;
 
 		$metadata = $block['attrs']['metadata'] ?? array();
 
@@ -261,8 +269,10 @@ final class Content_Model_Block {
 
 		$html_handler = new Content_Model_Html_Manipulator( $parsed_block['innerHTML'] );
 
-		$block_attribute['source']   = 'rich-text';
-		$block_attribute['selector'] = 'div';
+		$block_attribute = array(
+			'source'   => 'rich-text',
+			'selector' => 'div',
+		);
 
 		$parsed_block['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
 		$parsed_block['innerContent'] = array( $parsed_block['innerHTML'] );
@@ -274,5 +284,84 @@ final class Content_Model_Block {
 		add_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99, 2 );
 
 		return $rendered_group;
+	}
+
+	/**
+	 * Returns the metadata for an attribute.
+	 *
+	 * @param string $attribute_name The attribute.
+	 *
+	 * @return array The metadata.
+	 */
+	public function get_attribute_metadata( $attribute_name ) {
+		$block_metadata   = WP_Block_Type_Registry::get_instance()->get_registered( $this->get_block_name() );
+		$block_attributes = $block_metadata->get_attributes();
+
+		if ( isset( $block_attributes[ $attribute_name ] ) ) {
+			return $block_attributes[ $attribute_name ];
+		}
+
+		if ( 'core/group' === $this->get_block_name() && 'content' === $attribute_name ) {
+			return array(
+				'source'   => 'rich-text',
+				'selector' => 'div',
+			);
+		}
+	}
+
+	/**
+	 * Get the type of an attribute, according to our case handling.
+	 *
+	 * @param string $attribute_name The name of the attribute.
+	 *
+	 * @return string The type of the attribute.
+	 */
+	public function get_attribute_type( $attribute_name ) {
+		$block_attribute = $this->get_attribute_metadata( $attribute_name );
+
+		$block_attribute_type = $block_attribute['type'] ?? 'string';
+
+		if ( ! in_array( $block_attribute_type, array( 'integer', 'number', 'boolean' ), true ) ) {
+			$block_attribute_type = 'string';
+		}
+
+		return $block_attribute_type;
+	}
+
+	/**
+	 * Get the default value for an attribute.
+	 *
+	 * @param string $attribute_name The name of the attribute.
+	 */
+	public function get_default_value_for_attribute( $attribute_name ) {
+		$block_attribute = $this->raw_block['attrs'][ $attribute_name ] ?? null;
+
+		if ( $block_attribute ) {
+			return $block_attribute;
+		}
+
+		if ( 'content' === $attribute_name && 'core/group' === $this->block_name ) {
+			return serialize_blocks( $this->raw_block['innerBlocks'] );
+		}
+
+		$attribute_metadata = $this->get_attribute_metadata( $attribute_name );
+
+		if ( isset( $attribute_metadata['source'] ) ) {
+			$html_manipulator = new Content_Model_Html_Manipulator( $this->raw_block['innerHTML'] );
+
+			return $html_manipulator->extract_attribute( $attribute_metadata );
+		}
+
+		if ( isset( $attribute_metadata['default'] ) ) {
+			return $attribute_metadata['default'];
+		}
+
+		$attribute_type = $this->get_attribute_type( $attribute_name );
+
+		if ( 'string' !== $attribute_type ) {
+			return 0;
+		}
+
+		return $attribute_name;
 	}
 }
