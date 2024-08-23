@@ -12,7 +12,7 @@ import { useState } from '@wordpress/element';
 /**
  * Display a form to edit a field.
  * @param {Object} props
- * @param {Function} props.save
+ * @param {Function} props.onSave
  * @param {Object} props.defaultFormData (to be updated with the field data for editing)
  * @returns EditFieldForm
  */
@@ -22,6 +22,7 @@ const AddFieldForm = ( {
 		slug: '',
 		description: '',
 		type: 'text',
+		visible: false,
 	},
 	onSave = () => {},
 } ) => {

@@ -14,6 +14,7 @@ import {
 	Flex,
 	FlexBlock,
 	FlexItem,
+	Card,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
@@ -29,6 +30,7 @@ import {
 } from '@wordpress/icons';
 
 import AddFieldForm from './_add-field';
+import EditFieldForm from './_edit-field';
 
 /**
  * Our base plugin component.
@@ -179,129 +181,44 @@ const FieldsList = () => {
 
 	const editField = ( field ) => {
 		console.log( 'Edit Field:', field );
+		const newFields = fields.map( ( f ) =>
+			f.slug === field.slug ? field : f
+		);
+		setFields( newFields );
 	};
 
 	return (
 		<>
 			<VStack spacing={ 16 }>
 				{ fields.map( ( field ) => (
-					<FieldRow
+					<EditFieldForm
 						key={ field.slug }
 						field={ field }
-						editField={ editField }
-						deleteField={ deleteField }
+						onDelete={ deleteField }
+						onChange={ editField }
 					/>
 				) ) }
+
+				<Button
+					variant="secondary"
+					onClick={ () =>
+						setFields( [
+							...fields,
+							{
+								label: '',
+								slug: '',
+								description: '',
+								type: 'text',
+								visible: false,
+							},
+						] )
+					}
+				>
+					{ __( 'Add Field' ) }
+				</Button>
 			</VStack>
 		</>
 	);
-};
-
-/**
- * Display a row for a field.
- * @param {Object} field
- * @returns FieldRow
- */
-const FieldRow = ( { field, deleteField, editField } ) => {
-	const handleDeleteField = () => {
-		if (
-			! confirm( __( 'Are you sure you want to delete this field?' ) )
-		) {
-			return;
-		}
-		deleteField( field );
-	};
-
-	const handleEditField = () => {
-		editField( field );
-	};
-	return (
-		<>
-			<Grid columns={ 8 }>
-				<div style={ { gridColumn: '1/8' } }>
-					<FieldInput field={ field } isDisabled />
-					<small>
-						<em>{ field.description }</em>
-					</small>
-				</div>
-				<div style={ { gridColumn: '8/9' } }>
-					<ButtonGroup>
-						{ /* <Button
-							icon={ chevronUp }
-							title={ __( 'Move Field Up' ) }
-							onClick={ () => console.log( 'Move Field Up' ) }
-						/>
-						<Button
-							icon={ chevronDown }
-							title={ __( 'Move Field Down' ) }
-							onClick={ () => console.log( 'Move Field Down' ) }
-						/> */ }
-						{ /* <Button
-							icon={ edit }
-							title={ __( 'Edit Field' ) }
-							onClick={ handleEditField }
-						/> */ }
-						<Button
-							icon={ trash }
-							title={ __( 'Delete Field' ) }
-							onClick={ handleDeleteField }
-						/>
-					</ButtonGroup>
-				</div>
-			</Grid>
-		</>
-	);
-};
-
-/**
- * Display the input for a field.
- * @param {Object} field
- * @param {boolean} isDisabled
- * @returns FieldInput
- */
-const FieldInput = ( { field, isDisabled = false } ) => {
-	switch ( field.type ) {
-		case 'image':
-			return (
-				<>
-					<label
-						style={ {
-							textTransform: 'uppercase',
-							fontSize: '11px',
-							marginBottom: 'calc(8px)',
-							fontWeight: '500',
-						} }
-					>
-						{ field.label }
-					</label>
-					<div style={ { display: 'block' } }>
-						<Button variant="secondary" disabled={ isDisabled }>
-							{ __( 'Upload Image' ) }
-						</Button>
-					</div>
-				</>
-			);
-			break;
-
-		case 'textarea':
-			return (
-				<TextareaControl
-					label={ field.label }
-					readOnly={ isDisabled }
-				/>
-			);
-			break;
-
-		default:
-			return (
-				<TextControl
-					label={ field.label }
-					type={ field.type }
-					readOnly={ isDisabled }
-				/>
-			);
-			break;
-	}
 };
 
 // Register the plugin.
