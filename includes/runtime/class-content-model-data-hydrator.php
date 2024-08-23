@@ -103,6 +103,8 @@ class Content_Model_Data_Hydrator {
 			$block['innerContent'] = array( $block['innerHTML'] );
 		}
 
+		unset( $block['attrs']['metadata']['bindings'] );
+
 		return $block;
 	}
 }
