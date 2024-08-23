@@ -109,19 +109,20 @@ final class Content_Model {
 	private function inflate_template_blocks( $blocks ) {
 		$acc = array();
 
-		foreach ( $blocks as $block ) {
-			if ( ! empty( $block['innerBlocks'] ) ) {
-				$acc = array_merge( $acc, $this->inflate_template_blocks( $block['innerBlocks'] ) );
+		content_model_block_walker(
+			$blocks,
+			function ( $block ) use ( &$acc ) {
+				$content_model_block = new Content_Model_Block( $block, $this );
+
+				if ( empty( $content_model_block->get_bindings() ) ) {
+					return $block;
+				}
+
+				$acc[ $content_model_block->get_block_variation_name() ] = $content_model_block;
+
+				return $block;
 			}
-
-			$content_model_block = new Content_Model_Block( $block, $this );
-
-			if ( empty( $content_model_block->get_bindings() ) ) {
-				continue;
-			}
-
-			$acc[ $content_model_block->get_block_variation_name() ] = $content_model_block;
-		}
+		);
 
 		return $acc;
 	}

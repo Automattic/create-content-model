@@ -13,5 +13,6 @@ require_once __DIR__ . '/class-content-model-block.php';
 require_once __DIR__ . '/class-content-model-data-extractor.php';
 require_once __DIR__ . '/class-content-model-data-hydrator.php';
 require_once __DIR__ . '/class-content-model-html-manipulator.php';
+require_once __DIR__ . '/helpers.php';
 
 add_action( 'init', array( Content_Model_Manager::class, 'get_instance' ) );
