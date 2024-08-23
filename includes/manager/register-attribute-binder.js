@@ -17,15 +17,6 @@ const SUPPORTED_BLOCK_ATTRIBUTES = {
 	'core/button': [ 'url', 'text', 'linkTarget', 'rel' ],
 };
 
-const getBindingObject = ( { key } ) => {
-	return {
-		source: key === 'post_content' ? 'core/post-content' : 'core/post-meta',
-		args: {
-			key: key.trim(),
-		},
-	};
-};
-
 const ErrorMessage = ( { children } ) => {
 	return (
 		<span style={ { color: 'var(--wp--preset--color--vivid-red)' } }>
@@ -42,27 +33,30 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		const { attributes, setAttributes, name } = props;
 
 		const getBinding = useCallback(
-			( attribute ) => {
-				return attributes.metadata?.bindings?.[ attribute ]?.args?.key;
-			},
-			[ attributes.metadata?.bindings ]
+			( attribute ) =>
+				attributes.metadata?.[ window.BINDINGS_KEY ]?.[ attribute ],
+			[ attributes.metadata ]
 		);
 
 		const setBinding = useCallback(
 			( attribute ) => {
-				return ( key ) => {
+				return ( field ) => {
 					const newAttributes = {
 						metadata: {
 							...( attributes.metadata ?? {} ),
-							bindings: {
-								...( attributes.metadata?.bindings ?? {} ),
-								[ attribute ]: getBindingObject( { key } ),
+							[ window.BINDINGS_KEY ]: {
+								...( attributes.metadata?.[
+									window.BINDINGS_KEY
+								] ?? {} ),
+								[ attribute ]: field,
 							},
 						},
 					};
 
-					if ( ! key.trim() ) {
-						delete newAttributes.metadata.bindings[ attribute ];
+					if ( ! field.trim() ) {
+						delete newAttributes.metadata[ window.BINDINGS_KEY ][
+							attribute
+						];
 					}
 
 					setAttributes( newAttributes );
@@ -78,7 +72,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 
 		const validations = useMemo( () => {
 			const metadata = attributes.metadata ?? {};
-			const bindings = metadata.bindings ?? {};
+			const bindings = metadata[ window.BINDINGS_KEY ] ?? {};
 
 			const _validations = {};
 
@@ -107,9 +101,9 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			}
 
 			Object.keys( bindings ).forEach( ( attribute ) => {
-				const key = getBinding( attribute );
+				const field = getBinding( attribute );
 
-				if ( key === 'post_content' && name !== 'core/group' ) {
+				if ( field === 'post_content' && name !== 'core/group' ) {
 					_validations[ attribute ] = (
 						<ErrorMessage>
 							{ __(

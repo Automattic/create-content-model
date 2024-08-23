@@ -11,6 +11,8 @@ declare( strict_types = 1 );
  * Loads the Content Models post type for managing models.
  */
 class Content_Model_Loader {
+	private const BINDINGS_KEY = 'contentModelBindings';
+
 	/**
 	 * The instance.
 	 *
@@ -49,6 +51,15 @@ class Content_Model_Loader {
 		$this->maybe_enqueue_the_attribute_binder();
 		$this->maybe_enqueue_the_fields_ui();
 		$this->maybe_enqueue_content_model_length_restrictor();
+
+		add_action( 'save_post', array( $this, 'map_template_to_bindings_api_signature' ), 99, 2 );
+
+		/**
+		 * We need two different hooks here because the Editor and the front-end read from different sources.
+		 *
+		 * The Editor reads the whole post, while the front-end reads only the post content.
+		 */
+		add_action( 'the_post', array( $this, 'map_template_to_content_model_editor_signature' ) );
 	}
 
 	/**
@@ -142,6 +153,12 @@ class Content_Model_Loader {
 
 				wp_add_inline_script(
 					'content-model/attribute-binder',
+					'window.BINDINGS_KEY = "' . Content_Model_Loader::BINDINGS_KEY . '";',
+					'before'
+				);
+
+				wp_add_inline_script(
+					'content-model/attribute-binder',
 					'window.BLOCK_VARIATION_NAME_ATTR = "' . Content_Model_Block::BLOCK_VARIATION_NAME_ATTR . '";',
 					'before'
 				);
@@ -219,5 +236,118 @@ class Content_Model_Loader {
 				);
 			}
 		);
+	}
+
+	/**
+	 * Maps our bindings to the bindings API signature.
+	 *
+	 * @param int     $post_id The post ID.
+	 * @param WP_Post $post The post.
+	 */
+	public function map_template_to_bindings_api_signature( $post_id, $post ) {
+		if ( Content_Model_Manager::POST_TYPE_NAME !== $post->post_type || 'publish' !== $post->post_status ) {
+			return;
+		}
+
+		remove_action( 'save_post', array( $this, 'map_template_to_bindings_api_signature' ), 99 );
+
+		$blocks = parse_blocks( wp_unslash( $post->post_content ) );
+		$blocks = self::map_blocks_to_bindings_api_signature( $blocks );
+		$blocks = serialize_blocks( $blocks );
+
+		wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => $blocks,
+			)
+		);
+
+		add_action( 'save_post', array( $this, 'map_template_to_bindings_api_signature' ), 99, 2 );
+	}
+
+	/**
+	 * Maps bindings from our signature to a language the bindings API can understand. This is necessary because in
+	 * content editing mode, you should be able to override the bound attribute's values.
+	 *
+	 * @param array $blocks The blocks from the template.
+	 *
+	 * @return array $blocks The blocks from the template.
+	 */
+	private static function map_blocks_to_bindings_api_signature( $blocks ) {
+		foreach ( $blocks as &$block ) {
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$block['innerBlocks'] = self::map_blocks_to_content_model_editor_signature( $block['innerBlocks'] );
+			}
+
+			$existing_bindings = $block['attrs']['metadata'][ self::BINDINGS_KEY ] ?? array();
+
+			if ( empty( $existing_bindings ) ) {
+				continue;
+			}
+
+			$block['attrs']['metadata']['bindings'] = array();
+
+			foreach ( $existing_bindings as $attribute => $field ) {
+				$block['attrs']['metadata']['bindings'][ $attribute ] = array(
+					'source' => 'post_content' === $field ? 'core/post-content' : 'core/post-meta',
+					'args'   => array( 'key' => $field ),
+				);
+			}
+
+			unset( $block['attrs']['metadata'][ self::BINDINGS_KEY ] );
+
+		}
+
+		return $blocks;
+	}
+
+	/**
+	 * In the editor, display the template and fill it with the data.
+	 *
+	 * @param WP_Post $post The current post.
+	 */
+	public function map_template_to_content_model_editor_signature( $post ) {
+		if ( Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
+			return;
+		}
+
+		$blocks = parse_blocks( wp_unslash( $post->post_content ) );
+		$blocks = self::map_blocks_to_content_model_editor_signature( $blocks );
+		$blocks = serialize_blocks( $blocks );
+
+		$post->post_content = $blocks;
+	}
+
+	/**
+	 * Maps bindings from the bindings API signature to ours. This is necessary because in
+	 * content editing mode, you should be able to override the bound attribute's values.
+	 *
+	 * @param array $blocks The blocks from the template.
+	 *
+	 * @return array $blocks The blocks from the template.
+	 */
+	private static function map_blocks_to_content_model_editor_signature( $blocks ) {
+		foreach ( $blocks as &$block ) {
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$block['innerBlocks'] = self::map_blocks_to_content_model_editor_signature( $block['innerBlocks'] );
+			}
+
+			$existing_bindings = $block['attrs']['metadata']['bindings'] ?? array();
+
+			if ( empty( $existing_bindings ) ) {
+				continue;
+			}
+
+			$block['attrs']['metadata'][ self::BINDINGS_KEY ] = array();
+
+			foreach ( $existing_bindings as $attribute => $binding ) {
+				$block['attrs']['metadata'][ self::BINDINGS_KEY ][ $attribute ] = $binding['args']['key'];
+			}
+
+			unset( $block['attrs']['metadata']['bindings'] );
+
+		}
+
+		return $blocks;
 	}
 }
