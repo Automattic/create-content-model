@@ -24,12 +24,12 @@ define( 'CONTENT_MODEL_PLUGIN_FILE', __FILE__ );
 define( 'CONTENT_MODEL_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CONTENT_MODEL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
-/**
- * Requires a file if it exists.
- *
- * @param string $file The file to require.
- */
 if ( ! function_exists( 'content_model_require_if_exists' ) ) {
+	/**
+	 * Requires a file if it exists.
+	 *
+	 * @param string $file The file to require.
+	 */
 	function content_model_require_if_exists( string $file ) {
 		if ( file_exists( $file ) ) {
 			require_once $file;
