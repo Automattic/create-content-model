@@ -6,18 +6,29 @@ import {
 	Modal,
 	TextControl,
 	TextareaControl,
-	SelectControl,
 	__experimentalVStack as VStack,
-	Card,
-	CardBody,
 	__experimentalGrid as Grid,
 	__experimentalItemGroup as ItemGroup,
 	__experimentalItem as Item,
+	Icon,
+	Flex,
+	FlexBlock,
+	FlexItem,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { chevronUp, chevronDown, edit, trash, plus } from '@wordpress/icons';
+import {
+	seen,
+	unseen,
+	chevronUp,
+	chevronDown,
+	edit,
+	trash,
+	plus,
+} from '@wordpress/icons';
+
+import AddFieldForm from './_add-field';
 
 /**
  * Our base plugin component.
@@ -66,8 +77,23 @@ const CreateContentModelPageSettings = function () {
 				<ItemGroup isBordered isSeparated>
 					{ fields.map( ( field ) => (
 						<Item key={ field.slug } size="small">
-							{ field.label }
-							<code>{ field.slug }</code>
+							<Flex>
+								<FlexBlock>{ field.label }</FlexBlock>
+								<FlexItem>
+									<code>{ field.slug }</code>
+								</FlexItem>
+
+								{ field.visible && (
+									<FlexItem>
+										<Icon icon={ seen } />
+									</FlexItem>
+								) }
+								{ ! field.visible && (
+									<FlexItem>
+										<Icon icon={ unseen } />
+									</FlexItem>
+								) }
+							</Flex>
 						</Item>
 					) ) }
 				</ItemGroup>
@@ -113,15 +139,8 @@ const CreateContentModelPageSettings = function () {
 						size="large"
 						onRequestClose={ () => setAddNewOpen( false ) }
 					>
-						<EditFieldForm
-							save={ ( formData ) => {
-								console.log( 'Save', formData );
-								setMeta( {
-									fields: JSON.stringify( [
-										...fields,
-										formData,
-									] ),
-								} );
+						<AddFieldForm
+							onSave={ () => {
 								setAddNewOpen( false );
 							} }
 						/>
@@ -198,14 +217,14 @@ const FieldRow = ( { field, deleteField, editField } ) => {
 	};
 	return (
 		<>
-			<Grid columns={ 4 }>
-				<div style={ { gridColumn: '1/4' } }>
+			<Grid columns={ 8 }>
+				<div style={ { gridColumn: '1/8' } }>
 					<FieldInput field={ field } isDisabled />
 					<small>
 						<em>{ field.description }</em>
 					</small>
 				</div>
-				<div style={ { gridColumn: '4/5' } }>
+				<div style={ { gridColumn: '8/9' } }>
 					<ButtonGroup>
 						{ /* <Button
 							icon={ chevronUp }
@@ -283,75 +302,6 @@ const FieldInput = ( { field, isDisabled = false } ) => {
 			);
 			break;
 	}
-};
-
-/**
- * Display a form to edit a field.
- * @param {Object} props
- * @param {Function} props.save
- * @param {Object} props.defaultFormData (to be updated with the field data for editing)
- * @returns EditFieldForm
- */
-const EditFieldForm = ( {
-	save = () => {},
-	defaultFormData = {
-		label: '',
-		slug: '',
-		description: '',
-		type: 'text',
-	},
-} ) => {
-	const [ formData, setFormData ] = useState( defaultFormData );
-
-	const saveForm = () => {
-		save( formData );
-		setFormData( defaultFormData );
-	};
-
-	return (
-		<>
-			<Grid columns={ 3 }>
-				<TextControl
-					label={ __( 'Label' ) }
-					value={ formData.label }
-					onChange={ ( value ) =>
-						setFormData( { ...formData, label: value } )
-					}
-				/>
-				<TextControl
-					label={ __( 'Slug' ) }
-					value={ formData.slug }
-					onChange={ ( value ) =>
-						setFormData( { ...formData, slug: value } )
-					}
-				/>
-				<SelectControl
-					label={ __( 'Field Type' ) }
-					value={ formData.type }
-					options={ [
-						{ label: __( 'Text' ), value: 'text' },
-						{ label: __( 'Textarea' ), value: 'textarea' },
-						{ label: __( 'URL' ), value: 'url' },
-						{ label: __( 'Image' ), value: 'image' },
-					] }
-					onChange={ ( value ) =>
-						setFormData( { ...formData, type: value } )
-					}
-				/>
-			</Grid>
-			<TextControl
-				label={ __( 'Field Description (optional)' ) }
-				value={ formData.description }
-				onChange={ ( value ) =>
-					setFormData( { ...formData, description: value } )
-				}
-			/>
-
-			<Button variant="secondary" onClick={ saveForm }>
-				{ __( 'Save' ) }
-			</Button>
-		</>
-	);
 };
 
 // Register the plugin.
