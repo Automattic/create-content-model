@@ -2,32 +2,20 @@ import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import {
 	Button,
-	ButtonGroup,
 	Modal,
 	TextControl,
-	TextareaControl,
 	__experimentalVStack as VStack,
-	__experimentalGrid as Grid,
 	__experimentalItemGroup as ItemGroup,
 	__experimentalItem as Item,
 	Icon,
 	Flex,
 	FlexBlock,
 	FlexItem,
-	Card,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import {
-	seen,
-	unseen,
-	chevronUp,
-	chevronDown,
-	edit,
-	trash,
-	plus,
-} from '@wordpress/icons';
+import { seen, unseen, plus } from '@wordpress/icons';
 
 import AddFieldForm from './_add-field';
 import EditFieldForm from './_edit-field';
@@ -145,7 +133,6 @@ const CreateContentModelPageSettings = function () {
 				{ isAddNewOpen && (
 					<Modal
 						title={ __( 'Add New Field' ) }
-						size="large"
 						onRequestClose={ () => setAddNewOpen( false ) }
 					>
 						<AddFieldForm

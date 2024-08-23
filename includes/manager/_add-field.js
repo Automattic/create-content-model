@@ -41,7 +41,7 @@ const AddFieldForm = ( {
 		setMeta( {
 			fields: JSON.stringify( [ ...fields, formData ] ),
 		} );
-		onSave();
+		onSave( formData );
 	};
 
 	return (

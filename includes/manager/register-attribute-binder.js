@@ -1,12 +1,20 @@
 import { addFilter } from '@wordpress/hooks';
-import { useCallback, useMemo, useEffect } from '@wordpress/element';
+import { useCallback, useMemo, useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
-import { TextControl, PanelBody } from '@wordpress/components';
+import {
+	TextControl,
+	PanelBody,
+	SelectControl,
+	Modal,
+} from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
 import { store as blocksStore } from '@wordpress/blocks';
+import { useEntityProp } from '@wordpress/core-data';
+
+import AddFieldForm from './_add-field';
 
 // https://github.com/WordPress/WordPress/blob/master/wp-includes/class-wp-block.php#L246-L251
 const SUPPORTED_BLOCK_ATTRIBUTES = {
@@ -29,6 +37,23 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 	return ( props ) => {
 		const { getBlockType } = useSelect( blocksStore );
 		const { lockPostSaving, unlockPostSaving } = useDispatch( editorStore );
+		const [ isAddNewOpen, setAddNewOpen ] = useState( false );
+
+		const [ meta, setMeta ] = useEntityProp(
+			'postType',
+			contentModelFields.postType,
+			'meta'
+		);
+
+		// Saving the fields as serialized JSON because I was tired of fighting the REST API.
+		const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
+
+		// Add a uuid to each field for React to track.
+		fields.forEach( ( field ) => {
+			if ( ! field.uuid ) {
+				field.uuid = window.crypto.randomUUID();
+			}
+		} );
 
 		const { attributes, setAttributes, name } = props;
 
@@ -41,6 +66,11 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		const setBinding = useCallback(
 			( attribute ) => {
 				return ( field ) => {
+					if ( field === 'create_new' ) {
+						setAddNewOpen( true );
+						return;
+					}
+
 					const newAttributes = {
 						metadata: {
 							...( attributes.metadata ?? {} ),
@@ -170,15 +200,53 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 						/>
 						{ supportedAttributes.map( ( attributeKey ) => {
 							return (
-								<TextControl
+								<SelectControl
 									key={ attributeKey }
 									label={ attributeKey }
 									help={ validations[ attributeKey ] }
 									value={ getBinding( attributeKey ) }
 									onChange={ setBinding( attributeKey ) }
+									options={ [
+										{
+											label: 'None',
+											value: '',
+										},
+										...fields.map( ( field ) => {
+											return {
+												label: field.label,
+												value: field.slug,
+											};
+										} ),
+										{
+											label: '+ Create New',
+											value: 'create_new',
+										},
+									] }
 								/>
 							);
 						} ) }
+
+						{ isAddNewOpen && (
+							<Modal
+								title={ __( 'Add New Field' ) }
+								onRequestClose={ () => setAddNewOpen( false ) }
+							>
+								<AddFieldForm
+									onSave={ ( formData ) => {
+										setAddNewOpen( false );
+										setBinding( formData.slug );
+									} }
+									defaultFormData={ {
+										label: '',
+										slug: '',
+										description: '',
+										type: 'text',
+										visible: false,
+										uuid: window.crypto.randomUUID(),
+									} }
+								/>
+							</Modal>
+						) }
 					</PanelBody>
 				</InspectorControls>
 				<BlockEdit { ...props } />
