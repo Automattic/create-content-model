@@ -48,6 +48,7 @@ class Content_Model_Loader {
 		$this->register_post_type();
 		$this->maybe_enqueue_the_attribute_binder();
 		$this->maybe_enqueue_the_fields_ui();
+		$this->maybe_enqueue_content_model_length_restrictor();
 	}
 
 	/**
@@ -186,6 +187,36 @@ class Content_Model_Loader {
 				);
 
 				wp_enqueue_script( 'data-types/fields-ui' );
+			}
+		);
+	}
+
+	/**
+	 * Conditionally enqueues the content model length restrictor script for the block editor.
+	 *
+	 * Checks if the current post is of the correct type before enqueueing the script.
+	 *
+	 * @return void
+	 */
+	private function maybe_enqueue_content_model_length_restrictor() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
+					return;
+				}
+
+				$content_model_length_restrictor_js = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/content-model-title-length-restrictor.asset.php';
+
+				wp_enqueue_script(
+					'content-model/length-restrictor',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/content-model-title-length-restrictor.js',
+					$content_model_length_restrictor_js['dependencies'],
+					$content_model_length_restrictor_js['version'],
+					true
+				);
 			}
 		);
 	}
