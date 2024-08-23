@@ -126,9 +126,11 @@ const FieldsList = () => {
 	return (
 		<>
 			<VStack spacing={ 8 }>
-				{ fields.map( ( field ) => (
-					<FieldRow key={ field.slug } field={ field } />
-				) ) }
+				{ fields
+					.filter( ( field ) => field.visible )
+					.map( ( field ) => (
+						<FieldRow key={ field.slug } field={ field } />
+					) ) }
 			</VStack>
 		</>
 	);
