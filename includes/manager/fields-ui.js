@@ -56,6 +56,13 @@ const CreateContentModelPageSettings = function () {
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
+	// Add UUID to fields
+	fields.forEach( ( field ) => {
+		if ( ! field.uuid ) {
+			field.uuid = uuid();
+		}
+	} );
+
 	return (
 		<>
 			<PluginDocumentSettingPanel
@@ -79,7 +86,7 @@ const CreateContentModelPageSettings = function () {
 			>
 				<ItemGroup isBordered isSeparated>
 					{ fields.map( ( field ) => (
-						<Item key={ field.slug } size="small">
+						<Item key={ field.uuid } size="small">
 							<Flex>
 								<FlexBlock>{ field.label }</FlexBlock>
 								<FlexItem>
