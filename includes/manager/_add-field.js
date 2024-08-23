@@ -22,7 +22,8 @@ const AddFieldForm = ( {
 		slug: '',
 		description: '',
 		type: 'text',
-		visible: false,
+		visible: true,
+		uuid: window.crypto.randomUUID(),
 	},
 	onSave = () => {},
 } ) => {

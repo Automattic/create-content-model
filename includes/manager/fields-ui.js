@@ -55,6 +55,13 @@ const CreateContentModelPageSettings = function () {
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
+	// Add UUID to fields
+	fields.forEach( ( field ) => {
+		if ( ! field.uuid ) {
+			field.uuid = window.crypto.randomUUID();
+		}
+	} );
+
 	return (
 		<>
 			<PluginDocumentSettingPanel
@@ -78,7 +85,7 @@ const CreateContentModelPageSettings = function () {
 			>
 				<ItemGroup isBordered isSeparated>
 					{ fields.map( ( field ) => (
-						<Item key={ field.slug } size="small">
+						<Item key={ field.uuid } size="small">
 							<Flex>
 								<FlexBlock>{ field.label }</FlexBlock>
 								<FlexItem>
@@ -167,22 +174,26 @@ const FieldsList = () => {
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
+	// Add a uuid to each field for React to track.
+	fields.forEach( ( field ) => {
+		if ( ! field.uuid ) {
+			field.uuid = window.crypto.randomUUID();
+		}
+	} );
+
 	// Save the fields back to the meta.
 	const setFields = ( newFields ) => {
-		console.log( 'Set Fields:', newFields );
 		setMeta( { fields: JSON.stringify( newFields ) } );
 	};
 
 	const deleteField = ( field ) => {
-		console.log( 'Delete Field:', field );
-		const newFields = fields.filter( ( f ) => f.slug !== field.slug );
+		const newFields = fields.filter( ( f ) => f.uuid !== field.uuid );
 		setFields( newFields );
 	};
 
 	const editField = ( field ) => {
-		console.log( 'Edit Field:', field );
 		const newFields = fields.map( ( f ) =>
-			f.slug === field.slug ? field : f
+			f.uuid === field.uuid ? field : f
 		);
 		setFields( newFields );
 	};
@@ -192,17 +203,17 @@ const FieldsList = () => {
 			<VStack spacing={ 16 }>
 				{ fields.map( ( field ) => (
 					<EditFieldForm
-						key={ field.slug }
+						key={ field.uuid }
 						field={ field }
 						onDelete={ deleteField }
 						onChange={ editField }
 						total={ fields.length }
 						index={ fields.findIndex(
-							( f ) => f.slug === field.slug
+							( f ) => f.uuid === field.uuid
 						) }
 						onMoveUp={ ( field ) => {
 							const index = fields.findIndex(
-								( f ) => f.slug === field.slug
+								( f ) => f.uuid === field.uuid
 							);
 							const newFields = [ ...fields ];
 							newFields.splice( index, 1 );
@@ -211,7 +222,7 @@ const FieldsList = () => {
 						} }
 						onMoveDown={ ( field ) => {
 							const index = fields.findIndex(
-								( f ) => f.slug === field.slug
+								( f ) => f.uuid === field.uuid
 							);
 							const newFields = [ ...fields ];
 							newFields.splice( index, 1 );
@@ -227,11 +238,12 @@ const FieldsList = () => {
 						setFields( [
 							...fields,
 							{
+								uuid: window.crypto.randomUUID(),
 								label: '',
 								slug: '',
 								description: '',
 								type: 'text',
-								visible: false,
+								visible: true,
 							},
 						] )
 					}
