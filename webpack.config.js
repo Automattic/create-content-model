@@ -9,8 +9,7 @@ const includesDir = path.resolve( process.cwd(), 'includes' );
 const entries = glob
 	.sync( '*/*.js', { cwd: includesDir } )
 	.filter( ( entry ) => {
-		console.log( entry );
-		! entry.split( '/' )[ 1 ].startsWith( '_' );
+		return ! entry.split( '/' )[ 1 ].startsWith( '_' );
 	} )
 	.reduce( ( acc, entry ) => {
 		const [ folder, name ] = entry.split( '/' );
