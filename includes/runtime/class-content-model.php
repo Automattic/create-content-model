@@ -70,6 +70,11 @@ final class Content_Model {
 
 		add_action( 'save_post', array( $this, 'extract_fields_from_blocks' ), 99, 2 );
 
+		/**
+		 * We need two different hooks here because the Editor and the front-end read from different sources.
+		 *
+		 * The Editor reads the whole post, while the front-end reads only the post content.
+		 */
 		add_action( 'the_post', array( $this, 'set_hydrated_template_as_post_content' ) );
 		add_filter( 'the_content', array( $this, 'swap_post_content_with_hydrated_template' ) );
 
