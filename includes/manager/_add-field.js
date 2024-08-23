@@ -8,7 +8,6 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { v4 as uuid } from 'uuid';
 
 /**
  * Display a form to edit a field.
@@ -24,7 +23,7 @@ const AddFieldForm = ( {
 		description: '',
 		type: 'text',
 		visible: true,
-		uuid: uuid(),
+		uuid: window.crypto.randomUUID(),
 	},
 	onSave = () => {},
 } ) => {

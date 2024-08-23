@@ -31,7 +31,6 @@ import {
 
 import AddFieldForm from './_add-field';
 import EditFieldForm from './_edit-field';
-import { v4 as uuid } from 'uuid';
 
 /**
  * Our base plugin component.
@@ -59,7 +58,7 @@ const CreateContentModelPageSettings = function () {
 	// Add UUID to fields
 	fields.forEach( ( field ) => {
 		if ( ! field.uuid ) {
-			field.uuid = uuid();
+			field.uuid = window.crypto.randomUUID();
 		}
 	} );
 
@@ -178,24 +177,21 @@ const FieldsList = () => {
 	// Add a uuid to each field for React to track.
 	fields.forEach( ( field ) => {
 		if ( ! field.uuid ) {
-			field.uuid = uuid();
+			field.uuid = window.crypto.randomUUID();
 		}
 	} );
 
 	// Save the fields back to the meta.
 	const setFields = ( newFields ) => {
-		console.log( 'Set Fields:', newFields );
 		setMeta( { fields: JSON.stringify( newFields ) } );
 	};
 
 	const deleteField = ( field ) => {
-		console.log( 'Delete Field:', field );
 		const newFields = fields.filter( ( f ) => f.uuid !== field.uuid );
 		setFields( newFields );
 	};
 
 	const editField = ( field ) => {
-		console.log( 'Edit Field:', field );
 		const newFields = fields.map( ( f ) =>
 			f.uuid === field.uuid ? field : f
 		);
@@ -242,7 +238,7 @@ const FieldsList = () => {
 						setFields( [
 							...fields,
 							{
-								uuid: uuid(),
+								uuid: window.crypto.randomUUID(),
 								label: '',
 								slug: '',
 								description: '',
