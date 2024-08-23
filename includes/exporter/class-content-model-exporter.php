@@ -38,6 +38,12 @@ class Content_Model_Exporter {
 		add_action( 'admin_post_download_content_models_zip', array( $this, 'handle_zip_download' ) );
 	}
 
+
+	/**
+	 * Adds the export submenu page to the admin menu.
+	 *
+	 * @return void
+	 */
 	public function add_export_submenu_page() {
 		add_submenu_page(
 			'edit.php?post_type=content_model',
@@ -49,6 +55,12 @@ class Content_Model_Exporter {
 		);
 	}
 
+
+	/**
+	 * Renders the export page.
+	 *
+	 * @return void
+	 */
 	public function render_export_page() {
 		$all_models_json = $this->generate_all_models_json();
 		$has_models      = ! empty( $all_models_json );
@@ -111,6 +123,8 @@ class Content_Model_Exporter {
 		}
 		return $formatted_fields;
 	}
+
+
 	/**
 	 * Generates JSON data for all registered content models.
 	 *
@@ -128,6 +142,12 @@ class Content_Model_Exporter {
 		return $all_models_json;
 	}
 
+
+	/**
+	 * Handles the ZIP file download process.
+	 *
+	 * @return void
+	 */
 	public function handle_zip_download() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.' ) );
@@ -160,6 +180,15 @@ class Content_Model_Exporter {
 		}
 	}
 
+
+	/**
+	 * Includes nested files in the ZIP archive.
+	 *
+	 * @param ZipArchive $zip       The ZIP archive object.
+	 * @param string     $base_path The base path of the files.
+	 * @param string     $folder    The folder to include.
+	 * @return void
+	 */
 	private function include_nested_files( $zip, $base_path, $folder ) {
 		$files = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $base_path . $folder ), RecursiveIteratorIterator::SELF_FIRST );
 
@@ -180,6 +209,12 @@ class Content_Model_Exporter {
 		}
 	}
 
+
+	/**
+	 * Updates the version and name in the main plugin file.
+	 *
+	 * @return string The updated plugin file content.
+	 */
 	private function replace_content_model_plugin_file_version() {
 		$plugin_data = get_plugin_data( CONTENT_MODEL_PLUGIN_FILE, false, false );
 		$plugin_file = file_get_contents( CONTENT_MODEL_PLUGIN_PATH . 'create-content-model.php' );
@@ -197,6 +232,14 @@ class Content_Model_Exporter {
 		return $plugin_file;
 	}
 
+
+	/**
+	 * Creates a ZIP file containing the content models and necessary plugin files.
+   * This does not include content models that are not published.
+	 *
+	 * @param array $all_models_json The JSON data for the content models.
+	 * @return int|false The attachment ID of the created ZIP file, or false on failure.
+	 */
 	private function create_zip_file( $all_models_json ) {
 		$upload_dir   = wp_upload_dir();
 		$zip_filename = 'content_models_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
@@ -234,5 +277,3 @@ class Content_Model_Exporter {
 		return $attach_id;
 	}
 }
-
-Content_Model_Exporter::get_instance();
