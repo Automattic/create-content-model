@@ -31,6 +31,7 @@ import {
 
 import AddFieldForm from './_add-field';
 import EditFieldForm from './_edit-field';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Our base plugin component.
@@ -167,6 +168,13 @@ const FieldsList = () => {
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
+	// Add a uuid to each field for React to track.
+	fields.forEach( ( field ) => {
+		if ( ! field.uuid ) {
+			field.uuid = uuid();
+		}
+	} );
+
 	// Save the fields back to the meta.
 	const setFields = ( newFields ) => {
 		console.log( 'Set Fields:', newFields );
@@ -175,14 +183,14 @@ const FieldsList = () => {
 
 	const deleteField = ( field ) => {
 		console.log( 'Delete Field:', field );
-		const newFields = fields.filter( ( f ) => f.slug !== field.slug );
+		const newFields = fields.filter( ( f ) => f.uuid !== field.uuid );
 		setFields( newFields );
 	};
 
 	const editField = ( field ) => {
 		console.log( 'Edit Field:', field );
 		const newFields = fields.map( ( f ) =>
-			f.slug === field.slug ? field : f
+			f.uuid === field.uuid ? field : f
 		);
 		setFields( newFields );
 	};
@@ -192,17 +200,17 @@ const FieldsList = () => {
 			<VStack spacing={ 16 }>
 				{ fields.map( ( field ) => (
 					<EditFieldForm
-						key={ field.slug }
+						key={ field.uuid }
 						field={ field }
 						onDelete={ deleteField }
 						onChange={ editField }
 						total={ fields.length }
 						index={ fields.findIndex(
-							( f ) => f.slug === field.slug
+							( f ) => f.uuid === field.uuid
 						) }
 						onMoveUp={ ( field ) => {
 							const index = fields.findIndex(
-								( f ) => f.slug === field.slug
+								( f ) => f.uuid === field.uuid
 							);
 							const newFields = [ ...fields ];
 							newFields.splice( index, 1 );
@@ -211,7 +219,7 @@ const FieldsList = () => {
 						} }
 						onMoveDown={ ( field ) => {
 							const index = fields.findIndex(
-								( f ) => f.slug === field.slug
+								( f ) => f.uuid === field.uuid
 							);
 							const newFields = [ ...fields ];
 							newFields.splice( index, 1 );
@@ -227,11 +235,12 @@ const FieldsList = () => {
 						setFields( [
 							...fields,
 							{
+								uuid: uuid(),
 								label: '',
 								slug: '',
 								description: '',
 								type: 'text',
-								visible: false,
+								visible: true,
 							},
 						] )
 					}

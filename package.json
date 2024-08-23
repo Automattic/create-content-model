@@ -31,7 +31,8 @@
         "@wordpress/hooks": "^4.5.0",
         "@wordpress/i18n": "^5.5.0",
         "@wordpress/icons": "^10.5.0",
-        "@wordpress/server-side-render": "^5.5.0"
+        "@wordpress/server-side-render": "^5.5.0",
+        "uuid": "^10.0.0"
     },
     "devDependencies": {
         "@wordpress/eslint-plugin": "^20.0.0",
