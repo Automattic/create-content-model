@@ -196,6 +196,28 @@ const FieldsList = () => {
 						field={ field }
 						onDelete={ deleteField }
 						onChange={ editField }
+						total={ fields.length }
+						index={ fields.findIndex(
+							( f ) => f.slug === field.slug
+						) }
+						onMoveUp={ ( field ) => {
+							const index = fields.findIndex(
+								( f ) => f.slug === field.slug
+							);
+							const newFields = [ ...fields ];
+							newFields.splice( index, 1 );
+							newFields.splice( index - 1, 0, field );
+							setFields( newFields );
+						} }
+						onMoveDown={ ( field ) => {
+							const index = fields.findIndex(
+								( f ) => f.slug === field.slug
+							);
+							const newFields = [ ...fields ];
+							newFields.splice( index, 1 );
+							newFields.splice( index + 1, 0, field );
+							setFields( newFields );
+						} }
 					/>
 				) ) }
 
