@@ -279,7 +279,9 @@ final class Content_Model {
 			return;
 		}
 
-		$post->post_content = $this->get_hydrated_template();
+		$data_hydrator = new Content_Model_Data_Hydrator( $this->template );
+
+		$post->post_content = serialize_blocks( $data_hydrator->hydrate() );
 	}
 
 	/**
@@ -294,16 +296,7 @@ final class Content_Model {
 			return $post_content;
 		}
 
-		return $this->get_hydrated_template();
-	}
-
-	/**
-	 * Returns the hydrated template.
-	 */
-	private function get_hydrated_template() {
-		$data_hydrator = new Content_Model_Data_Hydrator( $this->template );
-
-		return serialize_blocks( $data_hydrator->hydrate() );
+		return implode( '', array_map( fn( $block ) => render_block( $block ), $this->template ) );
 	}
 
 	/**
