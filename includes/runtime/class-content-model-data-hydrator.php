@@ -71,26 +71,7 @@ class Content_Model_Data_Hydrator {
 				continue;
 			}
 
-			// Inflate the stored blocks into Group.
-			if ( 'core/group' === $block['blockName'] ) {
-				$block['innerBlocks'] = parse_blocks( $content );
-
-				$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
-
-				$block_attribute = array(
-					'source'   => 'rich-text',
-					'selector' => 'div',
-				);
-
-				$block['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
-				$block['innerContent'] = array( $block['innerHTML'] );
-
-				continue;
-			}
-
-			$block_metadata   = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
-			$block_attributes = $block_metadata->get_attributes();
-			$block_attribute  = $block_attributes[ $attribute ];
+			$block_attribute = $content_model_block->get_attribute_metadata( $attribute );
 
 			if ( ! isset( $block_attribute['source'] ) ) {
 				$block['attrs'][ $attribute ] = $content;
