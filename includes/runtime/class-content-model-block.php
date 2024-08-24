@@ -95,9 +95,7 @@ final class Content_Model_Block {
 
 		add_filter( 'block_variation_attributes', array( $this, 'hydrate_block_variation_attributes' ), 10, 2 );
 
-		if ( $this->should_render_group_variation() ) {
-			add_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99, 2 );
-		}
+		add_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99, 2 );
 	}
 
 	/**
@@ -194,15 +192,6 @@ final class Content_Model_Block {
 	}
 
 	/**
-	 * Determines if the current block should intercept Group rendering.
-	 *
-	 * @return bool Returns true if the block is a 'core/group' and has a 'content' binding, false otherwise.
-	 */
-	private function should_render_group_variation() {
-		return 'core/group' === $this->block_name && null !== $this->get_binding( 'content' );
-	}
-
-	/**
 	 * Replaces the variation attributes in the block with the ones from the content model template.
 	 *
 	 * @param array               $block_attributes The block attributes from the incoming block variation.
@@ -243,47 +232,17 @@ final class Content_Model_Block {
 	public function render_group_variation( $pre_render, $parsed_block ) {
 		$tentative_block = new Content_Model_Block( $parsed_block );
 
-		if ( $tentative_block->block_name !== $this->block_name ) {
+		if ( $tentative_block->get_block_variation_name() !== $this->block_variation_name ) {
 			return $pre_render;
 		}
 
-		$content_binding = $tentative_block->get_binding( 'content' );
-
-		if ( ! $content_binding ) {
+		if ( $tentative_block->get_block_name() !== 'core/group' ) {
 			return $pre_render;
 		}
 
-		$field = $content_binding['args']['key'];
+		$hydrator = new Content_Model_Data_Hydrator( array( $parsed_block ) );
 
-		if ( 'post_content' === $field ) {
-			$content = get_the_content();
-		} else {
-			$content = get_post_meta( get_the_ID(), $field, true );
-		}
-
-		if ( ! $content ) {
-			return $pre_render;
-		}
-
-		$parsed_block['innerBlocks'] = parse_blocks( $content );
-
-		$html_handler = new Content_Model_Html_Manipulator( $parsed_block['innerHTML'] );
-
-		$block_attribute = array(
-			'source'   => 'rich-text',
-			'selector' => 'div',
-		);
-
-		$parsed_block['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
-		$parsed_block['innerContent'] = array( $parsed_block['innerHTML'] );
-
-		remove_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99 );
-
-		$rendered_group = render_block( $parsed_block );
-
-		add_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99, 2 );
-
-		return $rendered_group;
+		return serialize_blocks( $hydrator->hydrate() );
 	}
 
 	/**
