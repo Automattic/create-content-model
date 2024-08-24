@@ -279,7 +279,7 @@ final class Content_Model {
 			return;
 		}
 
-		$data_hydrator = new Content_Model_Data_Hydrator( $this->template );
+		$data_hydrator = new Content_Model_Data_Hydrator( $this->template, false );
 
 		$post->post_content = serialize_blocks( $data_hydrator->hydrate() );
 	}

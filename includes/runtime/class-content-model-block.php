@@ -240,9 +240,16 @@ final class Content_Model_Block {
 			return $pre_render;
 		}
 
-		$hydrator = new Content_Model_Data_Hydrator( array( $parsed_block ) );
+		$hydrator = new Content_Model_Data_Hydrator( array( $parsed_block ), true );
 
-		return serialize_blocks( $hydrator->hydrate() );
+		remove_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99 );
+
+		// Accessing index zero because we've passed an array with one element above.
+		$result = render_block( $hydrator->hydrate()[0] );
+
+		add_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99, 2 );
+
+		return $result;
 	}
 
 	/**

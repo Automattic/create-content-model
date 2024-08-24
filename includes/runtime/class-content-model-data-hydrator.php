@@ -19,13 +19,23 @@ class Content_Model_Data_Hydrator {
 	private $blocks;
 
 	/**
+	 * Whether to strip attribute metadata.
+	 *
+	 * @var bool
+	 */
+	private $strip_attribute_metadata;
+
+	/**
 	 * Initializes the Content_Model_Data_Hydrator instance with the given blocks.
 	 *
 	 * @param array $blocks The blocks to initialize with.
+	 * @param bool  $strip_attribute_metadata Whether to strip attribute metadata.
 	 * @return void
 	 */
-	public function __construct( $blocks ) {
+	public function __construct( $blocks, $strip_attribute_metadata ) {
 		$this->blocks = $blocks;
+
+		$this->strip_attribute_metadata = $strip_attribute_metadata;
 	}
 
 	/**
@@ -76,6 +86,13 @@ class Content_Model_Data_Hydrator {
 			if ( ! isset( $block_attribute['source'] ) ) {
 				$block['attrs'][ $attribute ] = $content;
 				continue;
+			}
+
+			if ( $this->strip_attribute_metadata && 'rich-text' === $block_attribute['source'] ) {
+				$content = implode(
+					'',
+					array_map( fn( $block ) => render_block( $block ), parse_blocks( $content ) )
+				);
 			}
 
 			$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
