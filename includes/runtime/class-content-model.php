@@ -133,6 +133,24 @@ final class Content_Model {
 	 * @return void
 	 */
 	private function register_meta_fields() {
+
+		if ( ! empty( $this->fields ) ) {
+			foreach ( $this->fields as $field ) {
+				register_post_meta(
+					$this->slug,
+					$field['slug'],
+					array(
+						'description'  => $field['description'],
+						'show_in_rest' => true,
+						'single'       => true,
+						'type'         => 'string', // todo: support other types.
+						'default'      => $field['default'] ?? $field['slug'],
+					)
+				);
+
+			}
+		}
+
 		foreach ( $this->blocks as $block ) {
 			foreach ( $block->get_bindings() as $attribute_name => $binding ) {
 				$field = $binding['args']['key'];
@@ -151,23 +169,6 @@ final class Content_Model {
 						'default'      => $block->get_default_value_for_attribute( $attribute_name ),
 					)
 				);
-			}
-		}
-
-		if ( ! empty( $this->fields ) ) {
-			foreach ( $this->fields as $field ) {
-				register_post_meta(
-					$this->slug,
-					$field['slug'],
-					array(
-						'description'  => $field['description'],
-						'show_in_rest' => true,
-						'single'       => true,
-						'type'         => 'string', // todo: support other types.
-						'default'      => $field['default'] ?? $field['slug'],
-					)
-				);
-
 			}
 		}
 	}

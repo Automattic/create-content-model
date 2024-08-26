@@ -26,6 +26,7 @@ const AddFieldForm = ( {
 		uuid: window.crypto.randomUUID(),
 	},
 	onSave = () => {},
+	typeIsDisabled = false,
 } ) => {
 	const [ formData, setFormData ] = useState( defaultFormData );
 
@@ -41,29 +42,30 @@ const AddFieldForm = ( {
 		setMeta( {
 			fields: JSON.stringify( [ ...fields, formData ] ),
 		} );
-		onSave();
+		onSave( formData );
 	};
 
 	return (
 		<>
 			<Grid columns={ 3 }>
 				<TextControl
-					label={ __( 'Label' ) }
+					label={ __( 'Name' ) }
 					value={ formData.label }
 					onChange={ ( value ) =>
 						setFormData( { ...formData, label: value } )
 					}
 				/>
 				<TextControl
-					label={ __( 'Slug' ) }
+					label={ __( 'Key' ) }
 					value={ formData.slug }
 					onChange={ ( value ) =>
 						setFormData( { ...formData, slug: value } )
 					}
 				/>
 				<SelectControl
-					label={ __( 'Field Type' ) }
+					label={ __( 'Type' ) }
 					value={ formData.type }
+					disabled={ typeIsDisabled }
 					options={ [
 						{ label: __( 'Text' ), value: 'text' },
 						{ label: __( 'Textarea' ), value: 'textarea' },
@@ -78,7 +80,7 @@ const AddFieldForm = ( {
 			</Grid>
 
 			<TextControl
-				label={ __( 'Field Description (optional)' ) }
+				label={ __( 'Description (optional)' ) }
 				value={ formData.description }
 				onChange={ ( value ) =>
 					setFormData( { ...formData, description: value } )
