@@ -65,17 +65,18 @@ final class Content_Model {
 		$this->fields = json_decode( get_post_meta( $content_model_post->ID, 'fields', true ), true );
 		$this->register_meta_fields();
 		$this->maybe_enqueue_the_fields_ui();
+		$this->maybe_enqueue_bound_group_extractor();
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
 
-		add_action( 'save_post', array( $this, 'extract_fields_from_blocks' ), 99, 2 );
+		add_action( 'rest_after_insert_' . $this->slug, array( $this, 'extract_post_content_from_blocks' ), 99, 1 );
 
 		/**
 		 * We need two different hooks here because the Editor and the front-end read from different sources.
 		 *
 		 * The Editor reads the whole post, while the front-end reads only the post content.
 		 */
-		add_action( 'the_post', array( $this, 'set_hydrated_template_as_post_content' ) );
+		add_action( 'the_post', array( $this, 'hydrate_bound_groups' ) );
 		add_filter( 'the_content', array( $this, 'swap_post_content_with_hydrated_template' ) );
 
 		add_filter( 'get_post_metadata', array( $this, 'cast_meta_field_types' ), 10, 3 );
@@ -244,37 +245,64 @@ final class Content_Model {
 	/**
 	 * Finds the post_content content area within blocks.
 	 *
-	 * @param int     $post_id The post ID.
 	 * @param WP_Post $post The post.
 	 */
-	public function extract_fields_from_blocks( $post_id, $post ) {
-		if ( $post->post_type !== $this->slug || 'publish' !== $post->post_status ) {
+	public function extract_post_content_from_blocks( $post ) {
+		if ( 'publish' !== $post->post_status ) {
 			return;
 		}
 
-		remove_action( 'save_post', array( $this, 'extract_fields_from_blocks' ), 99 );
-
 		$blocks = parse_blocks( wp_unslash( $post->post_content ) );
-
-		$data_extractor = new Content_Model_Data_Extractor( $blocks, $this->blocks );
 
 		wp_update_post(
 			array(
-				'ID'           => $post_id,
-				'post_content' => $data_extractor->get_post_content() ?? '',
-				'meta_input'   => $data_extractor->get_meta_fields(),
+				'ID'           => $post->ID,
+				'post_content' => self::get_post_content( $blocks ) ?? '',
 			)
 		);
-
-		add_action( 'save_post', array( $this, 'extract_fields_from_blocks' ), 99, 2 );
 	}
 
 	/**
-	 * In the editor, display the template and fill it with the data.
+	 * Extracts the post content from the blocks.
+	 *
+	 * @param array $blocks The blocks.
+	 *
+	 * @return string The post content.
+	 */
+	private static function get_post_content( $blocks ) {
+		$post_content = content_model_block_walker(
+			$blocks,
+			function ( $block ) {
+				if ( 'core/group' !== $block['blockName'] ) {
+					return $block;
+				}
+
+				$content_model_block = new Content_Model_Block( $block );
+				$content_binding     = $content_model_block->get_binding( 'content' );
+
+				if ( $content_binding && 'post_content' === $content_binding['args']['key'] ) {
+						return serialize_blocks( $block['innerBlocks'] );
+				}
+
+				return $block;
+			},
+			false // Breadth-first because it's more likely that post content will be at the top level.
+		);
+
+		if ( ! is_string( $post_content ) ) {
+			return null;
+		}
+
+		return $post_content;
+	}
+
+	/**
+	 * In the editor, display the template and fill bound Groups with data.
+	 * Blocks using the supported Bindings API attributes will be filled automatically.
 	 *
 	 * @param WP_Post $post The current post.
 	 */
-	public function set_hydrated_template_as_post_content( $post ) {
+	public function hydrate_bound_groups( $post ) {
 		if ( $this->slug !== $post->post_type ) {
 			return;
 		}
@@ -297,6 +325,46 @@ final class Content_Model {
 		}
 
 		return implode( '', array_map( fn( $block ) => render_block( $block ), $this->template ) );
+	}
+
+	/**
+	 * When you use the Bindings API, the Editor automatically extracts bound attributes as post meta.
+	 * But because we're binding to the inner blocks of Groups (and not an attribute),
+	 * we need to manually extract it.
+	 *
+	 * @return void
+	 */
+	private function maybe_enqueue_bound_group_extractor() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || $this->slug !== $post->post_type ) {
+					return;
+				}
+
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/bound-group-extractor.asset.php';
+
+				wp_register_script(
+					'data-types/bound-group-extractor',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/bound-group-extractor.js',
+					$asset_file['dependencies'],
+					$asset_file['version'],
+					true
+				);
+
+				wp_localize_script(
+					'data-types/fields-ui',
+					'contentModelFields',
+					array(
+						'postType' => $this->slug,
+					)
+				);
+
+				wp_enqueue_script( 'data-types/bound-group-extractor' );
+			}
+		);
 	}
 
 	/**
