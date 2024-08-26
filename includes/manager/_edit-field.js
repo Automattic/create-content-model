@@ -84,21 +84,21 @@ const EditFieldForm = ( {
 
 					<Grid columns={ 3 }>
 						<TextControl
-							label={ __( 'Label' ) }
+							label={ __( 'Name' ) }
 							value={ formData.label }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, label: value } )
 							}
 						/>
 						<TextControl
-							label={ __( 'Slug' ) }
+							label={ __( 'Key' ) }
 							value={ formData.slug }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, slug: value } )
 							}
 						/>
 						<SelectControl
-							label={ __( 'Field Type' ) }
+							label={ __( 'Type' ) }
 							value={ formData.type }
 							options={ [
 								{ label: __( 'Text' ), value: 'text' },
@@ -114,7 +114,7 @@ const EditFieldForm = ( {
 					</Grid>
 
 					<TextControl
-						label={ __( 'Field Description (optional)' ) }
+						label={ __( 'Description (optional)' ) }
 						value={ formData.description }
 						onChange={ ( value ) =>
 							setFormData( { ...formData, description: value } )
