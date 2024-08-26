@@ -356,10 +356,11 @@ final class Content_Model {
 				);
 
 				wp_localize_script(
-					'data-types/fields-ui',
+					'data-types/bound-group-extractor',
 					'contentModelFields',
 					array(
 						'postType' => $this->slug,
+						'fields'   => $this->fields,
 					)
 				);
 

@@ -29,6 +29,8 @@ const CreateContentModelPageSettings = function () {
 
 	const blocks = wp.data.select( 'core/block-editor' ).getBlocks();
 
+	console.log( blocks, fields );
+
 	const { setBlockEditingMode } = useDispatch( blockEditorStore );
 
 	if ( ! fields ) {
