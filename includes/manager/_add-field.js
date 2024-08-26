@@ -26,6 +26,7 @@ const AddFieldForm = ( {
 		uuid: window.crypto.randomUUID(),
 	},
 	onSave = () => {},
+	typeIsDisabled = false,
 } ) => {
 	const [ formData, setFormData ] = useState( defaultFormData );
 
@@ -64,6 +65,7 @@ const AddFieldForm = ( {
 				<SelectControl
 					label={ __( 'Field Type' ) }
 					value={ formData.type }
+					disabled={ typeIsDisabled }
 					options={ [
 						{ label: __( 'Text' ), value: 'text' },
 						{ label: __( 'Textarea' ), value: 'textarea' },

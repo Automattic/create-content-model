@@ -244,6 +244,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 										visible: false,
 										uuid: window.crypto.randomUUID(),
 									} }
+									typeIsDisabled={ true }
 								/>
 							</Modal>
 						) }
