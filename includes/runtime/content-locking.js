@@ -13,6 +13,10 @@ const CreateContentModelContentLocking = function () {
 
 	const blocks = wp.data.select( 'core/block-editor' ).getBlocks();
 
+	const currentBlock = wp.data
+		.select( 'core/block-editor' )
+		.getSelectedBlock();
+
 	const { setBlockEditingMode } = useDispatch( blockEditorStore );
 
 	if ( ! fields ) {
@@ -23,7 +27,14 @@ const CreateContentModelContentLocking = function () {
 		if ( blocks.length > 0 ) {
 			parseBlocks( blocks, setBlockEditingMode );
 		}
-	}, [ blocks, setBlockEditingMode ] );
+	}, [ blocks, setBlockEditingMode, currentBlock ] );
+
+	useEffect( () => {
+		console.log( currentBlock );
+		// if ( currentBlock ) {
+		// 	setBlockEditingMode( currentBlock.clientId, '' );
+		// }
+	}, [ currentBlock?.clientId, setBlockEditingMode ] );
 
 	return;
 };
@@ -36,28 +47,36 @@ const SUPPORTED_BLOCKS = [
 ];
 
 const parseBlocks = ( blocks, setEditMode, forceEnabled = false ) => {
+	console.log( 'parse blocks' );
 	blocks.forEach( ( block ) => {
 		if (
 			block.innerBlocks.length > 0 &&
 			block.attributes.metadata?.bindings
 		) {
 			// This is a group block with bindings, probably content.
-			setEditMode( block.clientId, '' );
+			setEditMode( block.clientId, 'default' );
 
 			if ( block.innerBlocks ) {
 				parseBlocks( block.innerBlocks, setEditMode, true );
 			}
 		} else if ( block.innerBlocks.length > 0 ) {
 			// This is a group block with no bindings, probably layout.
-			dispatch( 'core/block-editor' ).updateBlock( block.clientId, {
-				...block,
-				attributes: {
-					...block.attributes,
-					templateLock: 'contentOnly',
-				},
-			} );
-			setEditMode( block.clientId, 'disabled' );
 
+			// First check this container has a bound group block is inside.
+			const boundGroup = findBoundGroup( block.innerBlocks );
+
+			console.log( boundGroup );
+			if ( ! boundGroup ) {
+				// Then, lock the block.
+				dispatch( 'core/block-editor' ).updateBlock( block.clientId, {
+					...block,
+					attributes: {
+						...block.attributes,
+						templateLock: 'contentOnly',
+					},
+				} );
+				setEditMode( block.clientId, 'disabled' );
+			}
 			if ( block.innerBlocks ) {
 				parseBlocks( block.innerBlocks, setEditMode );
 			}
@@ -66,11 +85,29 @@ const parseBlocks = ( blocks, setEditMode, forceEnabled = false ) => {
 				block.attributes.metadata?.bindings ) ||
 			forceEnabled
 		) {
-			setEditMode( block.clientId, '' );
+			setEditMode( block.clientId, 'default' );
 		} else {
 			setEditMode( block.clientId, 'disabled' );
 		}
 	} );
+};
+
+const findBoundGroup = ( blocks ) => {
+	for ( const block of blocks ) {
+		if (
+			block.name === 'core/group' &&
+			block.attributes.metadata?.bindings
+		) {
+			return block;
+		}
+		if ( block.innerBlocks.length > 0 ) {
+			const boundGroup = findBoundGroup( block.innerBlocks );
+			if ( boundGroup ) {
+				return boundGroup;
+			}
+		}
+	}
+	return null;
 };
 
 // Register the plugin.
