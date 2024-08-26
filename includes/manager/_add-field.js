@@ -7,7 +7,7 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Display a form to edit a field.
@@ -29,6 +29,7 @@ const AddFieldForm = ( {
 	typeIsDisabled = false,
 } ) => {
 	const [ formData, setFormData ] = useState( defaultFormData );
+	const [ isValid, setIsValid ] = useState( false );
 
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
@@ -44,6 +45,18 @@ const AddFieldForm = ( {
 		} );
 		onSave( formData );
 	};
+
+	useEffect( () => {
+		const hasValidationErrors = [ 'label', 'slug', 'type' ].some(
+			( field ) => ! formData[ field ]
+		);
+
+		if ( hasValidationErrors ) {
+			setIsValid( false );
+		} else {
+			setIsValid( true );
+		}
+	}, [ formData ] );
 
 	return (
 		<>
@@ -79,22 +92,28 @@ const AddFieldForm = ( {
 				/>
 			</Grid>
 
-			<TextControl
-				label={ __( 'Description (optional)' ) }
-				value={ formData.description }
-				onChange={ ( value ) =>
-					setFormData( { ...formData, description: value } )
-				}
-			/>
-			<ToggleControl
-				label={ __( 'Show Field in Custom Fields Form' ) }
-				checked={ formData.visible ?? false }
-				onChange={ ( value ) =>
-					setFormData( { ...formData, visible: value } )
-				}
-			/>
+			<Grid columns={ 2 } alignment="bottom">
+				<TextControl
+					label={ __( 'Description (optional)' ) }
+					value={ formData.description }
+					onChange={ ( value ) =>
+						setFormData( { ...formData, description: value } )
+					}
+				/>
+				<ToggleControl
+					label={ __( 'Show Field in Custom Fields Form' ) }
+					checked={ formData.visible ?? false }
+					onChange={ ( value ) =>
+						setFormData( { ...formData, visible: value } )
+					}
+				/>
+			</Grid>
 
-			<Button variant="secondary" onClick={ saveForm }>
+			<Button
+				variant="secondary"
+				onClick={ saveForm }
+				disabled={ ! isValid }
+			>
 				{ __( 'Save Field' ) }
 			</Button>
 		</>

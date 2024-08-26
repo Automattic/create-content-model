@@ -112,21 +112,25 @@ const EditFieldForm = ( {
 							}
 						/>
 					</Grid>
-
-					<TextControl
-						label={ __( 'Description (optional)' ) }
-						value={ formData.description }
-						onChange={ ( value ) =>
-							setFormData( { ...formData, description: value } )
-						}
-					/>
-					<ToggleControl
-						label={ __( 'Show Field in Custom Fields Form' ) }
-						checked={ formData.visible ?? false }
-						onChange={ ( value ) =>
-							setFormData( { ...formData, visible: value } )
-						}
-					/>
+					<Grid columns={ 2 } alignment="bottom">
+						<TextControl
+							label={ __( 'Description (optional)' ) }
+							value={ formData.description }
+							onChange={ ( value ) =>
+								setFormData( {
+									...formData,
+									description: value,
+								} )
+							}
+						/>
+						<ToggleControl
+							label={ __( 'Show Field in Custom Fields Form' ) }
+							checked={ formData.visible ?? false }
+							onChange={ ( value ) =>
+								setFormData( { ...formData, visible: value } )
+							}
+						/>
+					</Grid>
 				</CardBody>
 			</Card>
 		</>
