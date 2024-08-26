@@ -37,7 +37,8 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 	return ( props ) => {
 		const { getBlockType } = useSelect( blocksStore );
 		const { lockPostSaving, unlockPostSaving } = useDispatch( editorStore );
-		const [ isAddNewOpen, setAddNewOpen ] = useState( false );
+		const [ editingBoundAttribute, setEditingBoundAttribute ] =
+			useState( null );
 
 		const [ meta, setMeta ] = useEntityProp(
 			'postType',
@@ -64,33 +65,25 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		);
 
 		const setBinding = useCallback(
-			( attribute ) => {
-				return ( field ) => {
-					if ( field === 'create_new' ) {
-						setAddNewOpen( true );
-						return;
-					}
-
-					const newAttributes = {
-						metadata: {
-							...( attributes.metadata ?? {} ),
-							[ window.BINDINGS_KEY ]: {
-								...( attributes.metadata?.[
-									window.BINDINGS_KEY
-								] ?? {} ),
-								[ attribute ]: field,
-							},
+			( attribute, field ) => {
+				const newAttributes = {
+					metadata: {
+						...( attributes.metadata ?? {} ),
+						[ window.BINDINGS_KEY ]: {
+							...( attributes.metadata?.[ window.BINDINGS_KEY ] ??
+								{} ),
+							[ attribute ]: field,
 						},
-					};
-
-					if ( ! field.trim() ) {
-						delete newAttributes.metadata[ window.BINDINGS_KEY ][
-							attribute
-						];
-					}
-
-					setAttributes( newAttributes );
+					},
 				};
+
+				if ( ! field.trim() ) {
+					delete newAttributes.metadata[ window.BINDINGS_KEY ][
+						attribute
+					];
+				}
+
+				setAttributes( newAttributes );
 			},
 			[ attributes.metadata, setAttributes ]
 		);
@@ -205,7 +198,16 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 									label={ attributeKey }
 									help={ validations[ attributeKey ] }
 									value={ getBinding( attributeKey ) }
-									onChange={ setBinding( attributeKey ) }
+									onChange={ ( value ) => {
+										if ( 'create_new' === value ) {
+											setEditingBoundAttribute(
+												attributeKey
+											);
+											return;
+										}
+
+										setBinding( attributeKey, value );
+									} }
 									options={ [
 										{
 											label: 'None',
@@ -226,15 +228,20 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 							);
 						} ) }
 
-						{ isAddNewOpen && (
+						{ editingBoundAttribute && (
 							<Modal
 								title={ __( 'Add New Field' ) }
-								onRequestClose={ () => setAddNewOpen( false ) }
+								onRequestClose={ () =>
+									setEditingBoundAttribute( null )
+								}
 							>
 								<AddFieldForm
 									onSave={ ( formData ) => {
-										setAddNewOpen( false );
-										setBinding( formData.slug );
+										setBinding(
+											editingBoundAttribute,
+											formData.slug
+										);
+										setEditingBoundAttribute( null );
 									} }
 									defaultFormData={ {
 										label: '',
