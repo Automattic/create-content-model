@@ -65,43 +65,42 @@ class Content_Model_Data_Hydrator {
 
 		$content_model_block = new Content_Model_Block( $block );
 
-		$bindings = $content_model_block->get_bindings();
-
-		foreach ( $bindings as $attribute => $binding ) {
-			$field = $binding['args']['key'];
-
-			if ( 'post_content' === $field ) {
-				$content = get_the_content();
-			} else {
-				$content = get_post_meta( get_the_ID(), $field, true );
-			}
-
-			// If can't find the corresponding content, do not try to inject it.
-			if ( ! $content ) {
-				continue;
-			}
-
-			$block_attribute = $content_model_block->get_attribute_metadata( $attribute );
-
-			if ( ! isset( $block_attribute['source'] ) ) {
-				$block['attrs'][ $attribute ] = $content;
-				continue;
-			}
-
-			if ( $this->strip_attribute_metadata && 'rich-text' === $block_attribute['source'] ) {
-				$content = implode(
-					'',
-					array_map( fn( $block ) => render_block( $block ), parse_blocks( $content ) )
-				);
-			}
-
-			$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
-
-			$block['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
-			$block['innerContent'] = array( $block['innerHTML'] );
+		if ( 'core/group' !== $content_model_block->get_block_name() ) {
+			return $block;
 		}
 
-		unset( $block['attrs']['metadata']['bindings'] );
+		$binding = $content_model_block->get_binding( 'content' );
+
+		if ( ! $binding ) {
+			return $block;
+		}
+
+		$field = $binding['args']['key'];
+
+		if ( 'post_content' === $field ) {
+			$content = get_the_content();
+		} else {
+			$content = get_post_meta( get_the_ID(), $field, true );
+		}
+
+		// If can't find the content, do not try to inject it.
+		if ( ! $content ) {
+			return $block;
+		}
+
+		if ( $this->strip_attribute_metadata ) {
+			$content = implode(
+				'',
+				array_map( fn( $block ) => render_block( $block ), parse_blocks( $content ) )
+			);
+		}
+
+		$html_handler = new Content_Model_Html_Manipulator( $block['innerHTML'] );
+
+		$block_attribute = $content_model_block->get_attribute_metadata( 'content' );
+
+		$block['innerHTML']    = $html_handler->replace_attribute( $block_attribute, $content );
+		$block['innerContent'] = array( $block['innerHTML'] );
 
 		return $block;
 	}
