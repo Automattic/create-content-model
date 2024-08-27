@@ -29,13 +29,6 @@ const CreateContentModelContentLocking = function () {
 		}
 	}, [ blocks, setBlockEditingMode, currentBlock ] );
 
-	useEffect( () => {
-		console.log( currentBlock );
-		// if ( currentBlock ) {
-		// 	setBlockEditingMode( currentBlock.clientId, '' );
-		// }
-	}, [ currentBlock?.clientId, setBlockEditingMode ] );
-
 	return;
 };
 const SUPPORTED_BLOCKS = [
@@ -47,7 +40,6 @@ const SUPPORTED_BLOCKS = [
 ];
 
 const parseBlocks = ( blocks, setEditMode, forceEnabled = false ) => {
-	console.log( 'parse blocks' );
 	blocks.forEach( ( block ) => {
 		if (
 			block.innerBlocks.length > 0 &&
@@ -65,7 +57,6 @@ const parseBlocks = ( blocks, setEditMode, forceEnabled = false ) => {
 			// First check this container has a bound group block is inside.
 			const boundGroup = findBoundGroup( block.innerBlocks );
 
-			console.log( boundGroup );
 			if ( ! boundGroup ) {
 				// Then, lock the block.
 				dispatch( 'core/block-editor' ).updateBlock( block.clientId, {
