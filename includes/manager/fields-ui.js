@@ -15,7 +15,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { seen, unseen } from '@wordpress/icons';
+import { seen, unseen, blockDefault } from '@wordpress/icons';
 
 import EditFieldForm from './_edit-field';
 
@@ -83,11 +83,18 @@ const CreateContentModelPageSettings = function () {
 										<Icon icon={ seen } />
 									</FlexItem>
 								) }
-								{ ! field.visible && (
-									<FlexItem>
-										<Icon icon={ unseen } />
-									</FlexItem>
-								) }
+								{ ! field.visible &&
+									field.type.indexOf( 'core' ) > -1 && (
+										<FlexItem>
+											<Icon icon={ blockDefault } />
+										</FlexItem>
+									) }
+								{ ! field.visible &&
+									field.type.indexOf( 'core' ) < 0 && (
+										<FlexItem>
+											<Icon icon={ unseen } />
+										</FlexItem>
+									) }
 							</Flex>
 						</Item>
 					) ) }
