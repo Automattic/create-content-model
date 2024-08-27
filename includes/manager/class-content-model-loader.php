@@ -122,6 +122,27 @@ class Content_Model_Loader {
 				),
 			)
 		);
+
+		$cpt_fields = [
+			'plural_label' => [
+				'type'         => 'string',
+				'single'       => true,
+				'show_in_rest' => true,
+			],
+			'description'  => [
+				'type'         => 'string',
+				'single'       => true,
+				'show_in_rest' => true,
+			],
+		];
+
+		foreach ( $cpt_fields as $field_name => $field_args ) {
+			register_post_meta(
+				Content_Model_Manager::POST_TYPE_NAME,
+				$field_name,
+				$field_args
+			);
+		}
 	}
 
 	/**

@@ -48,6 +48,13 @@ final class Content_Model {
 	public $fields = array();
 
 	/**
+	 * The ID of the content model post.
+	 *
+	 * @var int
+	 */
+	private $post_id;
+
+	/**
 	 * Initializes the Content_Model instance with the given WP_Post object.
 	 *
 	 * @param WP_Post $content_model_post The WP_Post object representing the content model.
@@ -57,6 +64,7 @@ final class Content_Model {
 		$this->slug     = $content_model_post->post_name;
 		$this->title    = $content_model_post->post_title;
 		$this->template = parse_blocks( $content_model_post->post_content );
+		$this->post_id  = $content_model_post->ID;
 
 		$this->register_post_type();
 
@@ -91,7 +99,10 @@ final class Content_Model {
 		register_post_type(
 			$this->slug,
 			array(
-				'label'        => $this->title,
+				'labels'       => array(
+					'name'          => get_post_meta( $this->post_id, 'plural_label', true ) ?: $this->title . 's',
+					'singular_name' => $this->title,
+				),
 				'public'       => true,
 				'show_in_menu' => true,
 				'show_in_rest' => true,
@@ -100,6 +111,7 @@ final class Content_Model {
 			)
 		);
 	}
+
 
 	/**
 	 * Recursively inflates (i.e., maps the block into Content_Model_Block) the blocks.
@@ -148,7 +160,6 @@ final class Content_Model {
 						'default'      => $field['default'] ?? $field['slug'],
 					)
 				);
-
 			}
 		}
 
