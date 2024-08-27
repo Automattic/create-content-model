@@ -4,10 +4,15 @@ import { __ } from '@wordpress/i18n';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
 import {
-	TextControl,
 	PanelBody,
-	SelectControl,
+	Button,
+	ButtonGroup,
 	Modal,
+	__experimentalItemGroup as ItemGroup,
+	__experimentalItem as Item,
+	Flex,
+	FlexBlock,
+	FlexItem,
 } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
@@ -65,28 +70,74 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		);
 
 		const setBinding = useCallback(
-			( attribute, field ) => {
+			( field ) => {
 				const newAttributes = {
 					metadata: {
 						...( attributes.metadata ?? {} ),
 						[ window.BINDINGS_KEY ]: {
 							...( attributes.metadata?.[ window.BINDINGS_KEY ] ??
 								{} ),
-							[ attribute ]: field,
+							[ 'meta_key' ]: field.slug,
 						},
+						[ window.BLOCK_VARIATION_NAME_ATTR ]: field.label,
 					},
 				};
 
-				if ( ! field.trim() ) {
-					delete newAttributes.metadata[ window.BINDINGS_KEY ][
-						attribute
+				if (
+					! newAttributes.metadata[
+						window.BLOCK_VARIATION_NAME_ATTR
+					].trim()
+				) {
+					delete newAttributes.metadata[
+						window.BLOCK_VARIATION_NAME_ATTR
 					];
+				}
+
+				supportedAttributes.forEach( ( attribute ) => {
+					if (
+						! newAttributes.metadata[ window.BINDINGS_KEY ][
+							attribute
+						]
+					) {
+						const slug =
+							'content' === attribute
+								? field.slug
+								: `${ field.slug }__${ attribute }`;
+						newAttributes.metadata[ window.BINDINGS_KEY ][
+							attribute
+						] = slug;
+					}
+				} );
+
+				if ( ! field.slug.trim() ) {
+					delete newAttributes.metadata[ window.BINDINGS_KEY ][
+						'meta_key'
+					];
+
+					supportedAttributes.forEach( ( attribute ) => {
+						delete newAttributes.metadata[ window.BINDINGS_KEY ][
+							attribute
+						];
+					} );
 				}
 
 				setAttributes( newAttributes );
 			},
 			[ attributes.metadata, setAttributes ]
 		);
+
+		const removeBindings = useCallback( () => {
+			const newAttributes = {
+				metadata: {
+					...( attributes.metadata ?? {} ),
+				},
+			};
+
+			delete newAttributes.metadata[ window.BINDINGS_KEY ];
+			delete newAttributes.metadata[ window.BLOCK_VARIATION_NAME_ATTR ];
+
+			setAttributes( newAttributes );
+		}, [ attributes.metadata, setAttributes ] );
 
 		const selectedBlockType = getBlockType( name );
 
@@ -158,94 +209,76 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			<>
 				<InspectorControls>
 					<PanelBody title="Attribute Bindings" initialOpen>
-						<TextControl
-							label="Block variation name"
-							required
-							value={
-								attributes.metadata?.[
-									window.BLOCK_VARIATION_NAME_ATTR
-								]
-							}
-							help={
-								validations[ window.BLOCK_VARIATION_NAME_ATTR ]
-							}
-							onChange={ ( newName ) => {
-								const newAttributes = {
-									metadata: {
-										...( attributes.metadata ?? {} ),
-										[ window.BLOCK_VARIATION_NAME_ATTR ]:
-											newName,
-									},
-								};
-
-								if (
-									! newAttributes.metadata[
+						{ attributes?.metadata?.[
+							window.BLOCK_VARIATION_NAME_ATTR
+						] && (
+							<ItemGroup isBordered isSeparated>
+								{ supportedAttributes.map( ( attribute ) => (
+									<Item key={ attribute } size="small">
+										<Flex>
+											<FlexBlock>{ attribute }</FlexBlock>
+											<FlexItem>
+												<span>
+													<code>
+														{
+															attributes
+																?.metadata?.[
+																window
+																	.BINDINGS_KEY
+															][ attribute ]
+														}
+													</code>
+												</span>
+											</FlexItem>
+										</Flex>
+									</Item>
+								) ) }
+							</ItemGroup>
+						) }
+						<ButtonGroup>
+							<Button
+								variant="secondary"
+								onClick={ () =>
+									setEditingBoundAttribute(
 										window.BLOCK_VARIATION_NAME_ATTR
-									].trim()
-								) {
-									delete newAttributes.metadata[
-										window.BLOCK_VARIATION_NAME_ATTR
-									];
+									)
 								}
-
-								setAttributes( newAttributes );
-							} }
-						/>
-						{ supportedAttributes.map( ( attributeKey ) => {
-							return (
-								<SelectControl
-									key={ attributeKey }
-									label={ attributeKey }
-									help={ validations[ attributeKey ] }
-									value={ getBinding( attributeKey ) }
-									onChange={ ( value ) => {
-										if ( 'create_new' === value ) {
-											setEditingBoundAttribute(
-												attributeKey
-											);
-											return;
-										}
-
-										setBinding( attributeKey, value );
-									} }
-									options={ [
-										{
-											label: 'None',
-											value: '',
-										},
-										...fields.map( ( field ) => {
-											return {
-												label: field.label,
-												value: field.slug,
-											};
-										} ),
-										{
-											label: '+ Create New',
-											value: 'create_new',
-										},
-									] }
-								/>
-							);
-						} ) }
-
+							>
+								{ __( 'Manage Binding' ) }
+							</Button>
+							{ attributes?.metadata?.[
+								window.BLOCK_VARIATION_NAME_ATTR
+							] && (
+								<Button
+									isDestructive
+									onClick={ removeBindings }
+								>
+									{ __( 'Remove Binding' ) }
+								</Button>
+							) }
+						</ButtonGroup>
 						{ editingBoundAttribute && (
 							<Modal
 								title={ __( 'Add New Field' ) }
+								size="small"
 								onRequestClose={ () =>
 									setEditingBoundAttribute( null )
 								}
 							>
 								<AddFieldForm
 									onSave={ ( formData ) => {
-										setBinding(
-											editingBoundAttribute,
-											formData.slug
-										);
+										setBinding( formData );
 										setEditingBoundAttribute( null );
 									} }
 									defaultFormData={ {
-										label: '',
-										slug: '',
+										label:
+											attributes?.metadata?.[
+												window.BLOCK_VARIATION_NAME_ATTR
+											] ?? '',
+										slug:
+											attributes.metadata?.[
+												window.BINDINGS_KEY
+											]?.[ 'meta_key' ] ?? '',
 										description: '',
 										type: 'text',
 										visible: false,

@@ -15,9 +15,8 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { seen, unseen, plus } from '@wordpress/icons';
+import { seen, unseen } from '@wordpress/icons';
 
-import AddFieldForm from './_add-field';
 import EditFieldForm from './_edit-field';
 
 /**
@@ -26,7 +25,6 @@ import EditFieldForm from './_edit-field';
  */
 const CreateContentModelPageSettings = function () {
 	const [ isFieldsOpen, setFieldsOpen ] = useState( false );
-	const [ isAddNewOpen, setAddNewOpen ] = useState( false );
 
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
@@ -94,25 +92,6 @@ const CreateContentModelPageSettings = function () {
 						</Item>
 					) ) }
 				</ItemGroup>
-				<div
-					style={ {
-						textAlign: 'right',
-					} }
-				>
-					<Button
-						icon={ plus }
-						onClick={ () => setAddNewOpen( true ) }
-						label={ __( 'Add Field' ) }
-						style={ {
-							background: '#1e1e1e',
-							borderRadius: '2px',
-							color: '#fff',
-							height: '24px',
-							minWidth: '24px',
-							borderRadius: '0',
-						} }
-					/>
-				</div>
 
 				<Button
 					variant="secondary"
@@ -128,18 +107,6 @@ const CreateContentModelPageSettings = function () {
 						onRequestClose={ () => setFieldsOpen( false ) }
 					>
 						<FieldsList />
-					</Modal>
-				) }
-				{ isAddNewOpen && (
-					<Modal
-						title={ __( 'Add New Field' ) }
-						onRequestClose={ () => setAddNewOpen( false ) }
-					>
-						<AddFieldForm
-							onSave={ () => {
-								setAddNewOpen( false );
-							} }
-						/>
 					</Modal>
 				) }
 			</PluginDocumentSettingPanel>

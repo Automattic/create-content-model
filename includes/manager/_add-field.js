@@ -1,10 +1,4 @@
-import {
-	Button,
-	TextControl,
-	SelectControl,
-	ToggleControl,
-	__experimentalGrid as Grid,
-} from '@wordpress/components';
+import { Button, TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState, useEffect } from '@wordpress/element';
@@ -26,7 +20,6 @@ const AddFieldForm = ( {
 		uuid: window.crypto.randomUUID(),
 	},
 	onSave = () => {},
-	typeIsDisabled = false,
 } ) => {
 	const [ formData, setFormData ] = useState( defaultFormData );
 	const [ isValid, setIsValid ] = useState( false );
@@ -39,7 +32,12 @@ const AddFieldForm = ( {
 
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
-	const saveForm = () => {
+	const saveForm = ( e ) => {
+		e.preventDefault();
+		if ( fields.find( ( field ) => field.slug === formData.slug ) ) {
+			onSave( formData );
+			return;
+		}
 		setMeta( {
 			fields: JSON.stringify( [ ...fields, formData ] ),
 		} );
@@ -47,11 +45,7 @@ const AddFieldForm = ( {
 	};
 
 	useEffect( () => {
-		const hasValidationErrors = [ 'label', 'slug', 'type' ].some(
-			( field ) => ! formData[ field ]
-		);
-
-		if ( hasValidationErrors ) {
+		if ( formData.slug === '' ) {
 			setIsValid( false );
 		} else {
 			setIsValid( true );
@@ -60,9 +54,9 @@ const AddFieldForm = ( {
 
 	return (
 		<>
-			<Grid columns={ 3 }>
+			<form onSubmit={ saveForm }>
 				<TextControl
-					label={ __( 'Name' ) }
+					label={ __( 'Label' ) }
 					value={ formData.label }
 					onChange={ ( value ) =>
 						setFormData( { ...formData, label: value } )
@@ -75,47 +69,15 @@ const AddFieldForm = ( {
 						setFormData( { ...formData, slug: value } )
 					}
 				/>
-				<SelectControl
-					label={ __( 'Type' ) }
-					value={ formData.type }
-					disabled={ typeIsDisabled }
-					options={ [
-						{ label: __( 'Text' ), value: 'text' },
-						{ label: __( 'Textarea' ), value: 'textarea' },
-						{ label: __( 'URL' ), value: 'url' },
-						{ label: __( 'Image' ), value: 'image' },
-						{ label: __( 'Number' ), value: 'number' },
-					] }
-					onChange={ ( value ) =>
-						setFormData( { ...formData, type: value } )
-					}
-				/>
-			</Grid>
 
-			<Grid columns={ 2 } alignment="bottom">
-				<TextControl
-					label={ __( 'Description (optional)' ) }
-					value={ formData.description }
-					onChange={ ( value ) =>
-						setFormData( { ...formData, description: value } )
-					}
-				/>
-				<ToggleControl
-					label={ __( 'Show Field in Custom Fields Form' ) }
-					checked={ formData.visible ?? false }
-					onChange={ ( value ) =>
-						setFormData( { ...formData, visible: value } )
-					}
-				/>
-			</Grid>
-
-			<Button
-				variant="secondary"
-				onClick={ saveForm }
-				disabled={ ! isValid }
-			>
-				{ __( 'Save Field' ) }
-			</Button>
+				<Button
+					variant="secondary"
+					type="submit"
+					disabled={ ! isValid }
+				>
+					{ __( 'Save Field' ) }
+				</Button>
+			</form>
 		</>
 	);
 };
