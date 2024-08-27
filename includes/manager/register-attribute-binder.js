@@ -19,7 +19,7 @@ import { store as editorStore } from '@wordpress/editor';
 import { store as blocksStore } from '@wordpress/blocks';
 import { useEntityProp } from '@wordpress/core-data';
 
-import AddFieldForm from './_add-field';
+import ManageBindings from './_manage-bindings';
 
 // https://github.com/WordPress/WordPress/blob/master/wp-includes/class-wp-block.php#L246-L251
 const SUPPORTED_BLOCK_ATTRIBUTES = {
@@ -259,13 +259,13 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 						</ButtonGroup>
 						{ editingBoundAttribute && (
 							<Modal
-								title={ __( 'Add New Field' ) }
+								title={ __( 'Manage Bindings' ) }
 								size="small"
 								onRequestClose={ () =>
 									setEditingBoundAttribute( null )
 								}
 							>
-								<AddFieldForm
+								<ManageBindings
 									onSave={ ( formData ) => {
 										setBinding( formData );
 										setEditingBoundAttribute( null );

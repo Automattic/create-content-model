@@ -10,7 +10,7 @@ import { useState, useEffect } from '@wordpress/element';
  * @param {Object} props.defaultFormData (to be updated with the field data for editing)
  * @returns EditFieldForm
  */
-const AddFieldForm = ( {
+const ManageBindings = ( {
 	defaultFormData = {
 		label: '',
 		slug: '',
@@ -82,4 +82,4 @@ const AddFieldForm = ( {
 	);
 };
 
-export default AddFieldForm;
+export default ManageBindings;
