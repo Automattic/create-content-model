@@ -137,6 +137,9 @@ final class Content_Model {
 
 		if ( ! empty( $this->fields ) ) {
 			foreach ( $this->fields as $field ) {
+				if ( strpos( $field['type'], 'core' ) !== false ) {
+					continue;
+				}
 				register_post_meta(
 					$this->slug,
 					$field['slug'],
