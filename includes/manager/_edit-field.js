@@ -100,10 +100,7 @@ const EditFieldForm = ( {
 						<SelectControl
 							label={ __( 'Type' ) }
 							value={ formData.type }
-							disabled={
-								formData.type === 'core/image' ||
-								formData.type === 'core/button'
-							}
+							disabled={ formData.type.indexOf( 'core/' ) === 0 }
 							options={ [
 								{ label: __( 'Text' ), value: 'text' },
 								{ label: __( 'Textarea' ), value: 'textarea' },
