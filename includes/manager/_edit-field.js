@@ -100,12 +100,24 @@ const EditFieldForm = ( {
 						<SelectControl
 							label={ __( 'Type' ) }
 							value={ formData.type }
+							disabled={
+								formData.type === 'core/image' ||
+								formData.type === 'core/button'
+							}
 							options={ [
 								{ label: __( 'Text' ), value: 'text' },
 								{ label: __( 'Textarea' ), value: 'textarea' },
 								{ label: __( 'URL' ), value: 'url' },
 								{ label: __( 'Image' ), value: 'image' },
 								{ label: __( 'Number' ), value: 'number' },
+								{
+									label: __( 'Image Block' ),
+									value: 'core/image',
+								},
+								{
+									label: __( 'Button Block' ),
+									value: 'core/button',
+								},
 							] }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, type: value } )
@@ -123,9 +135,14 @@ const EditFieldForm = ( {
 								} )
 							}
 						/>
+
 						<ToggleControl
 							label={ __( 'Show Field in Custom Fields Form' ) }
 							checked={ formData.visible ?? false }
+							disabled={
+								formData.type === 'core/image' ||
+								formData.type === 'core/button'
+							}
 							onChange={ ( value ) =>
 								setFormData( { ...formData, visible: value } )
 							}

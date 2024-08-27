@@ -154,7 +154,7 @@ const FieldsList = () => {
 
 	return (
 		<>
-			<VStack spacing={ 16 }>
+			<VStack spacing={ 2 }>
 				{ fields.map( ( field ) => (
 					<EditFieldForm
 						key={ field.uuid }
