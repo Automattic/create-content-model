@@ -33,6 +33,15 @@ const ErrorMessage = ( { children } ) => {
 	);
 };
 
+const getBindingObject = ( { key } ) => {
+	return {
+		source: key === 'post_content' ? 'core/post-content' : 'core/post-meta',
+		args: {
+			key: key.trim(),
+		},
+	};
+};
+
 const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 	return ( props ) => {
 		const { getBlockType } = useSelect( blocksStore );
@@ -73,6 +82,10 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 							...( attributes.metadata?.[ window.BINDINGS_KEY ] ??
 								{} ),
 							[ attribute ]: field,
+						},
+						bindings: {
+							...( attributes.metadata?.bindings ?? {} ),
+							[ attribute ]: getBindingObject( { key: field } ),
 						},
 					},
 				};
