@@ -280,11 +280,14 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 												window.BINDINGS_KEY
 											]?.[ 'meta_key' ] ?? '',
 										description: '',
-										type: supportedAttributes.includes(
-											'content'
-										)
-											? 'text'
-											: selectedBlockType?.name,
+										type:
+											supportedAttributes.includes(
+												'content'
+											) &&
+											'core/group' !==
+												selectedBlockType?.name
+												? 'text'
+												: selectedBlockType?.name,
 										visible: false,
 										uuid: window.crypto.randomUUID(),
 									} }

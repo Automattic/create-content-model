@@ -118,6 +118,10 @@ const EditFieldForm = ( {
 									label: __( 'Button Block' ),
 									value: 'core/button',
 								},
+								{
+									label: __( 'Group Block' ),
+									value: 'core/group',
+								},
 							] }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, type: value } )
@@ -139,10 +143,7 @@ const EditFieldForm = ( {
 						<ToggleControl
 							label={ __( 'Show Field in Custom Fields Form' ) }
 							checked={ formData.visible ?? false }
-							disabled={
-								formData.type === 'core/image' ||
-								formData.type === 'core/button'
-							}
+							disabled={ formData.type.indexOf( 'core/' ) === 0 }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, visible: value } )
 							}
