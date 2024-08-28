@@ -188,7 +188,11 @@ const BlockAttributes = ( { slug, type } ) => {
 						<FlexBlock>{ attribute }</FlexBlock>
 						<FlexItem>
 							<span>
-								<code>{ `${ slug }__${ attribute }` }</code>
+								{ 'content' === attribute ? (
+									<code>{ `${ slug }` }</code>
+								) : (
+									<code>{ `${ slug }__${ attribute }` }</code>
+								) }
 							</span>
 						</FlexItem>
 					</Flex>
