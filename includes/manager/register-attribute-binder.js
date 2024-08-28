@@ -142,7 +142,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		);
 
 		// Check if any parent blocks have bindings.
-		const checkParents = useMemo( () => {
+		const parentHasBindings = useMemo( () => {
 			return (
 				getBlocksByClientId( blockParentsByBlockName ).filter(
 					( block ) =>
@@ -215,7 +215,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			}
 		}, [ lockPostSaving, unlockPostSaving, validations ] );
 
-		if ( ! supportedAttributes || checkParents ) {
+		if ( ! supportedAttributes || parentHasBindings ) {
 			return <BlockEdit { ...props } />;
 		}
 
