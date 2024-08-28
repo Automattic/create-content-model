@@ -322,8 +322,12 @@ final class Content_Model_Block {
 			}
 		}
 
-		if ( isset( $attribute_metadata['default'] ) ) {
+		if ( ! empty( $attribute_metadata['default'] ) ) {
 			return $attribute_metadata['default'];
+		}
+
+		if ( in_array( $this->block_name, array( 'core/heading', 'core/paragraph' ), true ) ) {
+			return $this->block_variation_name;
 		}
 
 		$attribute_type = $this->get_attribute_type( $attribute_name );
