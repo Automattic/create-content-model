@@ -56,14 +56,13 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 		const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
-		// Add a uuid to each field for React to track.
-		fields.forEach( ( field ) => {
-			if ( ! field.uuid ) {
-				field.uuid = window.crypto.randomUUID();
-			}
-		} );
-
 		const { attributes, setAttributes, name } = props;
+
+		const boundField = fields.find(
+			( field ) =>
+				field.slug ===
+				attributes.metadata?.[ window.BINDINGS_KEY ]?.[ 'meta_key' ]
+		);
 
 		const getBinding = useCallback(
 			( attribute ) =>
@@ -270,7 +269,13 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 											attributes?.metadata?.[
 												window.BLOCK_VARIATION_NAME_ATTR
 											] ?? '',
-										slug: attributes.metadata?.slug,
+										slug:
+											attributes.metadata?.[
+												window.BINDINGS_KEY
+											][ 'meta_key' ] ?? '',
+										uuid:
+											boundField?.uuid ??
+											window.crypto.randomUUID(),
 										description: '',
 										type:
 											supportedAttributes.includes(
@@ -281,7 +286,6 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 												? 'text'
 												: selectedBlockType?.name,
 										visible: false,
-										uuid: window.crypto.randomUUID(),
 									} }
 									typeIsDisabled={ true }
 								/>
