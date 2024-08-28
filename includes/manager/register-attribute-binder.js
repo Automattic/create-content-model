@@ -5,9 +5,9 @@ import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
 import {
 	PanelBody,
+	PanelRow,
 	Button,
 	ButtonGroup,
-	Modal,
 	__experimentalItemGroup as ItemGroup,
 	__experimentalItem as Item,
 	Flex,
@@ -94,19 +94,12 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 				}
 
 				supportedAttributes.forEach( ( attribute ) => {
-					if (
-						! newAttributes.metadata[ window.BINDINGS_KEY ][
-							attribute
-						]
-					) {
-						const slug =
-							'content' === attribute
-								? field.slug
-								: `${ field.slug }__${ attribute }`;
-						newAttributes.metadata[ window.BINDINGS_KEY ][
-							attribute
-						] = slug;
-					}
+					const slug =
+						'content' === attribute
+							? field.slug
+							: `${ field.slug }__${ attribute }`;
+					newAttributes.metadata[ window.BINDINGS_KEY ][ attribute ] =
+						slug;
 				} );
 
 				if ( ! field.slug.trim() ) {
@@ -209,62 +202,70 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			<>
 				<InspectorControls>
 					<PanelBody title="Attribute Bindings" initialOpen>
-						{ attributes?.metadata?.[
-							window.BLOCK_VARIATION_NAME_ATTR
-						] && (
-							<ItemGroup isBordered isSeparated>
-								{ supportedAttributes.map( ( attribute ) => (
-									<Item key={ attribute } size="small">
-										<Flex>
-											<FlexBlock>{ attribute }</FlexBlock>
-											<FlexItem>
-												<span>
-													<code>
-														{
-															attributes
-																?.metadata?.[
-																window
-																	.BINDINGS_KEY
-															][ attribute ]
-														}
-													</code>
-												</span>
-											</FlexItem>
-										</Flex>
-									</Item>
-								) ) }
-							</ItemGroup>
-						) }
-						<ButtonGroup>
-							<Button
-								variant="secondary"
-								onClick={ () =>
-									setEditingBoundAttribute(
-										window.BLOCK_VARIATION_NAME_ATTR
-									)
-								}
-							>
-								{ __( 'Manage Binding' ) }
-							</Button>
-							{ attributes?.metadata?.[
+						{ ! editingBoundAttribute &&
+							attributes?.metadata?.[
 								window.BLOCK_VARIATION_NAME_ATTR
 							] && (
-								<Button
-									isDestructive
-									onClick={ removeBindings }
-								>
-									{ __( 'Remove Binding' ) }
-								</Button>
+								<ItemGroup isBordered isSeparated>
+									{ supportedAttributes.map(
+										( attribute ) => (
+											<Item
+												key={ attribute }
+												size="small"
+											>
+												<Flex>
+													<FlexBlock>
+														{ attribute }
+													</FlexBlock>
+													<FlexItem>
+														<span>
+															<code>
+																{
+																	attributes
+																		?.metadata?.[
+																		window
+																			.BINDINGS_KEY
+																	][
+																		attribute
+																	]
+																}
+															</code>
+														</span>
+													</FlexItem>
+												</Flex>
+											</Item>
+										)
+									) }
+								</ItemGroup>
 							) }
-						</ButtonGroup>
+						{ ! editingBoundAttribute && (
+							<PanelRow>
+								<ButtonGroup>
+									<Button
+										variant="secondary"
+										onClick={ () =>
+											setEditingBoundAttribute(
+												window.BLOCK_VARIATION_NAME_ATTR
+											)
+										}
+									>
+										{ __( 'Manage Binding' ) }
+									</Button>
+									{ attributes?.metadata?.[
+										window.BLOCK_VARIATION_NAME_ATTR
+									] && (
+										<Button
+											isDestructive
+											onClick={ removeBindings }
+										>
+											{ __( 'Remove Binding' ) }
+										</Button>
+									) }
+								</ButtonGroup>
+							</PanelRow>
+						) }
 						{ editingBoundAttribute && (
-							<Modal
-								title={ __( 'Manage Bindings' ) }
-								size="small"
-								onRequestClose={ () =>
-									setEditingBoundAttribute( null )
-								}
-							>
+							<PanelRow>
 								<ManageBindings
 									onSave={ ( formData ) => {
 										setBinding( formData );
@@ -293,7 +294,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 									} }
 									typeIsDisabled={ true }
 								/>
-							</Modal>
+							</PanelRow>
 						) }
 					</PanelBody>
 				</InspectorControls>

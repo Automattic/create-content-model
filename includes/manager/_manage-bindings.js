@@ -23,6 +23,7 @@ const ManageBindings = ( {
 } ) => {
 	const [ formData, setFormData ] = useState( defaultFormData );
 	const [ isValid, setIsValid ] = useState( false );
+	const [ originalSlug, setOriginalSlug ] = useState( defaultFormData.slug );
 
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
@@ -34,13 +35,33 @@ const ManageBindings = ( {
 
 	const saveForm = ( e ) => {
 		e.preventDefault();
-		if ( fields.find( ( field ) => field.slug === formData.slug ) ) {
-			onSave( formData );
-			return;
+		let newFields = fields;
+
+		if ( originalSlug !== formData.slug ) {
+			// If the slug has been updated, remove the old slug.
+			newFields = newFields.filter(
+				( field ) => field.slug !== originalSlug
+			);
+			newFields.push( formData );
+			setMeta( {
+				fields: JSON.stringify( newFields ),
+			} );
+		} else if ( fields.find( ( field ) => field.slug === formData.slug ) ) {
+			// If the slug is the same and it exists, update the field.
+			newFields = newFields.map( ( field ) => {
+				if ( field.slug === formData.slug ) {
+					field = formData;
+				}
+				return field;
+			} );
+			setMeta( {
+				fields: JSON.stringify( newFields ),
+			} );
+		} else {
+			setMeta( {
+				fields: JSON.stringify( [ ...newFields, formData ] ),
+			} );
 		}
-		setMeta( {
-			fields: JSON.stringify( [ ...fields, formData ] ),
-		} );
 		onSave( formData );
 	};
 
@@ -56,14 +77,14 @@ const ManageBindings = ( {
 		<>
 			<form onSubmit={ saveForm }>
 				<TextControl
-					label={ __( 'Label' ) }
+					label={ __( 'Binding Name' ) }
 					value={ formData.label }
 					onChange={ ( value ) =>
 						setFormData( { ...formData, label: value } )
 					}
 				/>
 				<TextControl
-					label={ __( 'Key' ) }
+					label={ __( 'Binding Metakey' ) }
 					value={ formData.slug }
 					onChange={ ( value ) =>
 						setFormData( { ...formData, slug: value } )
