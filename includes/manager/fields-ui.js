@@ -40,7 +40,7 @@ const CreateContentModelPageSettings = function () {
 		'slug'
 	);
 
-	const [ title ] = useEntityProp(
+	const [ title, setTitle ] = useEntityProp(
 		'postType',
 		contentModelFields.postType,
 		'title'
@@ -70,7 +70,7 @@ const CreateContentModelPageSettings = function () {
 			key: 'singular_label',
 			label: __( 'Singular Label' ),
 			value: title,
-			disabled: true,
+			onChange: ( value ) => setTitle( value ),
 			help: __( 'Synced with the title of the post type.' ),
 		},
 		{
