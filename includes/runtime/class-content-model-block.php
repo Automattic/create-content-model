@@ -315,7 +315,11 @@ final class Content_Model_Block {
 		if ( isset( $attribute_metadata['source'] ) ) {
 			$html_manipulator = new Content_Model_Html_Manipulator( $this->raw_block['innerHTML'] );
 
-			return $html_manipulator->extract_attribute( $attribute_metadata );
+			$attribute_value = $html_manipulator->extract_attribute( $attribute_metadata );
+
+			if ( $attribute_value ) {
+				return $attribute_value;
+			}
 		}
 
 		if ( isset( $attribute_metadata['default'] ) ) {
