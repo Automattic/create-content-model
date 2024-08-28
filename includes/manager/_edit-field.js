@@ -180,7 +180,6 @@ const EditFieldForm = ( {
 
 const BlockAttributes = ( { slug, type } ) => {
 	const supportedAttributes = SUPPORTED_BLOCK_ATTRIBUTES[ type ] ?? [];
-	console.log( supportedAttributes, type );
 	return (
 		<ItemGroup isBordered isSeparated>
 			{ supportedAttributes.map( ( attribute ) => (
