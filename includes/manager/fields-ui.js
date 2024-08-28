@@ -2,6 +2,7 @@ import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import {
 	Button,
+	PanelRow,
 	Modal,
 	TextControl,
 	__experimentalVStack as VStack,
@@ -109,7 +110,7 @@ const CreateContentModelPageSettings = function () {
 			</PluginDocumentSettingPanel>
 			<PluginDocumentSettingPanel
 				name="create-content-model-field-settings"
-				title={ __( 'Custom Fields' ) }
+				title={ __( 'Post Meta' ) }
 				className="create-content-model-field-settings"
 			>
 				<ItemGroup isBordered isSeparated>
@@ -143,16 +144,18 @@ const CreateContentModelPageSettings = function () {
 					) ) }
 				</ItemGroup>
 
-				<Button
-					variant="secondary"
-					onClick={ () => setFieldsOpen( true ) }
-				>
-					{ __( 'Manage Fields' ) }
-				</Button>
+				<PanelRow>
+					<Button
+						variant="secondary"
+						onClick={ () => setFieldsOpen( true ) }
+					>
+						{ __( 'Manage Fields' ) }
+					</Button>
+				</PanelRow>
 
 				{ isFieldsOpen && (
 					<Modal
-						title={ __( 'Manage Fields' ) }
+						title={ __( 'Post Meta' ) }
 						size="large"
 						onRequestClose={ () => setFieldsOpen( false ) }
 					>
@@ -177,13 +180,6 @@ const FieldsList = () => {
 
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
-
-	// Add a uuid to each field for React to track.
-	fields.forEach( ( field ) => {
-		if ( ! field.uuid ) {
-			field.uuid = window.crypto.randomUUID();
-		}
-	} );
 
 	// Save the fields back to the meta.
 	const setFields = ( newFields ) => {

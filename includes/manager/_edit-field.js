@@ -7,12 +7,19 @@ import {
 	__experimentalGrid as Grid,
 	CardBody,
 	Card,
+	__experimentalItemGroup as ItemGroup,
+	__experimentalItem as Item,
+	Flex,
+	FlexBlock,
+	FlexItem,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
 import { trash, chevronUp, chevronDown } from '@wordpress/icons';
 import { useEffect } from '@wordpress/element';
+
+import SUPPORTED_BLOCK_ATTRIBUTES from './_supported-attributes';
 
 /**
  * Display a form to edit a field.
@@ -97,35 +104,6 @@ const EditFieldForm = ( {
 								setFormData( { ...formData, slug: value } )
 							}
 						/>
-						<SelectControl
-							label={ __( 'Type' ) }
-							value={ formData.type }
-							disabled={ formData.type.indexOf( 'core/' ) === 0 }
-							options={ [
-								{ label: __( 'Text' ), value: 'text' },
-								{ label: __( 'Textarea' ), value: 'textarea' },
-								{ label: __( 'URL' ), value: 'url' },
-								{ label: __( 'Image' ), value: 'image' },
-								{ label: __( 'Number' ), value: 'number' },
-								{
-									label: __( 'Image Block' ),
-									value: 'core/image',
-								},
-								{
-									label: __( 'Button Block' ),
-									value: 'core/button',
-								},
-								{
-									label: __( 'Group Block' ),
-									value: 'core/group',
-								},
-							] }
-							onChange={ ( value ) =>
-								setFormData( { ...formData, type: value } )
-							}
-						/>
-					</Grid>
-					<Grid columns={ 2 } alignment="bottom">
 						<TextControl
 							label={ __( 'Description (optional)' ) }
 							value={ formData.description }
@@ -136,19 +114,88 @@ const EditFieldForm = ( {
 								} )
 							}
 						/>
-
-						<ToggleControl
-							label={ __( 'Show Field in Custom Fields Form' ) }
-							checked={ formData.visible ?? false }
-							disabled={ formData.type.indexOf( 'core/' ) === 0 }
-							onChange={ ( value ) =>
-								setFormData( { ...formData, visible: value } )
-							}
-						/>
 					</Grid>
+					{ formData.type.indexOf( 'core/' ) === -1 && (
+						<Grid columns={ 2 } alignment="bottom">
+							<SelectControl
+								label={ __( 'Type' ) }
+								value={ formData.type }
+								disabled={
+									formData.type.indexOf( 'core/' ) === 0
+								}
+								options={ [
+									{ label: __( 'Text' ), value: 'text' },
+									{
+										label: __( 'Textarea' ),
+										value: 'textarea',
+									},
+									{ label: __( 'URL' ), value: 'url' },
+									{ label: __( 'Image' ), value: 'image' },
+									{ label: __( 'Number' ), value: 'number' },
+									{
+										label: __( 'Image Block' ),
+										value: 'core/image',
+									},
+									{
+										label: __( 'Button Block' ),
+										value: 'core/button',
+									},
+									{
+										label: __( 'Group Block' ),
+										value: 'core/group',
+									},
+								] }
+								onChange={ ( value ) =>
+									setFormData( { ...formData, type: value } )
+								}
+							/>
+							<ToggleControl
+								label={ __(
+									'Show Field in Custom Fields Form'
+								) }
+								checked={ formData.visible ?? false }
+								disabled={
+									formData.type.indexOf( 'core/' ) === 0
+								}
+								onChange={ ( value ) =>
+									setFormData( {
+										...formData,
+										visible: value,
+									} )
+								}
+							/>
+						</Grid>
+					) }
+					{ formData.type.indexOf( 'core/' ) === 0 && (
+						<BlockAttributes
+							slug={ formData.slug }
+							type={ formData.type }
+						/>
+					) }
 				</CardBody>
 			</Card>
 		</>
+	);
+};
+
+const BlockAttributes = ( { slug, type } ) => {
+	const supportedAttributes = SUPPORTED_BLOCK_ATTRIBUTES[ type ] ?? [];
+	console.log( supportedAttributes, type );
+	return (
+		<ItemGroup isBordered isSeparated>
+			{ supportedAttributes.map( ( attribute ) => (
+				<Item key={ attribute }>
+					<Flex>
+						<FlexBlock>{ attribute }</FlexBlock>
+						<FlexItem>
+							<span>
+								<code>{ `${ slug }__${ attribute }` }</code>
+							</span>
+						</FlexItem>
+					</Flex>
+				</Item>
+			) ) }
+		</ItemGroup>
 	);
 };
 
