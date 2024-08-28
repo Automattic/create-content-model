@@ -114,7 +114,7 @@ const CreateContentModelPageSettings = function () {
 			>
 				<ItemGroup isBordered isSeparated>
 					{ fields.map( ( field ) => (
-						<Item key={ field.uuid } size="small">
+						<Item key={ field.uuid }>
 							<Flex>
 								<FlexBlock>{ field.label }</FlexBlock>
 								<FlexItem>

@@ -41,6 +41,8 @@ const ErrorMessage = ( { children } ) => {
 const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 	return ( props ) => {
 		const { getBlockType } = useSelect( blocksStore );
+		const { getBlockParentsByBlockName, getBlocksByClientId } =
+			useSelect( 'core/block-editor' );
 		const { lockPostSaving, unlockPostSaving } = useDispatch( editorStore );
 		const [ editingBoundAttribute, setEditingBoundAttribute ] =
 			useState( null );
@@ -84,6 +86,25 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		}, [ attributes.metadata, setAttributes ] );
 
 		const selectedBlockType = getBlockType( name );
+
+		const blockParentsByBlockName = getBlockParentsByBlockName(
+			props.clientId,
+			[ 'core/group' ]
+		);
+
+		// Check if any parent blocks have bindings.
+		const parentHasBindings = useMemo( () => {
+			return (
+				getBlocksByClientId( blockParentsByBlockName ).filter(
+					( block ) =>
+						Object.keys(
+							block?.attributes?.metadata?.[
+								window.BINDINGS_KEY
+							] || {}
+						).length > 0
+				).length > 0
+			);
+		}, [ blockParentsByBlockName, getBlocksByClientId ] );
 
 		const supportedAttributes =
 			SUPPORTED_BLOCK_ATTRIBUTES[ selectedBlockType?.name ];
@@ -170,7 +191,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			}
 		}, [ lockPostSaving, unlockPostSaving, validations ] );
 
-		if ( ! supportedAttributes ) {
+		if ( ! supportedAttributes || parentHasBindings ) {
 			return <BlockEdit { ...props } />;
 		}
 
@@ -185,10 +206,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 								<ItemGroup isBordered isSeparated>
 									{ supportedAttributes.map(
 										( attribute ) => (
-											<Item
-												key={ attribute }
-												size="small"
-											>
+											<Item key={ attribute }>
 												<Flex>
 													<FlexBlock>
 														{ attribute }
