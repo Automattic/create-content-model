@@ -110,7 +110,10 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			( field ) => {
 				const bindings = supportedAttributes.reduce(
 					( acc, attribute ) => {
-						acc[ attribute ] = `${ field.slug }__${ attribute }`;
+						acc[ attribute ] =
+							'content' === attribute
+								? field.slug
+								: `${ field.slug }__${ attribute }`;
 
 						return acc;
 					},
