@@ -45,9 +45,9 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		const [ editingBoundAttribute, setEditingBoundAttribute ] =
 			useState( null );
 
-		const [ meta, setMeta ] = useEntityProp(
+		const [ meta ] = useEntityProp(
 			'postType',
-			contentModelFields.postType,
+			window.contentModelFields.postType,
 			'meta'
 		);
 
@@ -69,56 +69,6 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			[ attributes.metadata ]
 		);
 
-		const setBinding = useCallback(
-			( field ) => {
-				const newAttributes = {
-					metadata: {
-						...( attributes.metadata ?? {} ),
-						[ window.BINDINGS_KEY ]: {
-							...( attributes.metadata?.[ window.BINDINGS_KEY ] ??
-								{} ),
-							[ 'meta_key' ]: field.slug,
-						},
-						[ window.BLOCK_VARIATION_NAME_ATTR ]: field.label,
-					},
-				};
-
-				if (
-					! newAttributes.metadata[
-						window.BLOCK_VARIATION_NAME_ATTR
-					].trim()
-				) {
-					delete newAttributes.metadata[
-						window.BLOCK_VARIATION_NAME_ATTR
-					];
-				}
-
-				supportedAttributes.forEach( ( attribute ) => {
-					const slug =
-						'content' === attribute
-							? field.slug
-							: `${ field.slug }__${ attribute }`;
-					newAttributes.metadata[ window.BINDINGS_KEY ][ attribute ] =
-						slug;
-				} );
-
-				if ( ! field.slug.trim() ) {
-					delete newAttributes.metadata[ window.BINDINGS_KEY ][
-						'meta_key'
-					];
-
-					supportedAttributes.forEach( ( attribute ) => {
-						delete newAttributes.metadata[ window.BINDINGS_KEY ][
-							attribute
-						];
-					} );
-				}
-
-				setAttributes( newAttributes );
-			},
-			[ attributes.metadata, setAttributes ]
-		);
-
 		const removeBindings = useCallback( () => {
 			const newAttributes = {
 				metadata: {
@@ -128,6 +78,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 
 			delete newAttributes.metadata[ window.BINDINGS_KEY ];
 			delete newAttributes.metadata[ window.BLOCK_VARIATION_NAME_ATTR ];
+			delete newAttributes.metadata.slug;
 
 			setAttributes( newAttributes );
 		}, [ attributes.metadata, setAttributes ] );
@@ -136,6 +87,31 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 
 		const supportedAttributes =
 			SUPPORTED_BLOCK_ATTRIBUTES[ selectedBlockType?.name ];
+
+		const setBinding = useCallback(
+			( field ) => {
+				const bindings = supportedAttributes.reduce(
+					( acc, attribute ) => {
+						acc[ attribute ] = `${ field.slug }__${ attribute }`;
+
+						return acc;
+					},
+					{}
+				);
+
+				const newAttributes = {
+					metadata: {
+						...( attributes.metadata ?? {} ),
+						[ window.BLOCK_VARIATION_NAME_ATTR ]: field.label,
+						slug: field.slug,
+						[ window.BINDINGS_KEY ]: bindings,
+					},
+				};
+
+				setAttributes( newAttributes );
+			},
+			[ attributes.metadata, setAttributes, supportedAttributes ]
+		);
 
 		const validations = useMemo( () => {
 			const metadata = attributes.metadata ?? {};
@@ -276,10 +252,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 											attributes?.metadata?.[
 												window.BLOCK_VARIATION_NAME_ATTR
 											] ?? '',
-										slug:
-											attributes.metadata?.[
-												window.BINDINGS_KEY
-											]?.[ 'meta_key' ] ?? '',
+										slug: attributes.metadata?.slug,
 										description: '',
 										type:
 											supportedAttributes.includes(
