@@ -24,7 +24,10 @@ const CreateContentModelFieldsUI = function () {
 
 	const fields = contentModelFields.fields;
 
-	if ( ! fields ) {
+	if (
+		! fields ||
+		fields.filter( ( field ) => field.visible ).length === 0
+	) {
 		return null;
 	}
 
