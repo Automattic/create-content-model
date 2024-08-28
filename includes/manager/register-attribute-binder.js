@@ -141,6 +141,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			[ 'core/group' ]
 		);
 
+		// Check if any parent blocks have bindings.
 		const checkParents = useMemo( () => {
 			return (
 				getBlocksByClientId( blockParentsByBlockName ).filter(
