@@ -166,12 +166,11 @@ const EditFieldForm = ( {
 							/>
 						</Grid>
 					) }
-					{ formData.type.indexOf( 'core/' ) === 0 && (
-						<BlockAttributes
-							slug={ formData.slug }
-							type={ formData.type }
-						/>
-					) }
+
+					<BlockAttributes
+						slug={ formData.slug }
+						type={ formData.type }
+					/>
 				</CardBody>
 			</Card>
 		</>
@@ -179,7 +178,9 @@ const EditFieldForm = ( {
 };
 
 const BlockAttributes = ( { slug, type } ) => {
-	const supportedAttributes = SUPPORTED_BLOCK_ATTRIBUTES[ type ] ?? [];
+	const supportedAttributes = SUPPORTED_BLOCK_ATTRIBUTES[ type ] ?? [
+		'content',
+	];
 	return (
 		<ItemGroup isBordered isSeparated>
 			{ supportedAttributes.map( ( attribute ) => (
