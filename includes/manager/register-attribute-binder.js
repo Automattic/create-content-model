@@ -59,9 +59,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		const { attributes, setAttributes, name } = props;
 
 		const boundField = fields.find(
-			( field ) =>
-				field.slug ===
-				attributes.metadata?.[ window.BINDINGS_KEY ]?.[ 'meta_key' ]
+			( field ) => field.slug === attributes.metadata?.slug
 		);
 
 		const getBinding = useCallback(
@@ -269,10 +267,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 											attributes?.metadata?.[
 												window.BLOCK_VARIATION_NAME_ATTR
 											] ?? '',
-										slug:
-											attributes.metadata?.[
-												window.BINDINGS_KEY
-											][ 'meta_key' ] ?? '',
+										slug: attributes?.metadata?.slug ?? '',
 										uuid:
 											boundField?.uuid ??
 											window.crypto.randomUUID(),
