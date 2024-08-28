@@ -1,13 +1,14 @@
 import { addFilter } from '@wordpress/hooks';
 import { useCallback, useMemo, useEffect, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createHigherOrderComponent } from '@wordpress/compose';
-import { InspectorControls } from '@wordpress/block-editor';
+import { InspectorControls, BlockControls } from '@wordpress/block-editor';
 import {
 	TextControl,
 	PanelBody,
 	SelectControl,
 	Modal,
+	Notice,
 } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
@@ -227,7 +228,6 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 								/>
 							);
 						} ) }
-
 						{ editingBoundAttribute && (
 							<Modal
 								title={ __( 'Add New Field' ) }
@@ -263,8 +263,73 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 	};
 }, 'withAttributeBinder' );
 
+const withCustomPlaceholder = createHigherOrderComponent( ( BlockEdit ) => {
+	return ( props ) => {
+		const { name, attributes } = props;
+		const binding = attributes.metadata?.[ window.BINDINGS_KEY ];
+
+		let customNotice = null;
+
+		if ( binding ) {
+			const boundField = attributes.metadata?.name;
+			if ( boundField ) {
+				switch ( name ) {
+					case 'core/paragraph':
+					case 'core/heading':
+					case 'core/button':
+						props = {
+							...props,
+							attributes: {
+								...attributes,
+								placeholder: sprintf(
+									/* translators: %s: custom field name */
+									__(
+										'Enter placeholder text for the custom field: %s'
+									),
+									boundField
+								),
+							},
+						};
+						break;
+					case 'core/image':
+						// If the URL is bounded but no placeholder image is set, ask the user to choose one.
+						if ( binding.url && ! attributes.url ) {
+							customNotice = (
+								<BlockControls>
+									<Notice isDismissible={ false }>
+										{ sprintf(
+											/* translators: %s: custom field name */
+											__(
+												'Choose a placeholder image for the custom field: %s'
+											),
+											boundField
+										) }
+									</Notice>
+								</BlockControls>
+							);
+						}
+						break;
+				}
+			}
+		}
+
+		return (
+			<>
+				{ customNotice }
+				<BlockEdit { ...props } />
+			</>
+		);
+	};
+}, 'withCustomPlaceholder' );
+
 addFilter(
 	'editor.BlockEdit',
 	'content-model/attribute-binder',
 	withAttributeBinder
+);
+
+addFilter(
+	'editor.BlockEdit',
+	'content-model/custom-placeholder',
+	withCustomPlaceholder
 );
