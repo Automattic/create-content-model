@@ -74,6 +74,7 @@ final class Content_Model {
 		$this->register_meta_fields();
 		$this->maybe_enqueue_the_fields_ui();
 		$this->maybe_enqueue_bound_group_extractor();
+		$this->maybe_enqueue_content_locking();
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
 
@@ -420,6 +421,48 @@ final class Content_Model {
 				);
 
 				wp_enqueue_script( 'data-types/fields-ui' );
+			}
+		);
+	}
+
+
+	/**
+	 * Conditionally enqueues the fields UI script for the block editor.
+	 *
+	 * Checks if the current post is of the correct type before enqueueing the script.
+	 *
+	 * @return void
+	 */
+	private function maybe_enqueue_content_locking() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || $this->slug !== $post->post_type ) {
+					return;
+				}
+
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/content-locking.asset.php';
+
+				wp_register_script(
+					'data-types/content-locking',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/content-locking.js',
+					$asset_file['dependencies'],
+					$asset_file['version'],
+					true
+				);
+
+				wp_localize_script(
+					'data-types/content-locking',
+					'contentModelFields',
+					array(
+						'postType' => $this->slug,
+						'fields'   => $this->fields,
+					)
+				);
+
+				wp_enqueue_script( 'data-types/content-locking' );
 			}
 		);
 	}
