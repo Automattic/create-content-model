@@ -40,6 +40,12 @@ const CreateContentModelPageSettings = function () {
 		'slug'
 	);
 
+	const [ title, setTitle ] = useEntityProp(
+		'postType',
+		contentModelFields.postType,
+		'title'
+	);
+
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
@@ -50,6 +56,41 @@ const CreateContentModelPageSettings = function () {
 		}
 	} );
 
+	const textControlFields = [
+		{
+			key: 'slug',
+			label: __( 'Slug' ),
+			value: slug,
+			onChange: ( value ) => setSlug( value ),
+			help: __(
+				'Warning: Changing the slug will break existing content.'
+			),
+		},
+		{
+			key: 'singular_label',
+			label: __( 'Singular Label' ),
+			value: title,
+			onChange: ( value ) => setTitle( value ),
+			help: __( 'Synced with the title of the post type.' ),
+		},
+		{
+			key: 'plural_label',
+			label: __( 'Plural Label' ),
+			value: meta.plural_label || `${ title }s`,
+			onChange: ( value ) => setMeta( { ...meta, plural_label: value } ),
+			help: __(
+				'This is the label that will be used for the plural form of the post type.'
+			),
+		},
+		{
+			key: 'description',
+			label: __( 'Description' ),
+			value: meta.description,
+			onChange: ( value ) => setMeta( { ...meta, description: value } ),
+			help: __( 'Description for the post type.' ),
+		},
+	];
+
 	return (
 		<>
 			<PluginDocumentSettingPanel
@@ -57,14 +98,16 @@ const CreateContentModelPageSettings = function () {
 				title={ __( 'Post Type' ) }
 				className="create-content-model-post-settings"
 			>
-				<TextControl
-					label={ __( 'Slug' ) }
-					value={ slug }
-					onChange={ ( value ) => setSlug( value ) }
-					help={ __(
-						'Warning: Changing the slug will break existing content.'
-					) }
-				/>
+				{ textControlFields.map( ( field ) => (
+					<TextControl
+						key={ field.key }
+						label={ field.label }
+						value={ field.value }
+						onChange={ field.onChange }
+						disabled={ field.disabled }
+						help={ field.help }
+					/>
+				) ) }
 			</PluginDocumentSettingPanel>
 			<PluginDocumentSettingPanel
 				name="create-content-model-field-settings"
