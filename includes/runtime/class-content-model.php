@@ -11,6 +11,8 @@ declare( strict_types = 1 );
  * Manages the registered Content Models.
  */
 final class Content_Model {
+	public const FALLBACK_VALUE_PLACEHOLDER = '__CREATE_CONTENT_MODEL__FALLBACK_VALUE__';
+
 	/**
 	 * The slug of the content model.
 	 *
@@ -39,6 +41,13 @@ final class Content_Model {
 	 */
 	public $blocks = array();
 
+	/**
+	 * A reverse map of meta keys, with the values being
+	 * the bound block and which attribute the meta key is bound to.
+	 *
+	 * @var array
+	 */
+	private $bound_meta_keys = array();
 
 	/**
 	 * Holds the fields of the content model.
@@ -75,8 +84,12 @@ final class Content_Model {
 		$this->maybe_enqueue_the_fields_ui();
 		$this->maybe_enqueue_bound_group_extractor();
 		$this->maybe_enqueue_content_locking();
+		$this->maybe_enqueue_fallback_value_clearer();
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
+
+		add_filter( 'rest_request_before_callbacks', array( $this, 'remove_default_meta_keys_on_save' ), 10, 3 );
+		add_filter( 'rest_post_dispatch', array( $this, 'fill_empty_meta_keys_with_default_values' ), 10, 3 );
 
 		add_action( 'rest_after_insert_' . $this->slug, array( $this, 'extract_post_content_from_blocks' ), 99, 1 );
 
@@ -204,15 +217,27 @@ final class Content_Model {
 					continue;
 				}
 
+				$this->bound_meta_keys[ $field ] = (object) array(
+					'block'          => $block,
+					'attribute_name' => $attribute_name,
+				);
+
+				$args = array(
+					'show_in_rest' => true,
+					'single'       => true,
+					'type'         => $block->get_attribute_type( $attribute_name ),
+				);
+
+				$default_value = $block->get_default_value_for_attribute( $attribute_name );
+
+				if ( ! empty( $default_value ) ) {
+					$args['default'] = $default_value;
+				}
+
 				register_post_meta(
 					$this->slug,
 					$field,
-					array(
-						'show_in_rest' => true,
-						'single'       => true,
-						'type'         => $block->get_attribute_type( $attribute_name ),
-						'default'      => $block->get_default_value_for_attribute( $attribute_name ),
-					)
+					$args
 				);
 			}
 		}
@@ -307,6 +332,70 @@ final class Content_Model {
 		);
 	}
 
+	/**
+	 * Intercepts the saving request and removes the meta keys with default values.
+	 *
+	 * TODO Remove when Gutneberg 19.2 gets released.
+	 *
+	 * @param WP_HTTP_Response|null $response The response.
+	 * @param WP_REST_Server        $server   Route handler used for the request.
+	 * @param WP_REST_Request       $request  The request.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public function remove_default_meta_keys_on_save( $response, $server, $request ) {
+		$is_upserting          = in_array( $request->get_method(), array( 'POST', 'PUT' ), true );
+		$is_touching_post_type = str_starts_with( $request->get_route(), '/wp/v2/' . $this->slug );
+
+		if ( $is_upserting && $is_touching_post_type ) {
+			$meta = $request->get_param( 'meta' ) ?? array();
+
+			foreach ( $meta as $key => $value ) {
+				if ( '' === $value ) {
+					unset( $meta[ $key ] );
+					delete_post_meta( $request->get_param( 'id' ), $key );
+				}
+			}
+
+			$request->set_param( 'meta', $meta );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Intercepts the response and fills the empty meta keys with default values.
+	 *
+	 * TODO Remove when Gutneberg 19.2 gets released.
+	 *
+	 * @param WP_HTTP_Response $result The response.
+	 * @param WP_REST_Server   $server The server.
+	 * @param WP_REST_Request  $request The request.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public function fill_empty_meta_keys_with_default_values( $result, $server, $request ) {
+		$is_allowed_method     = in_array( $request->get_method(), array( 'GET', 'POST', 'PUT' ), true );
+		$is_touching_post_type = str_starts_with( $request->get_route(), '/wp/v2/' . $this->slug );
+
+		if ( $is_allowed_method && $is_touching_post_type ) {
+			$data = $result->get_data();
+
+			$data['meta'] ??= array();
+
+			foreach ( $data['meta'] as $key => $value ) {
+				$bound_meta_key = $this->bound_meta_keys[ $key ] ?? null;
+
+				if ( empty( $value ) && $bound_meta_key ) {
+					$data['meta'][ $key ] = self::FALLBACK_VALUE_PLACEHOLDER;
+				}
+			}
+
+			$result->set_data( $data );
+		}
+
+		return $result;
+	}
 	/**
 	 * Extracts the post content from the blocks.
 	 *
@@ -492,6 +581,47 @@ final class Content_Model {
 				);
 
 				wp_enqueue_script( 'data-types/content-locking' );
+			}
+		);
+	}
+
+	/**
+	 * Conditionally enqueues the fallback value clearer, allowing the block to become editable.
+	 *
+	 * Checks if the current post is of the correct type before enqueueing the script.
+	 *
+	 * @return void
+	 */
+	private function maybe_enqueue_fallback_value_clearer() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || $this->slug !== $post->post_type ) {
+					return;
+				}
+
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/fallback-value-clearer.asset.php';
+
+				wp_register_script(
+					'data-types/fallback-value-clearer',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/fallback-value-clearer.js',
+					$asset_file['dependencies'],
+					$asset_file['version'],
+					true
+				);
+
+				wp_localize_script(
+					'data-types/fallback-value-clearer',
+					'contentModelFields',
+					array(
+						'postType'                   => $this->slug,
+						'FALLBACK_VALUE_PLACEHOLDER' => self::FALLBACK_VALUE_PLACEHOLDER,
+					)
+				);
+
+				wp_enqueue_script( 'data-types/fallback-value-clearer' );
 			}
 		);
 	}

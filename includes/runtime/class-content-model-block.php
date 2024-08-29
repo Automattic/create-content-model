@@ -295,9 +295,11 @@ final class Content_Model_Block {
 	}
 
 	/**
-	 * Get the default value for an attribute.
+	 * Get the default value from an attribute in the template.
 	 *
-	 * @param string $attribute_name The name of the attribute.
+	 * @param string $attribute_name The attribute name.
+	 *
+	 * @return mixed The default value.
 	 */
 	public function get_default_value_for_attribute( $attribute_name ) {
 		$block_attribute = $this->raw_block['attrs'][ $attribute_name ] ?? null;
@@ -321,17 +323,5 @@ final class Content_Model_Block {
 				return $attribute_value;
 			}
 		}
-
-		if ( isset( $attribute_metadata['default'] ) ) {
-			return $attribute_metadata['default'];
-		}
-
-		$attribute_type = $this->get_attribute_type( $attribute_name );
-
-		if ( 'string' !== $attribute_type ) {
-			return 0;
-		}
-
-		return $attribute_name;
 	}
 }

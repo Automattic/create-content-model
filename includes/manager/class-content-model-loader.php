@@ -52,6 +52,7 @@ class Content_Model_Loader {
 		$this->maybe_enqueue_the_cpt_settings_panel();
 		$this->maybe_enqueue_the_fields_ui();
 		$this->maybe_enqueue_content_model_length_restrictor();
+		$this->maybe_enqueue_the_defaut_value_placeholder();
 
 		add_action( 'save_post', array( $this, 'map_template_to_bindings_api_signature' ), 99, 2 );
 
@@ -292,6 +293,29 @@ class Content_Model_Loader {
 				wp_enqueue_script(
 					'content-model/length-restrictor',
 					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/content-model-title-length-restrictor.js',
+					$content_model_length_restrictor_js['dependencies'],
+					$content_model_length_restrictor_js['version'],
+					true
+				);
+			}
+		);
+	}
+
+	private function maybe_enqueue_the_defaut_value_placeholder() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
+					return;
+				}
+
+				$content_model_length_restrictor_js = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/default-value-placeholder-changer.asset.php';
+
+				wp_enqueue_script(
+					'content-model/default-value-placeholder-changer',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/default-value-placeholder-changer.js',
 					$content_model_length_restrictor_js['dependencies'],
 					$content_model_length_restrictor_js['version'],
 					true
