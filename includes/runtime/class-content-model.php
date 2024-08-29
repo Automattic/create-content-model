@@ -335,6 +335,8 @@ final class Content_Model {
 	/**
 	 * Intercepts the saving request and removes the meta keys with default values.
 	 *
+	 * TODO Remove when Gutneberg 19.2 gets released.
+	 *
 	 * @param WP_HTTP_Response|null $response The response.
 	 * @param WP_REST_Server        $server   Route handler used for the request.
 	 * @param WP_REST_Request       $request  The request.
@@ -363,6 +365,8 @@ final class Content_Model {
 
 	/**
 	 * Intercepts the response and fills the empty meta keys with default values.
+	 *
+	 * TODO Remove when Gutneberg 19.2 gets released.
 	 *
 	 * @param WP_HTTP_Response $result The response.
 	 * @param WP_REST_Server   $server The server.

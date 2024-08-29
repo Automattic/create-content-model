@@ -9,6 +9,8 @@ import { useSelect, useDispatch } from '@wordpress/data';
  * There is a bug in the Bindings API preventing this from working,
  * so here's our workaround.
  *
+ * TODO Remove when Gutneberg 19.2 gets released.
+ *
  * See https://github.com/Automattic/create-content-model/issues/63 for the problem.
  */
 const CreateContentModelFallbackValueClearer = () => {
