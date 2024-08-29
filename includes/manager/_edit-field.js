@@ -93,17 +93,19 @@ const EditFieldForm = ( {
 								} }
 							/>
 						) }
-						<Button
-							icon={ trash }
-							title={ __( 'Delete Field' ) }
-							onClick={ () => {
-								confirm(
-									__(
-										'Are you sure you want to delete this field?'
-									)
-								) && onDelete( formData );
-							} }
-						/>
+						{ formData.type.indexOf( 'core/' ) === -1 ?? (
+							<Button
+								icon={ trash }
+								title={ __( 'Delete Field' ) }
+								onClick={ () => {
+									confirm(
+										__(
+											'Are you sure you want to delete this field?'
+										)
+									) && onDelete( formData );
+								} }
+							/>
+						) }
 					</ButtonGroup>
 
 					<Grid columns={ 3 }>
@@ -168,11 +170,24 @@ const EditFieldForm = ( {
 							/>
 						</Grid>
 					) }
-					{ formData.type.indexOf( 'core/' ) === 0 && (
+					{ formData.type.indexOf( 'core/' ) === 0 ? (
 						<BlockAttributes
 							slug={ formData.slug }
 							type={ formData.type }
 						/>
+					) : (
+						<ItemGroup isBordered isSeparated>
+							<Item>
+								<Flex>
+									<FlexBlock>{ formData.type }</FlexBlock>
+									<FlexItem>
+										<span>
+											<code>{ formData.slug }</code>
+										</span>
+									</FlexItem>
+								</Flex>
+							</Item>
+						</ItemGroup>
 					) }
 				</CardBody>
 			</Card>
