@@ -1,8 +1,11 @@
 import { addFilter } from '@wordpress/hooks';
 import { useCallback, useMemo, useEffect, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { sprintf, __ } from '@wordpress/i18n';
 import { createHigherOrderComponent } from '@wordpress/compose';
-import { InspectorControls } from '@wordpress/block-editor';
+import {
+	InspectorControls,
+	store as blockEditorStore,
+} from '@wordpress/block-editor';
 import {
 	PanelBody,
 	PanelRow,
@@ -16,7 +19,7 @@ import {
 } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
-import { store as blocksStore } from '@wordpress/blocks';
+import { createBlock, store as blocksStore } from '@wordpress/blocks';
 import { useEntityProp } from '@wordpress/core-data';
 
 import ManageBindings from './_manage-bindings';
@@ -34,8 +37,12 @@ const ErrorMessage = ( { children } ) => {
 const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 	return ( props ) => {
 		const { getBlockType } = useSelect( blocksStore );
-		const { getBlockParentsByBlockName, getBlocksByClientId } =
-			useSelect( 'core/block-editor' );
+		const {
+			getBlockParentsByBlockName,
+			getBlocksByClientId,
+			getBlockOrder,
+		} = useSelect( blockEditorStore );
+		const { replaceInnerBlocks } = useDispatch( blockEditorStore );
 		const { lockPostSaving, unlockPostSaving } = useDispatch( editorStore );
 		const [ editingBoundAttribute, setEditingBoundAttribute ] =
 			useState( null );
@@ -51,7 +58,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			return meta?.fields ? JSON.parse( meta.fields ) : [];
 		}, [ meta.fields ] );
 
-		const { attributes, setAttributes, name } = props;
+		const { attributes, setAttributes, name, clientId } = props;
 
 		const boundField = fields.find(
 			( field ) => field.slug === attributes.metadata?.slug
@@ -184,6 +191,34 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			return _validations;
 		}, [ attributes.metadata, getBinding, name ] );
 
+		const bindings = attributes?.metadata?.[ window.BINDINGS_KEY ];
+		const noInnerBlocks = getBlockOrder( props.clientId ).length === 0;
+
+		const blockVariationName =
+			props.attributes.metadata?.[ window.BLOCK_VARIATION_NAME_ATTR ];
+
+		// Move this to data entry mode only?
+		useEffect( () => {
+			if ( 'core/group' === name && bindings && noInnerBlocks ) {
+				replaceInnerBlocks( clientId, [
+					createBlock( 'core/paragraph', {
+						placeholder: sprintf(
+							// translators: %s is the block name.
+							__( 'Add the default blocks for %s' ),
+							blockVariationName
+						),
+					} ),
+				] );
+			}
+		}, [
+			bindings,
+			blockVariationName,
+			noInnerBlocks,
+			clientId,
+			name,
+			replaceInnerBlocks,
+		] );
+
 		useEffect( () => {
 			const hasValidationErrors = Object.keys( validations ).length > 0;
 
@@ -197,8 +232,6 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		if ( ! supportedAttributes || parentHasBindings ) {
 			return <BlockEdit { ...props } />;
 		}
-
-		const bindings = attributes?.metadata?.[ window.BINDINGS_KEY ];
 
 		return (
 			<>
