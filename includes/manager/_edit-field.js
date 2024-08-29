@@ -14,9 +14,14 @@ import {
 	FlexItem,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { trash, chevronUp, chevronDown } from '@wordpress/icons';
+import {
+	trash,
+	chevronUp,
+	chevronDown,
+	blockDefault,
+	post,
+} from '@wordpress/icons';
 import { useEffect } from '@wordpress/element';
 
 import SUPPORTED_BLOCK_ATTRIBUTES from './_supported-attributes';
@@ -58,6 +63,18 @@ const EditFieldForm = ( {
 							marginBottom: '1rem',
 						} }
 					>
+						{ formData.type.indexOf( 'core/' ) === -1 ? (
+							<Button icon={ post } title={ formData.type }>
+								{ __( 'Custom Field' ) }
+							</Button>
+						) : (
+							<Button
+								icon={ blockDefault }
+								title={ formData.type }
+							>
+								{ __( 'Block Binding' ) }
+							</Button>
+						) }
 						{ index > 0 && (
 							<Button
 								icon={ chevronUp }
@@ -132,18 +149,6 @@ const EditFieldForm = ( {
 									{ label: __( 'URL' ), value: 'url' },
 									{ label: __( 'Image' ), value: 'image' },
 									{ label: __( 'Number' ), value: 'number' },
-									{
-										label: __( 'Image Block' ),
-										value: 'core/image',
-									},
-									{
-										label: __( 'Button Block' ),
-										value: 'core/button',
-									},
-									{
-										label: __( 'Group Block' ),
-										value: 'core/group',
-									},
 								] }
 								onChange={ ( value ) =>
 									setFormData( { ...formData, type: value } )
@@ -154,9 +159,6 @@ const EditFieldForm = ( {
 									'Show Field in Custom Fields Form'
 								) }
 								checked={ formData.visible ?? false }
-								disabled={
-									formData.type.indexOf( 'core/' ) === 0
-								}
 								onChange={ ( value ) =>
 									setFormData( {
 										...formData,
@@ -166,11 +168,12 @@ const EditFieldForm = ( {
 							/>
 						</Grid>
 					) }
-
-					<BlockAttributes
-						slug={ formData.slug }
-						type={ formData.type }
-					/>
+					{ formData.type.indexOf( 'core/' ) === 0 && (
+						<BlockAttributes
+							slug={ formData.slug }
+							type={ formData.type }
+						/>
+					) }
 				</CardBody>
 			</Card>
 		</>
@@ -178,9 +181,7 @@ const EditFieldForm = ( {
 };
 
 const BlockAttributes = ( { slug, type } ) => {
-	const supportedAttributes = SUPPORTED_BLOCK_ATTRIBUTES[ type ] ?? [
-		'content',
-	];
+	const supportedAttributes = SUPPORTED_BLOCK_ATTRIBUTES[ type ];
 	return (
 		<ItemGroup isBordered isSeparated>
 			{ supportedAttributes.map( ( attribute ) => (
@@ -189,11 +190,7 @@ const BlockAttributes = ( { slug, type } ) => {
 						<FlexBlock>{ attribute }</FlexBlock>
 						<FlexItem>
 							<span>
-								{ 'content' === attribute ? (
-									<code>{ `${ slug }` }</code>
-								) : (
-									<code>{ `${ slug }__${ attribute }` }</code>
-								) }
+								<code>{ `${ slug }__${ attribute }` }</code>
 							</span>
 						</FlexItem>
 					</Flex>

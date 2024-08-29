@@ -104,7 +104,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 				const bindings = supportedAttributes.reduce(
 					( acc, attribute ) => {
 						acc[ attribute ] =
-							'content' === attribute
+							'post_content' === field.slug
 								? field.slug
 								: `${ field.slug }__${ attribute }`;
 
@@ -268,14 +268,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 											boundField?.uuid ??
 											window.crypto.randomUUID(),
 										description: '',
-										type:
-											supportedAttributes.includes(
-												'content'
-											) &&
-											'core/group' !==
-												selectedBlockType?.name
-												? 'text'
-												: selectedBlockType?.name,
+										type: selectedBlockType?.name,
 										visible: false,
 									} }
 									typeIsDisabled={ true }
