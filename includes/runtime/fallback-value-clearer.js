@@ -1,7 +1,8 @@
 import { useLayoutEffect } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
 import { useEntityProp } from '@wordpress/core-data';
-import { useSelect } from '@wordpress/data';
+import { store as blockEditorStore } from '@wordpress/block-editor';
+import { useSelect, useDispatch } from '@wordpress/data';
 
 /**
  * This allows the user to edit values that are bound to an attribute.
@@ -17,8 +18,10 @@ const CreateContentModelFallbackValueClearer = () => {
 		'meta'
 	);
 
+	const dispatcher = useDispatch( blockEditorStore );
+
 	const blockToMetaMap = useSelect( ( select ) => {
-		const blocks = select( 'core/block-editor' ).getBlocks();
+		const blocks = select( blockEditorStore ).getBlocks();
 		const map = {};
 
 		const processBlock = ( block ) => {
@@ -30,7 +33,7 @@ const CreateContentModelFallbackValueClearer = () => {
 					}
 					map[ block.clientId ].push( {
 						metaKey: binding.args.key,
-						blockName: block.name,
+						blockName: block.attributes.metadata.name,
 					} );
 				}
 			} );
@@ -47,25 +50,24 @@ const CreateContentModelFallbackValueClearer = () => {
 	}, [] );
 
 	useLayoutEffect( () => {
-		Object.entries( blockToMetaMap ).forEach( ( [ , metaInfos ] ) => {
-			metaInfos.forEach( ( { metaKey, blockName } ) => {
-				const value = meta[ metaKey ];
-				if (
-					value ===
-					window.contentModelFields.FALLBACK_VALUE_PLACEHOLDER
-				) {
-					const placeholderText = `Enter data for ${ metaKey }`;
-
-					if ( blockName === 'core/image' ) {
-						// image doesn't need placeholder text
+		Object.entries( blockToMetaMap ).forEach(
+			( [ blockId, metaInfos ] ) => {
+				metaInfos.forEach( ( { metaKey, blockName } ) => {
+					const value = meta[ metaKey ];
+					if (
+						value ===
+						window.contentModelFields.FALLBACK_VALUE_PLACEHOLDER
+					) {
 						setMeta( { [ metaKey ]: '' } );
-					} else {
-						setMeta( { [ metaKey ]: placeholderText } );
+
+						dispatcher.updateBlockAttributes( blockId, {
+							placeholder: `Enter a value for ${ blockName }`,
+						} );
 					}
-				}
-			} );
-		} );
-	}, [ meta, setMeta, blockToMetaMap ] );
+				} );
+			}
+		);
+	}, [ meta, setMeta, blockToMetaMap, dispatcher ] );
 
 	return null;
 };
