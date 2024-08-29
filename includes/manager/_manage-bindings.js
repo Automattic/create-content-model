@@ -16,7 +16,7 @@ const ManageBindings = ( {
 		slug: '',
 		description: '',
 		type: 'text',
-		visible: true,
+		visible: false,
 		uuid: window.crypto.randomUUID(),
 	},
 	onSave = () => {},

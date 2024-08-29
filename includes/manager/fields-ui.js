@@ -55,23 +55,15 @@ const CreateContentModelPageSettings = function () {
 										<code>{ field.slug }</code>
 									</FlexItem>
 
-									{ field.visible && (
+									{ field.type.indexOf( 'core' ) > -1 ? (
+										<FlexItem>
+											<Icon icon={ blockDefault } />
+										</FlexItem>
+									) : (
 										<FlexItem>
 											<Icon icon={ seen } />
 										</FlexItem>
 									) }
-									{ ! field.visible &&
-										field.type.indexOf( 'core' ) > -1 && (
-											<FlexItem>
-												<Icon icon={ blockDefault } />
-											</FlexItem>
-										) }
-									{ ! field.visible &&
-										field.type.indexOf( 'core' ) < 0 && (
-											<FlexItem>
-												<Icon icon={ unseen } />
-											</FlexItem>
-										) }
 								</Flex>
 							</Item>
 						) ) }
@@ -83,7 +75,7 @@ const CreateContentModelPageSettings = function () {
 						variant="secondary"
 						onClick={ () => setFieldsOpen( true ) }
 					>
-						{ __( 'Manage Fields' ) }
+						{ __( 'Manage Post Meta' ) }
 					</Button>
 				</PanelRow>
 

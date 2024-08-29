@@ -108,17 +108,23 @@ const EditFieldForm = ( {
 						) }
 					</ButtonGroup>
 
-					<Grid columns={ 3 }>
+					<Grid
+						columns={
+							formData.type.indexOf( 'core/' ) === -1 ? 4 : 3
+						}
+					>
 						<TextControl
 							label={ __( 'Name' ) }
+							disabled={ formData.type.indexOf( 'core/' ) === 0 }
 							value={ formData.label }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, label: value } )
 							}
 						/>
 						<TextControl
-							label={ __( 'Key' ) }
+							label={ __( 'Meta Key' ) }
 							value={ formData.slug }
+							disabled={ formData.type.indexOf( 'core/' ) === 0 }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, slug: value } )
 							}
@@ -133,11 +139,9 @@ const EditFieldForm = ( {
 								} )
 							}
 						/>
-					</Grid>
-					{ formData.type.indexOf( 'core/' ) === -1 && (
-						<Grid columns={ 2 } alignment="bottom">
+						{ formData.type.indexOf( 'core/' ) === -1 && (
 							<SelectControl
-								label={ __( 'Type' ) }
+								label={ __( 'Field Type' ) }
 								value={ formData.type }
 								disabled={
 									formData.type.indexOf( 'core/' ) === 0
@@ -149,27 +153,24 @@ const EditFieldForm = ( {
 										value: 'textarea',
 									},
 									{ label: __( 'URL' ), value: 'url' },
-									{ label: __( 'Image' ), value: 'image' },
-									{ label: __( 'Number' ), value: 'number' },
+									{
+										label: __( 'Image' ),
+										value: 'image',
+									},
+									{
+										label: __( 'Number' ),
+										value: 'number',
+									},
 								] }
-								onChange={ ( value ) =>
-									setFormData( { ...formData, type: value } )
-								}
-							/>
-							<ToggleControl
-								label={ __(
-									'Show Field in Custom Fields Form'
-								) }
-								checked={ formData.visible ?? false }
 								onChange={ ( value ) =>
 									setFormData( {
 										...formData,
-										visible: value,
+										type: value,
 									} )
 								}
 							/>
-						</Grid>
-					) }
+						) }
+					</Grid>
 					{ formData.type.indexOf( 'core/' ) === 0 ? (
 						<BlockAttributes
 							slug={ formData.slug }
