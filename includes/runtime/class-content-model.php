@@ -219,14 +219,22 @@ final class Content_Model {
 					'attribute_name' => $attribute_name,
 				);
 
+				$args = array(
+					'show_in_rest' => true,
+					'single'       => true,
+					'type'         => $block->get_attribute_type( $attribute_name ),
+				);
+
+				$default_value = $block->get_default_value_for_attribute( $attribute_name );
+
+				if ( ! empty( $default_value ) ) {
+					$args['default'] = $default_value;
+				}
+
 				register_post_meta(
 					$this->slug,
 					$field,
-					array(
-						'show_in_rest' => true,
-						'single'       => true,
-						'type'         => $block->get_attribute_type( $attribute_name ),
-					)
+					$args
 				);
 			}
 		}
@@ -341,9 +349,9 @@ final class Content_Model {
 				$bound_meta_key = $this->bound_meta_keys[ $key ] ?? null;
 
 				if ( $bound_meta_key ) {
-					$default_value = $bound_meta_key->block->get_default_value_for_attribute( $bound_meta_key->attribute_name );
+					$fallback_value = $bound_meta_key->block->get_fallback_value_for_attribute( $bound_meta_key->attribute_name );
 
-					if ( $value === $default_value ) {
+					if ( $value === $fallback_value ) {
 						unset( $meta[ $key ] );
 						delete_post_meta( $request->get_param( 'id' ), $key );
 					}
@@ -378,9 +386,9 @@ final class Content_Model {
 				$bound_meta_key = $this->bound_meta_keys[ $key ] ?? null;
 
 				if ( empty( $value ) && $bound_meta_key ) {
-					$default_value = $bound_meta_key->block->get_default_value_for_attribute( $bound_meta_key->attribute_name );
+					$fallback_value = $bound_meta_key->block->get_fallback_value_for_attribute( $bound_meta_key->attribute_name );
 
-					$data['meta'][ $key ] = $default_value;
+					$data['meta'][ $key ] = $fallback_value;
 				}
 			}
 

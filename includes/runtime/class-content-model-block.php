@@ -295,13 +295,23 @@ final class Content_Model_Block {
 	}
 
 	/**
-	 * Get the fallback value for an attribute.
+	 * Get the default value from an attribute in the template.
 	 *
 	 * @param string $attribute_name The attribute name.
 	 *
-	 * @return mixed The fallback value.
+	 * @return mixed The default value.
 	 */
 	public function get_default_value_for_attribute( $attribute_name ) {
+		$block_attribute = $this->raw_block['attrs'][ $attribute_name ] ?? null;
+
+		if ( $block_attribute ) {
+			return $block_attribute;
+		}
+
+		if ( 'content' === $attribute_name && 'core/group' === $this->block_name ) {
+			return serialize_blocks( $this->raw_block['innerBlocks'] );
+		}
+
 		$attribute_metadata = $this->get_attribute_metadata( $attribute_name );
 
 		if ( isset( $attribute_metadata['source'] ) ) {
@@ -313,11 +323,16 @@ final class Content_Model_Block {
 				return $attribute_value;
 			}
 		}
+	}
 
-		if ( ! empty( $attribute_metadata['default'] ) ) {
-			return $attribute_metadata['default'];
-		}
-
+	/**
+	 * Get the fallback value for an attribute.
+	 *
+	 * @param string $attribute_name The attribute name.
+	 *
+	 * @return mixed The fallback value.
+	 */
+	public function get_fallback_value_for_attribute( $attribute_name ) {
 		if ( 'string' !== $this->get_attribute_type( $attribute_name ) ) {
 			return -9999;
 		}
