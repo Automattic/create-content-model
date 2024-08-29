@@ -17,6 +17,8 @@ const CreateContentModelFallbackValueClearer = () => {
 				setMeta( {
 					[ key ]: '',
 				} );
+
+				// TODO: Change placeholder?
 			}
 		} );
 	}, [ meta, setMeta ] );
