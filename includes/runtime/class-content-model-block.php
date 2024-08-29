@@ -324,29 +324,4 @@ final class Content_Model_Block {
 			}
 		}
 	}
-
-	/**
-	 * Get the fallback value for an attribute.
-	 *
-	 * @param string $attribute_name The attribute name.
-	 *
-	 * @return mixed The fallback value.
-	 */
-	public function get_fallback_value_for_attribute( $attribute_name ) {
-		if ( 'string' !== $this->get_attribute_type( $attribute_name ) ) {
-			return -9999;
-		}
-
-		if ( 'url' === $attribute_name ) {
-			return CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/placeholder_image.png';
-		}
-
-		if ( 'content' === $attribute_name ) {
-			// translators: %s is the block variation name.
-			return sprintf( __( 'Insert a value for %s' ), $this->block_variation_name );
-		}
-
-		// translators: %s is the attribute name.
-		return sprintf( __( 'Insert a value for %s' ), $attribute_name );
-	}
 }
