@@ -2,6 +2,7 @@ import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useLayoutEffect, useRef } from '@wordpress/element';
 import { useEntityProp } from '@wordpress/core-data';
 
 const CreateContentModelCptSettings = function () {
@@ -11,52 +12,20 @@ const CreateContentModelCptSettings = function () {
 		'meta'
 	);
 
-	const [ slug, setSlug ] = useEntityProp(
-		'postType',
-		window.contentModelFields.postType,
-		'slug'
-	);
-
 	const [ title, setTitle ] = useEntityProp(
 		'postType',
 		window.contentModelFields.postType,
 		'title'
 	);
 
-	const textControlFields = [
-		{
-			key: 'slug',
-			label: __( 'Slug' ),
-			value: slug,
-			onChange: ( value ) => setSlug( value ),
-			help: __(
-				'Warning: Changing the slug will break existing content.'
-			),
-		},
-		{
-			key: 'singular_label',
-			label: __( 'Singular Label' ),
-			value: title,
-			onChange: ( value ) => setTitle( value ),
-			help: __( 'Synced with the title of the post type.' ),
-		},
-		{
-			key: 'plural_label',
-			label: __( 'Plural Label' ),
-			value: meta.plural_label || `${ title }s`,
-			onChange: ( value ) => setMeta( { ...meta, plural_label: value } ),
-			help: __(
-				'This is the label that will be used for the plural form of the post type.'
-			),
-		},
-		{
-			key: 'description',
-			label: __( 'Description' ),
-			value: meta.description,
-			onChange: ( value ) => setMeta( { ...meta, description: value } ),
-			help: __( 'Description for the post type.' ),
-		},
-	];
+	const lastTitle = useRef( title );
+
+	useLayoutEffect( () => {
+		if ( title !== lastTitle.current ) {
+			lastTitle.current = title;
+			setMeta( { ...meta, plural_label: `${ title }s` } );
+		}
+	}, [ title, meta, setMeta ] );
 
 	return (
 		<>
@@ -65,16 +34,22 @@ const CreateContentModelCptSettings = function () {
 				title={ __( 'Post Type' ) }
 				className="create-content-model-post-settings"
 			>
-				{ textControlFields.map( ( field ) => (
-					<TextControl
-						key={ field.key }
-						label={ field.label }
-						value={ field.value }
-						onChange={ field.onChange }
-						disabled={ field.disabled }
-						help={ field.help }
-					/>
-				) ) }
+				<TextControl
+					label={ __( 'Singular Label' ) }
+					value={ title }
+					onChange={ setTitle }
+					help={ __( 'This is synced with the post title.' ) }
+				/>
+				<TextControl
+					label={ __( 'Plural Label' ) }
+					value={ meta.plural_label }
+					onChange={ ( value ) =>
+						setMeta( { ...meta, plural_label: value } )
+					}
+					help={ __(
+						'This is the label that will be used for the plural form of the post type.'
+					) }
+				/>
 			</PluginDocumentSettingPanel>
 		</>
 	);
