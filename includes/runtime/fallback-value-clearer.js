@@ -21,7 +21,7 @@ const CreateContentModelFallbackValueClearer = () => {
 		const blocks = select( 'core/block-editor' ).getBlocks();
 		const map = {};
 
-		blocks.forEach( ( block ) => {
+		const processBlock = ( block ) => {
 			const bindings = block.attributes?.metadata?.bindings || {};
 			Object.entries( bindings ).forEach( ( [ , binding ] ) => {
 				if ( binding.source === 'core/post-meta' ) {
@@ -34,7 +34,14 @@ const CreateContentModelFallbackValueClearer = () => {
 					} );
 				}
 			} );
-		} );
+
+			// Process inner blocks if they exist, like core/button is inside core/buttons.
+			if ( block.innerBlocks && block.innerBlocks.length > 0 ) {
+				block.innerBlocks.forEach( processBlock );
+			}
+		};
+
+		blocks.forEach( processBlock );
 
 		return map;
 	}, [] );
