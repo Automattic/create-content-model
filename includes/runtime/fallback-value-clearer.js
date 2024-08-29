@@ -1,6 +1,7 @@
 import { useLayoutEffect } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
 import { useEntityProp } from '@wordpress/core-data';
+import { useSelect } from '@wordpress/data';
 
 /**
  * This allows the user to edit values that are bound to an attribute.
@@ -16,19 +17,48 @@ const CreateContentModelFallbackValueClearer = () => {
 		'meta'
 	);
 
-	useLayoutEffect( () => {
-		Object.entries( meta ).forEach( ( [ key, value ] ) => {
-			if (
-				value === window.contentModelFields.FALLBACK_VALUE_PLACEHOLDER
-			) {
-				setMeta( {
-					[ key ]: '',
-				} );
+	const blockToMetaMap = useSelect( ( select ) => {
+		const blocks = select( 'core/block-editor' ).getBlocks();
+		const map = {};
 
-				// TODO: Change placeholder to block variation name or post meta key.
-			}
+		blocks.forEach( ( block ) => {
+			const bindings = block.attributes?.metadata?.bindings || {};
+			Object.entries( bindings ).forEach( ( [ , binding ] ) => {
+				if ( binding.source === 'core/post-meta' ) {
+					if ( ! map[ block.clientId ] ) {
+						map[ block.clientId ] = [];
+					}
+					map[ block.clientId ].push( {
+						metaKey: binding.args.key,
+						blockName: block.name,
+					} );
+				}
+			} );
 		} );
-	}, [ meta, setMeta ] );
+
+		return map;
+	}, [] );
+
+	useLayoutEffect( () => {
+		Object.entries( blockToMetaMap ).forEach( ( [ , metaInfos ] ) => {
+			metaInfos.forEach( ( { metaKey, blockName } ) => {
+				const value = meta[ metaKey ];
+				if (
+					value ===
+					window.contentModelFields.FALLBACK_VALUE_PLACEHOLDER
+				) {
+					const placeholderText = `Enter data for ${ metaKey }`;
+
+					if ( blockName === 'core/image' ) {
+						// image doesn't need placeholder text
+						setMeta( { [ metaKey ]: '' } );
+					} else {
+						setMeta( { [ metaKey ]: placeholderText } );
+					}
+				}
+			} );
+		} );
+	}, [ meta, setMeta, blockToMetaMap ] );
 
 	return null;
 };
