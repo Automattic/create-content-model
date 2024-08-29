@@ -97,17 +97,25 @@ final class Content_Model {
 	 * @return void
 	 */
 	private function register_post_type() {
+		$singular_name = $this->title;
+
+		$plural_name   = get_post_meta( $this->post_id, 'plural_label', true );
+		$plural_name ??= $singular_name . 's';
+
+		$icon = get_post_meta( $this->post_id, 'icon', true ) ?? 'admin-site';
+		$icon = str_replace( 'dashicons-', '', $icon );
+
 		register_post_type(
 			$this->slug,
 			array(
 				'labels'       => array(
-					'name'          => get_post_meta( $this->post_id, 'plural_label', true ) ?: $this->title . 's',
-					'singular_name' => $this->title,
+					'name'          => $plural_name,
+					'singular_name' => $singular_name,
 				),
 				'public'       => true,
 				'show_in_menu' => true,
 				'show_in_rest' => true,
-				'icon'         => 'dashicons-admin-site',
+				'menu_icon'    => "dashicons-$icon",
 				'supports'     => array( 'title', 'editor', 'custom-fields' ),
 			)
 		);

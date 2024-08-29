@@ -1,8 +1,12 @@
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
-import { TextControl } from '@wordpress/components';
+import { TextControl, Dashicon } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useLayoutEffect, useRef } from '@wordpress/element';
+import {
+	useLayoutEffect,
+	useRef,
+	createInterpolateElement,
+} from '@wordpress/element';
 import { useEntityProp } from '@wordpress/core-data';
 
 const CreateContentModelCptSettings = function () {
@@ -27,6 +31,8 @@ const CreateContentModelCptSettings = function () {
 		}
 	}, [ title, meta, setMeta ] );
 
+	const dashicon = meta.icon.replace( 'dashicons-', '' );
+
 	return (
 		<>
 			<PluginDocumentSettingPanel
@@ -38,7 +44,7 @@ const CreateContentModelCptSettings = function () {
 					label={ __( 'Singular Label' ) }
 					value={ title }
 					onChange={ setTitle }
-					help={ __( 'This is synced with the post title.' ) }
+					help={ __( 'This is synced with the post title' ) }
 				/>
 				<TextControl
 					label={ __( 'Plural Label' ) }
@@ -47,9 +53,43 @@ const CreateContentModelCptSettings = function () {
 						setMeta( { ...meta, plural_label: value } )
 					}
 					help={ __(
-						'This is the label that will be used for the plural form of the post type.'
+						'This is the label that will be used for the plural form of the post type'
 					) }
 				/>
+				<div style={ { position: 'relative' } }>
+					<TextControl
+						label={ __( 'Icon name' ) }
+						value={ meta.icon }
+						onChange={ ( icon ) => setMeta( { ...meta, icon } ) }
+						help={ createInterpolateElement(
+							__(
+								'The icon for the post type. <a>See reference</a>'
+							),
+							{
+								a: (
+									// eslint-disable-next-line jsx-a11y/anchor-has-content
+									<a
+										target="_blank"
+										href="https://developer.wordpress.org/resource/dashicons/"
+										rel="noreferrer"
+									/>
+								),
+							}
+						) }
+					/>
+					{ dashicon && (
+						<div
+							style={ {
+								position: 'absolute',
+								top: '30px',
+								right: '8px',
+							} }
+						>
+							{ ' ' }
+							<Dashicon icon={ dashicon } />{ ' ' }
+						</div>
+					) }
+				</div>
 			</PluginDocumentSettingPanel>
 		</>
 	);

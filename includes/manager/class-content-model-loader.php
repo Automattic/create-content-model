@@ -130,10 +130,11 @@ class Content_Model_Loader {
 				'single'       => true,
 				'show_in_rest' => true,
 			),
-			'description'  => array(
+			'icon'         => array(
 				'type'         => 'string',
 				'single'       => true,
 				'show_in_rest' => true,
+				'default'      => 'admin-site',
 			),
 		);
 
