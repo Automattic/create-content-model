@@ -295,21 +295,13 @@ final class Content_Model_Block {
 	}
 
 	/**
-	 * Get the default value for an attribute.
+	 * Get the fallback value for an attribute.
 	 *
-	 * @param string $attribute_name The name of the attribute.
+	 * @param string $attribute_name The attribute name.
+	 *
+	 * @return mixed The fallback value.
 	 */
 	public function get_default_value_for_attribute( $attribute_name ) {
-		$block_attribute = $this->raw_block['attrs'][ $attribute_name ] ?? null;
-
-		if ( $block_attribute ) {
-			return $block_attribute;
-		}
-
-		if ( 'content' === $attribute_name && 'core/group' === $this->block_name ) {
-			return serialize_blocks( $this->raw_block['innerBlocks'] );
-		}
-
 		$attribute_metadata = $this->get_attribute_metadata( $attribute_name );
 
 		if ( isset( $attribute_metadata['source'] ) ) {
@@ -322,16 +314,24 @@ final class Content_Model_Block {
 			}
 		}
 
-		if ( isset( $attribute_metadata['default'] ) ) {
+		if ( ! empty( $attribute_metadata['default'] ) ) {
 			return $attribute_metadata['default'];
 		}
 
-		$attribute_type = $this->get_attribute_type( $attribute_name );
-
-		if ( 'string' !== $attribute_type ) {
-			return 0;
+		if ( 'string' !== $this->get_attribute_type( $attribute_name ) ) {
+			return -9999;
 		}
 
-		return $attribute_name;
+		if ( 'url' === $attribute_name ) {
+			return CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/placeholder_image.png';
+		}
+
+		if ( 'content' === $attribute_name ) {
+			// translators: %s is the block variation name.
+			return sprintf( __( 'Insert a value for %s' ), $this->block_variation_name );
+		}
+
+		// translators: %s is the attribute name.
+		return sprintf( __( 'Insert a value for %s' ), $attribute_name );
 	}
 }

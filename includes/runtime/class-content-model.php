@@ -39,6 +39,13 @@ final class Content_Model {
 	 */
 	public $blocks = array();
 
+	/**
+	 * A reverse map of meta keys, with the values being
+	 * the bound block and which attribute the meta key is bound to.
+	 *
+	 * @var array
+	 */
+	private $bound_meta_keys = array();
 
 	/**
 	 * Holds the fields of the content model.
@@ -77,6 +84,9 @@ final class Content_Model {
 		$this->maybe_enqueue_content_locking();
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
+
+		add_filter( 'rest_request_before_callbacks', array( $this, 'remove_default_meta_keys_on_save' ), 10, 3 );
+		add_filter( 'rest_post_dispatch', array( $this, 'fill_empty_meta_keys_with_default_values' ), 10, 3 );
 
 		add_action( 'rest_after_insert_' . $this->slug, array( $this, 'extract_post_content_from_blocks' ), 99, 1 );
 
@@ -204,6 +214,11 @@ final class Content_Model {
 					continue;
 				}
 
+				$this->bound_meta_keys[ $field ] = (object) array(
+					'block'          => $block,
+					'attribute_name' => $attribute_name,
+				);
+
 				register_post_meta(
 					$this->slug,
 					$field,
@@ -211,7 +226,6 @@ final class Content_Model {
 						'show_in_rest' => true,
 						'single'       => true,
 						'type'         => $block->get_attribute_type( $attribute_name ),
-						'default'      => $block->get_default_value_for_attribute( $attribute_name ),
 					)
 				);
 			}
@@ -307,6 +321,74 @@ final class Content_Model {
 		);
 	}
 
+	/**
+	 * Intercepts the saving request and removes the meta keys with default values.
+	 *
+	 * @param WP_HTTP_Response|null $response The response.
+	 * @param WP_REST_Server        $server   Route handler used for the request.
+	 * @param WP_REST_Request       $request  The request.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public function remove_default_meta_keys_on_save( $response, $server, $request ) {
+		$is_upserting          = in_array( $request->get_method(), array( 'POST', 'PUT' ), true );
+		$is_touching_post_type = str_starts_with( $request->get_route(), '/wp/v2/' . $this->slug );
+
+		if ( $is_upserting && $is_touching_post_type ) {
+			$meta = $request->get_param( 'meta' ) ?? array();
+
+			foreach ( $meta as $key => $value ) {
+				$bound_meta_key = $this->bound_meta_keys[ $key ] ?? null;
+
+				if ( $bound_meta_key ) {
+					$default_value = $bound_meta_key->block->get_default_value_for_attribute( $bound_meta_key->attribute_name );
+
+					if ( $value === $default_value ) {
+						unset( $meta[ $key ] );
+						delete_post_meta( $request->get_param( 'id' ), $key );
+					}
+				}
+			}
+
+			$request->set_param( 'meta', $meta );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Intercepts the response and fills the empty meta keys with default values.
+	 *
+	 * @param WP_HTTP_Response $result The response.
+	 * @param WP_REST_Server   $server The server.
+	 * @param WP_REST_Request  $request The request.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public function fill_empty_meta_keys_with_default_values( $result, $server, $request ) {
+		$is_allowed_method     = in_array( $request->get_method(), array( 'GET', 'POST', 'PUT' ), true );
+		$is_touching_post_type = str_starts_with( $request->get_route(), '/wp/v2/' . $this->slug );
+
+		if ( $is_allowed_method && $is_touching_post_type ) {
+			$data = $result->get_data();
+
+			$data['meta'] ??= array();
+
+			foreach ( $data['meta'] as $key => $value ) {
+				$bound_meta_key = $this->bound_meta_keys[ $key ] ?? null;
+
+				if ( empty( $value ) && $bound_meta_key ) {
+					$default_value = $bound_meta_key->block->get_default_value_for_attribute( $bound_meta_key->attribute_name );
+
+					$data['meta'][ $key ] = $default_value;
+				}
+			}
+
+			$result->set_data( $data );
+		}
+
+		return $result;
+	}
 	/**
 	 * Extracts the post content from the blocks.
 	 *
