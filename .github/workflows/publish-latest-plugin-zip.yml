@@ -1,0 +1,54 @@
+name: Publish plugin to Automattic/create-content-model-releases latest on trunk merge
+
+on:
+  push:
+    branches:
+      - trunk
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and create plugin zip
+        run: npm run plugin-zip
+
+      - name: Create output directory
+        run: mkdir -p output
+
+      - name: Move plugin zip to output/
+        run: mv create-content-model.zip output/
+
+      - name: Get user email
+        id: get_email
+        run: |
+          EMAIL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/users/${{ github.actor }} \
+            | jq -r '.email // empty')
+          if [ -z "$EMAIL" ]; then
+            EMAIL="${{ github.actor }}@users.noreply.github.com"
+          fi
+          echo "email=$EMAIL" >> $GITHUB_OUTPUT
+
+      - name: Push zip to another repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+        with:
+          source-directory: "output"
+          destination-github-username: "automattic"
+          destination-repository-name: "create-content-model-releases"
+          user-name: ${{ github.actor }}
+          user-email: ${{ steps.get_email.outputs.email }}
+          target-branch: latest
