@@ -46,8 +46,10 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			'meta'
 		);
 
-		// Saving the fields as serialized JSON because I was tired of fighting the REST API.
-		const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
+		const fields = useMemo( () => {
+			// Saving the fields as serialized JSON because I was tired of fighting the REST API.
+			return meta?.fields ? JSON.parse( meta.fields ) : [];
+		}, [ meta.fields ] );
 
 		const { attributes, setAttributes, name } = props;
 
@@ -81,7 +83,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			} );
 
 			setAttributes( newAttributes );
-		}, [ attributes.metadata, setAttributes ] );
+		}, [ attributes.metadata, setAttributes, fields, setMeta ] );
 
 		const selectedBlockType = getBlockType( name );
 
@@ -196,43 +198,40 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			return <BlockEdit { ...props } />;
 		}
 
+		const bindings = attributes?.metadata?.[ window.BINDINGS_KEY ];
+
 		return (
 			<>
 				<InspectorControls>
 					<PanelBody title="Attribute Bindings" initialOpen>
-						{ ! editingBoundAttribute &&
-							attributes?.metadata?.[
-								window.BLOCK_VARIATION_NAME_ATTR
-							] && (
-								<ItemGroup isBordered isSeparated>
-									{ supportedAttributes.map(
-										( attribute ) => (
-											<Item key={ attribute }>
-												<Flex>
-													<FlexBlock>
-														{ attribute }
-													</FlexBlock>
+						{ ! editingBoundAttribute && bindings && (
+							<ItemGroup isBordered isSeparated>
+								{ supportedAttributes.map( ( attribute ) => {
+									return (
+										<Item key={ attribute }>
+											<Flex>
+												<FlexBlock>
+													{ attribute }
+												</FlexBlock>
+												{ bindings[ attribute ] && (
 													<FlexItem>
 														<span>
 															<code>
 																{
-																	attributes
-																		?.metadata?.[
-																		window
-																			.BINDINGS_KEY
-																	][
+																	bindings[
 																		attribute
 																	]
 																}
 															</code>
 														</span>
 													</FlexItem>
-												</Flex>
-											</Item>
-										)
-									) }
-								</ItemGroup>
-							) }
+												) }
+											</Flex>
+										</Item>
+									);
+								} ) }
+							</ItemGroup>
+						) }
 						{ ! editingBoundAttribute && (
 							<PanelRow>
 								<ButtonGroup>
@@ -246,9 +245,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 									>
 										{ __( 'Manage Binding' ) }
 									</Button>
-									{ attributes?.metadata?.[
-										window.BLOCK_VARIATION_NAME_ATTR
-									] && (
+									{ bindings && (
 										<Button
 											isDestructive
 											onClick={ removeBindings }
