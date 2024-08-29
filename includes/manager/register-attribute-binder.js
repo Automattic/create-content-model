@@ -21,14 +21,7 @@ import { useEntityProp } from '@wordpress/core-data';
 
 import ManageBindings from './_manage-bindings';
 
-// https://github.com/WordPress/WordPress/blob/master/wp-includes/class-wp-block.php#L246-L251
-const SUPPORTED_BLOCK_ATTRIBUTES = {
-	'core/group': [ 'content' ],
-	'core/paragraph': [ 'content' ],
-	'core/heading': [ 'content' ],
-	'core/image': [ 'id', 'url', 'title', 'alt' ],
-	'core/button': [ 'url', 'text', 'linkTarget', 'rel' ],
-};
+import SUPPORTED_BLOCK_ATTRIBUTES from './_supported-attributes';
 
 const ErrorMessage = ( { children } ) => {
 	return (
@@ -47,7 +40,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		const [ editingBoundAttribute, setEditingBoundAttribute ] =
 			useState( null );
 
-		const [ meta ] = useEntityProp(
+		const [ meta, setMeta ] = useEntityProp(
 			'postType',
 			window.contentModelFields.postType,
 			'meta'
@@ -56,14 +49,11 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 		const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
-		// Add a uuid to each field for React to track.
-		fields.forEach( ( field ) => {
-			if ( ! field.uuid ) {
-				field.uuid = window.crypto.randomUUID();
-			}
-		} );
-
 		const { attributes, setAttributes, name } = props;
+
+		const boundField = fields.find(
+			( field ) => field.slug === attributes.metadata?.slug
+		);
 
 		const getBinding = useCallback(
 			( attribute ) =>
@@ -81,6 +71,14 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			delete newAttributes.metadata[ window.BINDINGS_KEY ];
 			delete newAttributes.metadata[ window.BLOCK_VARIATION_NAME_ATTR ];
 			delete newAttributes.metadata.slug;
+
+			const newFields = fields.filter(
+				( field ) => field.slug !== attributes.metadata.slug
+			);
+
+			setMeta( {
+				fields: JSON.stringify( newFields ),
+			} );
 
 			setAttributes( newAttributes );
 		}, [ attributes.metadata, setAttributes ] );
@@ -113,7 +111,10 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			( field ) => {
 				const bindings = supportedAttributes.reduce(
 					( acc, attribute ) => {
-						acc[ attribute ] = `${ field.slug }__${ attribute }`;
+						acc[ attribute ] =
+							'post_content' === field.slug
+								? field.slug
+								: `${ field.slug }__${ attribute }`;
 
 						return acc;
 					},
@@ -270,18 +271,13 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 											attributes?.metadata?.[
 												window.BLOCK_VARIATION_NAME_ATTR
 											] ?? '',
-										slug: attributes.metadata?.slug,
+										slug: attributes?.metadata?.slug ?? '',
+										uuid:
+											boundField?.uuid ??
+											window.crypto.randomUUID(),
 										description: '',
-										type:
-											supportedAttributes.includes(
-												'content'
-											) &&
-											'core/group' !==
-												selectedBlockType?.name
-												? 'text'
-												: selectedBlockType?.name,
+										type: selectedBlockType?.name,
 										visible: false,
-										uuid: window.crypto.randomUUID(),
 									} }
 									typeIsDisabled={ true }
 								/>

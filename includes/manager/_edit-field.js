@@ -7,12 +7,24 @@ import {
 	__experimentalGrid as Grid,
 	CardBody,
 	Card,
+	__experimentalItemGroup as ItemGroup,
+	__experimentalItem as Item,
+	Flex,
+	FlexBlock,
+	FlexItem,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { trash, chevronUp, chevronDown } from '@wordpress/icons';
+import {
+	trash,
+	chevronUp,
+	chevronDown,
+	blockDefault,
+	post,
+} from '@wordpress/icons';
 import { useEffect } from '@wordpress/element';
+
+import SUPPORTED_BLOCK_ATTRIBUTES from './_supported-attributes';
 
 /**
  * Display a form to edit a field.
@@ -51,6 +63,18 @@ const EditFieldForm = ( {
 							marginBottom: '1rem',
 						} }
 					>
+						{ formData.type.indexOf( 'core/' ) === -1 ? (
+							<Button icon={ post } title={ formData.type }>
+								{ __( 'Custom Field' ) }
+							</Button>
+						) : (
+							<Button
+								icon={ blockDefault }
+								title={ formData.type }
+							>
+								{ __( 'Block Binding' ) }
+							</Button>
+						) }
 						{ index > 0 && (
 							<Button
 								icon={ chevronUp }
@@ -69,17 +93,19 @@ const EditFieldForm = ( {
 								} }
 							/>
 						) }
-						<Button
-							icon={ trash }
-							title={ __( 'Delete Field' ) }
-							onClick={ () => {
-								confirm(
-									__(
-										'Are you sure you want to delete this field?'
-									)
-								) && onDelete( formData );
-							} }
-						/>
+						{ formData.type.indexOf( 'core/' ) === -1 ?? (
+							<Button
+								icon={ trash }
+								title={ __( 'Delete Field' ) }
+								onClick={ () => {
+									confirm(
+										__(
+											'Are you sure you want to delete this field?'
+										)
+									) && onDelete( formData );
+								} }
+							/>
+						) }
 					</ButtonGroup>
 
 					<Grid columns={ 3 }>
@@ -97,35 +123,6 @@ const EditFieldForm = ( {
 								setFormData( { ...formData, slug: value } )
 							}
 						/>
-						<SelectControl
-							label={ __( 'Type' ) }
-							value={ formData.type }
-							disabled={ formData.type.indexOf( 'core/' ) === 0 }
-							options={ [
-								{ label: __( 'Text' ), value: 'text' },
-								{ label: __( 'Textarea' ), value: 'textarea' },
-								{ label: __( 'URL' ), value: 'url' },
-								{ label: __( 'Image' ), value: 'image' },
-								{ label: __( 'Number' ), value: 'number' },
-								{
-									label: __( 'Image Block' ),
-									value: 'core/image',
-								},
-								{
-									label: __( 'Button Block' ),
-									value: 'core/button',
-								},
-								{
-									label: __( 'Group Block' ),
-									value: 'core/group',
-								},
-							] }
-							onChange={ ( value ) =>
-								setFormData( { ...formData, type: value } )
-							}
-						/>
-					</Grid>
-					<Grid columns={ 2 } alignment="bottom">
 						<TextControl
 							label={ __( 'Description (optional)' ) }
 							value={ formData.description }
@@ -136,19 +133,89 @@ const EditFieldForm = ( {
 								} )
 							}
 						/>
-
-						<ToggleControl
-							label={ __( 'Show Field in Custom Fields Form' ) }
-							checked={ formData.visible ?? false }
-							disabled={ formData.type.indexOf( 'core/' ) === 0 }
-							onChange={ ( value ) =>
-								setFormData( { ...formData, visible: value } )
-							}
-						/>
 					</Grid>
+					{ formData.type.indexOf( 'core/' ) === -1 && (
+						<Grid columns={ 2 } alignment="bottom">
+							<SelectControl
+								label={ __( 'Type' ) }
+								value={ formData.type }
+								disabled={
+									formData.type.indexOf( 'core/' ) === 0
+								}
+								options={ [
+									{ label: __( 'Text' ), value: 'text' },
+									{
+										label: __( 'Textarea' ),
+										value: 'textarea',
+									},
+									{ label: __( 'URL' ), value: 'url' },
+									{ label: __( 'Image' ), value: 'image' },
+									{ label: __( 'Number' ), value: 'number' },
+								] }
+								onChange={ ( value ) =>
+									setFormData( { ...formData, type: value } )
+								}
+							/>
+							<ToggleControl
+								label={ __(
+									'Show Field in Custom Fields Form'
+								) }
+								checked={ formData.visible ?? false }
+								onChange={ ( value ) =>
+									setFormData( {
+										...formData,
+										visible: value,
+									} )
+								}
+							/>
+						</Grid>
+					) }
+					{ formData.type.indexOf( 'core/' ) === 0 ? (
+						<BlockAttributes
+							slug={ formData.slug }
+							type={ formData.type }
+						/>
+					) : (
+						<ItemGroup isBordered isSeparated>
+							<Item>
+								<Flex>
+									<FlexBlock>{ formData.type }</FlexBlock>
+									<FlexItem>
+										<span>
+											<code>{ formData.slug }</code>
+										</span>
+									</FlexItem>
+								</Flex>
+							</Item>
+						</ItemGroup>
+					) }
 				</CardBody>
 			</Card>
 		</>
+	);
+};
+
+const BlockAttributes = ( { slug, type } ) => {
+	const supportedAttributes = SUPPORTED_BLOCK_ATTRIBUTES[ type ];
+	return (
+		<ItemGroup isBordered isSeparated>
+			{ supportedAttributes.map( ( attribute ) => (
+				<Item key={ attribute }>
+					<Flex>
+						<FlexBlock>{ attribute }</FlexBlock>
+						<FlexItem>
+							<span>
+								{ 'post_content' === slug ? (
+									<code>{ slug }</code>
+								) : (
+									<code>{ `${ slug }__${ attribute }` }</code>
+								) }
+							</span>
+						</FlexItem>
+					</Flex>
+				</Item>
+			) ) }
+		</ItemGroup>
 	);
 };
 

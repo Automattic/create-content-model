@@ -23,7 +23,6 @@ const ManageBindings = ( {
 } ) => {
 	const [ formData, setFormData ] = useState( defaultFormData );
 	const [ isValid, setIsValid ] = useState( false );
-	const [ originalSlug, setOriginalSlug ] = useState( defaultFormData.slug );
 
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
@@ -37,19 +36,10 @@ const ManageBindings = ( {
 		e.preventDefault();
 		let newFields = fields;
 
-		if ( originalSlug !== formData.slug ) {
-			// If the slug has been updated, remove the old slug.
-			newFields = newFields.filter(
-				( field ) => field.slug !== originalSlug
-			);
-			newFields.push( formData );
-			setMeta( {
-				fields: JSON.stringify( newFields ),
-			} );
-		} else if ( fields.find( ( field ) => field.slug === formData.slug ) ) {
+		if ( fields.find( ( field ) => field.uuid === formData.uuid ) ) {
 			// If the slug is the same and it exists, update the field.
 			newFields = newFields.map( ( field ) => {
-				if ( field.slug === formData.slug ) {
+				if ( field.uuid === formData.uuid ) {
 					field = formData;
 				}
 				return field;

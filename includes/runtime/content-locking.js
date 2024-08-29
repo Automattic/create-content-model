@@ -76,7 +76,7 @@ const parseBlocks = ( blocks, setEditMode, forceEnabled = false ) => {
 				block.attributes.metadata?.bindings ) ||
 			forceEnabled
 		) {
-			setEditMode( block.clientId, 'default' );
+			setEditMode( block.clientId, '' );
 		} else {
 			setEditMode( block.clientId, 'disabled' );
 		}
