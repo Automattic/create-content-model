@@ -581,6 +581,13 @@ final class Content_Model {
 		);
 	}
 
+	/**
+	 * Conditionally enqueues the fallback value clearer, allowing the block to become editable.
+	 *
+	 * Checks if the current post is of the correct type before enqueueing the script.
+	 *
+	 * @return void
+	 */
 	private function maybe_enqueue_fallback_value_clearer() {
 		add_action(
 			'enqueue_block_editor_assets',
