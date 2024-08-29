@@ -97,17 +97,46 @@ final class Content_Model {
 	 * @return void
 	 */
 	private function register_post_type() {
+		$singular_name = $this->title;
+
+		$plural_name   = get_post_meta( $this->post_id, 'plural_label', true );
+		$plural_name ??= $singular_name . 's';
+
+		$labels = array(
+			'name'               => $plural_name,
+			'singular_name'      => $singular_name,
+			'menu_name'          => $plural_name,
+			// translators: %s is the plural name of the post type.
+			'all_items'          => sprintf( __( 'All %s' ), $plural_name ),
+			// translators: %s is the singular name of the post type.
+			'add_new'            => sprintf( __( 'Add New %s' ), $singular_name ),
+			// translators: %s is the singular name of the post type.
+			'add_new_item'       => sprintf( __( 'Add New %s' ), $singular_name ),
+			// translators: %s is the singular name of the post type.
+			'edit_item'          => sprintf( __( 'Edit %s' ), $singular_name ),
+			// translators: %s is the singular name of the post type.
+			'new_item'           => sprintf( __( 'New %s' ), $singular_name ),
+			// translators: %s is the singular name of the post type.
+			'view_item'          => sprintf( __( 'View %s' ), $singular_name ),
+			// translators: %s is the plural name of the post type.
+			'search_items'       => sprintf( __( 'Search %s' ), $plural_name ),
+			// translators: %s is the plural name of the post type.
+			'not_found'          => sprintf( __( 'No %s found' ), $plural_name ),
+			// translators: %s is the plural name of the post type.
+			'not_found_in_trash' => sprintf( __( 'No %s found in trash' ), $plural_name ),
+		);
+
+		$icon = get_post_meta( $this->post_id, 'icon', true ) ?? 'admin-site';
+		$icon = str_replace( 'dashicons-', '', $icon );
+
 		register_post_type(
 			$this->slug,
 			array(
-				'labels'       => array(
-					'name'          => get_post_meta( $this->post_id, 'plural_label', true ) ?: $this->title . 's',
-					'singular_name' => $this->title,
-				),
+				'labels'       => $labels,
 				'public'       => true,
 				'show_in_menu' => true,
 				'show_in_rest' => true,
-				'icon'         => 'dashicons-admin-site',
+				'menu_icon'    => "dashicons-$icon",
 				'supports'     => array( 'title', 'editor', 'custom-fields' ),
 			)
 		);
