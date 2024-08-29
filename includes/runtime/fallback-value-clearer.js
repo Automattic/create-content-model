@@ -20,7 +20,7 @@ const CreateContentModelFallbackValueClearer = () => {
 		'meta'
 	);
 
-	const dispatcher = useDispatch( blockEditorStore );
+	const { updateBlockAttributes } = useDispatch( blockEditorStore );
 
 	const blockToMetaMap = useSelect( ( select ) => {
 		const blocks = select( blockEditorStore ).getBlocks();
@@ -62,14 +62,14 @@ const CreateContentModelFallbackValueClearer = () => {
 					) {
 						setMeta( { [ metaKey ]: '' } );
 
-						dispatcher.updateBlockAttributes( blockId, {
+						updateBlockAttributes( blockId, {
 							placeholder: `Enter a value for ${ blockName }`,
 						} );
 					}
 				} );
 			}
 		);
-	}, [ meta, setMeta, blockToMetaMap, dispatcher ] );
+	}, [ meta, setMeta, blockToMetaMap, updateBlockAttributes ] );
 
 	return null;
 };
