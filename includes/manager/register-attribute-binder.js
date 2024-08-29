@@ -40,7 +40,7 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 		const [ editingBoundAttribute, setEditingBoundAttribute ] =
 			useState( null );
 
-		const [ meta ] = useEntityProp(
+		const [ meta, setMeta ] = useEntityProp(
 			'postType',
 			window.contentModelFields.postType,
 			'meta'
@@ -71,6 +71,14 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			delete newAttributes.metadata[ window.BINDINGS_KEY ];
 			delete newAttributes.metadata[ window.BLOCK_VARIATION_NAME_ATTR ];
 			delete newAttributes.metadata.slug;
+
+			const newFields = fields.filter(
+				( field ) => field.slug !== attributes.metadata.slug
+			);
+
+			setMeta( {
+				fields: JSON.stringify( newFields ),
+			} );
 
 			setAttributes( newAttributes );
 		}, [ attributes.metadata, setAttributes ] );
