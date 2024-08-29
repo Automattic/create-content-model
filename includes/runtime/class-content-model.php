@@ -11,6 +11,8 @@ declare( strict_types = 1 );
  * Manages the registered Content Models.
  */
 final class Content_Model {
+	public const FALLBACK_VALUE_PLACEHOLDER = '__CREATE_CONTENT_MODEL__FALLBACK_VALUE__';
+
 	/**
 	 * The slug of the content model.
 	 *
@@ -82,6 +84,7 @@ final class Content_Model {
 		$this->maybe_enqueue_the_fields_ui();
 		$this->maybe_enqueue_bound_group_extractor();
 		$this->maybe_enqueue_content_locking();
+		$this->maybe_enqueue_fallback_value_clearer();
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
 
@@ -346,15 +349,9 @@ final class Content_Model {
 			$meta = $request->get_param( 'meta' ) ?? array();
 
 			foreach ( $meta as $key => $value ) {
-				$bound_meta_key = $this->bound_meta_keys[ $key ] ?? null;
-
-				if ( $bound_meta_key ) {
-					$fallback_value = $bound_meta_key->block->get_fallback_value_for_attribute( $bound_meta_key->attribute_name );
-
-					if ( $value === $fallback_value ) {
-						unset( $meta[ $key ] );
-						delete_post_meta( $request->get_param( 'id' ), $key );
-					}
+				if ( '' === $value ) {
+					unset( $meta[ $key ] );
+					delete_post_meta( $request->get_param( 'id' ), $key );
 				}
 			}
 
@@ -386,9 +383,7 @@ final class Content_Model {
 				$bound_meta_key = $this->bound_meta_keys[ $key ] ?? null;
 
 				if ( empty( $value ) && $bound_meta_key ) {
-					$fallback_value = $bound_meta_key->block->get_fallback_value_for_attribute( $bound_meta_key->attribute_name );
-
-					$data['meta'][ $key ] = $fallback_value;
+					$data['meta'][ $key ] = self::FALLBACK_VALUE_PLACEHOLDER;
 				}
 			}
 
@@ -582,6 +577,40 @@ final class Content_Model {
 				);
 
 				wp_enqueue_script( 'data-types/content-locking' );
+			}
+		);
+	}
+
+	private function maybe_enqueue_fallback_value_clearer() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || $this->slug !== $post->post_type ) {
+					return;
+				}
+
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/fallback-value-clearer.asset.php';
+
+				wp_register_script(
+					'data-types/fallback-value-clearer',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/fallback-value-clearer.js',
+					$asset_file['dependencies'],
+					$asset_file['version'],
+					true
+				);
+
+				wp_localize_script(
+					'data-types/fallback-value-clearer',
+					'contentModelFields',
+					array(
+						'postType'                   => $this->slug,
+						'FALLBACK_VALUE_PLACEHOLDER' => self::FALLBACK_VALUE_PLACEHOLDER,
+					)
+				);
+
+				wp_enqueue_script( 'data-types/fallback-value-clearer' );
 			}
 		);
 	}
