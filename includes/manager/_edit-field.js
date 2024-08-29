@@ -190,7 +190,11 @@ const BlockAttributes = ( { slug, type } ) => {
 						<FlexBlock>{ attribute }</FlexBlock>
 						<FlexItem>
 							<span>
-								<code>{ `${ slug }__${ attribute }` }</code>
+								{ 'post_content' === slug ? (
+									<code>{ slug }</code>
+								) : (
+									<code>{ `${ slug }__${ attribute }` }</code>
+								) }
 							</span>
 						</FlexItem>
 					</Flex>
