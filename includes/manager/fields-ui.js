@@ -3,7 +3,6 @@ import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import {
 	Button,
 	Modal,
-	TextControl,
 	__experimentalVStack as VStack,
 	__experimentalItemGroup as ItemGroup,
 	__experimentalItem as Item,
@@ -19,29 +18,13 @@ import { seen, unseen, blockDefault } from '@wordpress/icons';
 
 import EditFieldForm from './_edit-field';
 
-/**
- * Our base plugin component.
- * @returns CreateContentModelPageSettings
- */
 const CreateContentModelPageSettings = function () {
 	const [ isFieldsOpen, setFieldsOpen ] = useState( false );
 
-	const [ meta, setMeta ] = useEntityProp(
+	const [ meta ] = useEntityProp(
 		'postType',
-		contentModelFields.postType,
+		window.contentModelFields.postType,
 		'meta'
-	);
-
-	const [ slug, setSlug ] = useEntityProp(
-		'postType',
-		contentModelFields.postType,
-		'slug'
-	);
-
-	const [ title, setTitle ] = useEntityProp(
-		'postType',
-		contentModelFields.postType,
-		'title'
 	);
 
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
@@ -54,94 +37,45 @@ const CreateContentModelPageSettings = function () {
 		}
 	} );
 
-	const textControlFields = [
-		{
-			key: 'slug',
-			label: __( 'Slug' ),
-			value: slug,
-			onChange: ( value ) => setSlug( value ),
-			help: __(
-				'Warning: Changing the slug will break existing content.'
-			),
-		},
-		{
-			key: 'singular_label',
-			label: __( 'Singular Label' ),
-			value: title,
-			onChange: ( value ) => setTitle( value ),
-			help: __( 'Synced with the title of the post type.' ),
-		},
-		{
-			key: 'plural_label',
-			label: __( 'Plural Label' ),
-			value: meta.plural_label || `${ title }s`,
-			onChange: ( value ) => setMeta( { ...meta, plural_label: value } ),
-			help: __(
-				'This is the label that will be used for the plural form of the post type.'
-			),
-		},
-		{
-			key: 'description',
-			label: __( 'Description' ),
-			value: meta.description,
-			onChange: ( value ) => setMeta( { ...meta, description: value } ),
-			help: __( 'Description for the post type.' ),
-		},
-	];
-
 	return (
 		<>
-			<PluginDocumentSettingPanel
-				name="create-content-model-post-settings"
-				title={ __( 'Post Type' ) }
-				className="create-content-model-post-settings"
-			>
-				{ textControlFields.map( ( field ) => (
-					<TextControl
-						key={ field.key }
-						label={ field.label }
-						value={ field.value }
-						onChange={ field.onChange }
-						disabled={ field.disabled }
-						help={ field.help }
-					/>
-				) ) }
-			</PluginDocumentSettingPanel>
 			<PluginDocumentSettingPanel
 				name="create-content-model-field-settings"
 				title={ __( 'Custom Fields' ) }
 				className="create-content-model-field-settings"
 			>
-				<ItemGroup isBordered isSeparated>
-					{ fields.map( ( field ) => (
-						<Item key={ field.uuid }>
-							<Flex>
-								<FlexBlock>{ field.label }</FlexBlock>
-								<FlexItem>
-									<code>{ field.slug }</code>
-								</FlexItem>
-
-								{ field.visible && (
+				{ fields.length > 0 && (
+					<ItemGroup isBordered isSeparated>
+						{ fields.map( ( field ) => (
+							<Item key={ field.uuid }>
+								<Flex>
+									<FlexBlock>{ field.label }</FlexBlock>
 									<FlexItem>
-										<Icon icon={ seen } />
+										<code>{ field.slug }</code>
 									</FlexItem>
-								) }
-								{ ! field.visible &&
-									field.type.indexOf( 'core' ) > -1 && (
+
+									{ field.visible && (
 										<FlexItem>
-											<Icon icon={ blockDefault } />
+											<Icon icon={ seen } />
 										</FlexItem>
 									) }
-								{ ! field.visible &&
-									field.type.indexOf( 'core' ) < 0 && (
-										<FlexItem>
-											<Icon icon={ unseen } />
-										</FlexItem>
-									) }
-							</Flex>
-						</Item>
-					) ) }
-				</ItemGroup>
+									{ ! field.visible &&
+										field.type.indexOf( 'core' ) > -1 && (
+											<FlexItem>
+												<Icon icon={ blockDefault } />
+											</FlexItem>
+										) }
+									{ ! field.visible &&
+										field.type.indexOf( 'core' ) < 0 && (
+											<FlexItem>
+												<Icon icon={ unseen } />
+											</FlexItem>
+										) }
+								</Flex>
+							</Item>
+						) ) }
+					</ItemGroup>
+				) }
 
 				<Button
 					variant="secondary"
@@ -164,14 +98,10 @@ const CreateContentModelPageSettings = function () {
 	);
 };
 
-/**
- * Display the list of fields inside the modal.
- * @returns FieldsList
- */
 const FieldsList = () => {
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
-		contentModelFields.postType,
+		window.contentModelFields.postType,
 		'meta'
 	);
 
@@ -215,22 +145,22 @@ const FieldsList = () => {
 						index={ fields.findIndex(
 							( f ) => f.uuid === field.uuid
 						) }
-						onMoveUp={ ( field ) => {
+						onMoveUp={ ( movedField ) => {
 							const index = fields.findIndex(
-								( f ) => f.uuid === field.uuid
+								( f ) => f.uuid === movedField.uuid
 							);
 							const newFields = [ ...fields ];
 							newFields.splice( index, 1 );
-							newFields.splice( index - 1, 0, field );
+							newFields.splice( index - 1, 0, movedField );
 							setFields( newFields );
 						} }
-						onMoveDown={ ( field ) => {
+						onMoveDown={ ( movedField ) => {
 							const index = fields.findIndex(
-								( f ) => f.uuid === field.uuid
+								( f ) => f.uuid === movedField.uuid
 							);
 							const newFields = [ ...fields ];
 							newFields.splice( index, 1 );
-							newFields.splice( index + 1, 0, field );
+							newFields.splice( index + 1, 0, movedField );
 							setFields( newFields );
 						} }
 					/>

@@ -49,6 +49,7 @@ class Content_Model_Loader {
 
 		$this->register_post_type();
 		$this->maybe_enqueue_the_attribute_binder();
+		$this->maybe_enqueue_the_cpt_settings_panel();
 		$this->maybe_enqueue_the_fields_ui();
 		$this->maybe_enqueue_content_model_length_restrictor();
 
@@ -123,18 +124,18 @@ class Content_Model_Loader {
 			)
 		);
 
-		$cpt_fields = [
-			'plural_label' => [
+		$cpt_fields = array(
+			'plural_label' => array(
 				'type'         => 'string',
 				'single'       => true,
 				'show_in_rest' => true,
-			],
-			'description'  => [
+			),
+			'description'  => array(
 				'type'         => 'string',
 				'single'       => true,
 				'show_in_rest' => true,
-			],
-		];
+			),
+		);
 
 		foreach ( $cpt_fields as $field_name => $field_args ) {
 			register_post_meta(
@@ -187,6 +188,45 @@ class Content_Model_Loader {
 		);
 	}
 
+	/**
+	 * Conditionally enqueues the CPT settings script for the content model editor.
+	 *
+	 * Checks if the current post is of the correct type before enqueueing the script.
+	 *
+	 * @return void
+	 */
+	private function maybe_enqueue_the_cpt_settings_panel() {
+		add_action(
+			'enqueue_block_editor_assets',
+			function () {
+				global $post;
+
+				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
+					return;
+				}
+
+				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/manager/dist/cpt-settings-panel.asset.php';
+
+				wp_register_script(
+					'data-types/cpt-settings-panel',
+					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/cpt-settings-panel.js',
+					$asset_file['dependencies'],
+					$asset_file['version'],
+					true
+				);
+
+				wp_localize_script(
+					'data-types/cpt-settings-panel',
+					'contentModelFields',
+					array(
+						'postType' => Content_Model_Manager::POST_TYPE_NAME,
+					)
+				);
+
+				wp_enqueue_script( 'data-types/cpt-settings-panel' );
+			}
+		);
+	}
 
 
 	/**
