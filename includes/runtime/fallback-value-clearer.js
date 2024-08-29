@@ -25,7 +25,7 @@ const CreateContentModelFallbackValueClearer = () => {
 					[ key ]: '',
 				} );
 
-				// TODO: Change placeholder?
+				// TODO: Change placeholder to block variation name or post meta key.
 			}
 		} );
 	}, [ meta, setMeta ] );
