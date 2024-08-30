@@ -18,6 +18,7 @@ import { useState } from '@wordpress/element';
 import { seen, blockDefault } from '@wordpress/icons';
 
 import EditFieldForm from './edit-field';
+import EditBlockForm from './edit-block';
 import { POST_TYPE_NAME } from '../constants';
 
 export const FieldsUI = function () {
@@ -26,6 +27,7 @@ export const FieldsUI = function () {
 	const [ meta ] = useEntityProp( 'postType', POST_TYPE_NAME, 'meta' );
 
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
+	const blocks = meta?.blocks ? JSON.parse( meta.blocks ) : [];
 
 	return (
 		<>
@@ -34,6 +36,24 @@ export const FieldsUI = function () {
 				title={ __( 'Post Meta' ) }
 				className="create-content-model-field-settings"
 			>
+				{ blocks.length > 0 && (
+					<ItemGroup isBordered isSeparated>
+						{ blocks.map( ( block ) => (
+							<Item key={ block.uuid }>
+								<Flex>
+									<FlexBlock>{ block.label }</FlexBlock>
+									<FlexItem>
+										<code>{ block.slug }</code>
+									</FlexItem>
+
+									<FlexItem>
+										<Icon icon={ blockDefault } />
+									</FlexItem>
+								</Flex>
+							</Item>
+						) ) }
+					</ItemGroup>
+				) }
 				{ fields.length > 0 && (
 					<ItemGroup isBordered isSeparated>
 						{ fields.map( ( field ) => (
@@ -44,15 +64,9 @@ export const FieldsUI = function () {
 										<code>{ field.slug }</code>
 									</FlexItem>
 
-									{ field.type.indexOf( 'core' ) > -1 ? (
-										<FlexItem>
-											<Icon icon={ blockDefault } />
-										</FlexItem>
-									) : (
-										<FlexItem>
-											<Icon icon={ seen } />
-										</FlexItem>
-									) }
+									<FlexItem>
+										<Icon icon={ seen } />
+									</FlexItem>
 								</Flex>
 							</Item>
 						) ) }
@@ -77,14 +91,14 @@ export const FieldsUI = function () {
 						<TabPanel
 							tabs={ [
 								{
-									name: 'fields',
-									title: __( 'Fields' ),
-									content: <FieldsList tab="fields" />,
+									name: 'blocks',
+									title: __( 'Block Bindings' ),
+									content: <BlocksList />,
 								},
 								{
-									name: 'blocks',
-									title: __( 'Blocks' ),
-									content: <FieldsList tab="blocks" />,
+									name: 'fields',
+									title: __( 'Fields' ),
+									content: <FieldsList />,
 								},
 							] }
 						>
@@ -97,7 +111,7 @@ export const FieldsUI = function () {
 	);
 };
 
-const FieldsList = ( { tab } ) => {
+const FieldsList = () => {
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
 		POST_TYPE_NAME,
@@ -125,65 +139,74 @@ const FieldsList = ( { tab } ) => {
 
 	return (
 		<>
+			<p>{ __( 'Custom fields show up in the post sidebar.' ) }</p>
 			<VStack spacing={ 2 }>
-				{ fields
-					.filter( ( field ) => {
-						if ( tab === 'fields' ) {
-							return ! field.type.startsWith( 'core/' );
-						}
+				{ fields.map( ( field ) => (
+					<EditFieldForm
+						key={ field.uuid }
+						field={ field }
+						onDelete={ deleteField }
+						onChange={ editField }
+						total={ fields.length }
+						index={ fields.findIndex(
+							( f ) => f.uuid === field.uuid
+						) }
+						onMoveUp={ ( movedField ) => {
+							const index = fields.findIndex(
+								( f ) => f.uuid === movedField.uuid
+							);
+							const newFields = [ ...fields ];
+							newFields.splice( index, 1 );
+							newFields.splice( index - 1, 0, movedField );
+							setFields( newFields );
+						} }
+						onMoveDown={ ( movedField ) => {
+							const index = fields.findIndex(
+								( f ) => f.uuid === movedField.uuid
+							);
+							const newFields = [ ...fields ];
+							newFields.splice( index, 1 );
+							newFields.splice( index + 1, 0, movedField );
+							setFields( newFields );
+						} }
+					/>
+				) ) }
 
-						return field.type.startsWith( 'core/' );
-					} )
-					.map( ( field ) => (
-						<EditFieldForm
-							key={ field.uuid }
-							field={ field }
-							onDelete={ deleteField }
-							onChange={ editField }
-							total={ fields.length }
-							index={ fields.findIndex(
-								( f ) => f.uuid === field.uuid
-							) }
-							onMoveUp={ ( movedField ) => {
-								const index = fields.findIndex(
-									( f ) => f.uuid === movedField.uuid
-								);
-								const newFields = [ ...fields ];
-								newFields.splice( index, 1 );
-								newFields.splice( index - 1, 0, movedField );
-								setFields( newFields );
-							} }
-							onMoveDown={ ( movedField ) => {
-								const index = fields.findIndex(
-									( f ) => f.uuid === movedField.uuid
-								);
-								const newFields = [ ...fields ];
-								newFields.splice( index, 1 );
-								newFields.splice( index + 1, 0, movedField );
-								setFields( newFields );
-							} }
-						/>
-					) ) }
-				{ tab === 'fields' ?? (
-					<Button
-						variant="secondary"
-						onClick={ () =>
-							setFields( [
-								...fields,
-								{
-									uuid: crypto.randomUUID(),
-									label: '',
-									slug: '',
-									description: '',
-									type: 'text',
-									visible: true,
-								},
-							] )
-						}
-					>
-						{ __( 'Add Field' ) }
-					</Button>
-				) }
+				<Button
+					variant="secondary"
+					style={ { marginTop: '1rem' } }
+					onClick={ () =>
+						setFields( [
+							...fields,
+							{
+								uuid: crypto.randomUUID(),
+								label: '',
+								slug: '',
+								description: '',
+								type: 'text',
+								visible: true,
+							},
+						] )
+					}
+				>
+					{ __( 'Add Field' ) }
+				</Button>
+			</VStack>
+		</>
+	);
+};
+
+const BlocksList = () => {
+	const [ meta ] = useEntityProp( 'postType', POST_TYPE_NAME, 'meta' );
+
+	const blocks = meta?.blocks ? JSON.parse( meta.blocks ) : [];
+
+	return (
+		<>
+			<VStack spacing={ 2 }>
+				{ blocks.map( ( block ) => (
+					<EditBlockForm key={ block.uuid } block={ block } />
+				) ) }
 			</VStack>
 		</>
 	);

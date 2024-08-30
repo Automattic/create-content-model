@@ -24,26 +24,26 @@ const ManageBindings = ( {
 		'meta'
 	);
 
-	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
+	const blocks = meta?.blocks ? JSON.parse( meta.blocks ) : [];
 
 	const saveForm = ( e ) => {
 		e.preventDefault();
-		let newFields = fields;
+		let newBlocks = blocks;
 
-		if ( fields.find( ( field ) => field.uuid === formData.uuid ) ) {
-			// If the slug is the same and it exists, update the field.
-			newFields = newFields.map( ( field ) => {
-				if ( field.uuid === formData.uuid ) {
-					field = formData;
+		if ( blocks.find( ( block ) => block.uuid === formData.uuid ) ) {
+			// If the slug is the same and it exists, update the block.
+			newBlocks = newBlocks.map( ( block ) => {
+				if ( block.uuid === formData.uuid ) {
+					block = formData;
 				}
-				return field;
+				return block;
 			} );
 			setMeta( {
-				fields: JSON.stringify( newFields ),
+				blocks: JSON.stringify( newBlocks ),
 			} );
 		} else {
 			setMeta( {
-				fields: JSON.stringify( [ ...newFields, formData ] ),
+				blocks: JSON.stringify( [ ...newBlocks, formData ] ),
 			} );
 		}
 		onSave( formData );
