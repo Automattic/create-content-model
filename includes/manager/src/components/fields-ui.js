@@ -2,6 +2,7 @@ import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import {
 	Button,
 	PanelRow,
+	TabPanel,
 	Modal,
 	__experimentalVStack as VStack,
 	__experimentalItemGroup as ItemGroup,
@@ -24,15 +25,7 @@ export const FieldsUI = function () {
 
 	const [ meta ] = useEntityProp( 'postType', POST_TYPE_NAME, 'meta' );
 
-	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
-
-	// Add UUID to fields
-	fields.forEach( ( field ) => {
-		if ( ! field.uuid ) {
-			field.uuid = crypto.randomUUID();
-		}
-	} );
 
 	return (
 		<>
@@ -96,7 +89,6 @@ const FieldsList = () => {
 		'meta'
 	);
 
-	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
 	// Save the fields back to the meta.

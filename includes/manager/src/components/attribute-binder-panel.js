@@ -36,7 +36,6 @@ export const AttributeBinderPanel = ( { attributes, setAttributes, name } ) => {
 	);
 
 	const fields = useMemo( () => {
-		// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 		return meta?.fields ? JSON.parse( meta.fields ) : [];
 	}, [ meta.fields ] );
 
