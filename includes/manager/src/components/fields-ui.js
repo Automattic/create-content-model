@@ -15,7 +15,15 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { seen, blockDefault } from '@wordpress/icons';
+import {
+	post,
+	blockDefault,
+	paragraph,
+	heading,
+	button,
+	group,
+	image,
+} from '@wordpress/icons';
 
 import EditFieldForm from './edit-field';
 import EditBlockForm from './edit-block';
@@ -42,13 +50,14 @@ export const FieldsUI = function () {
 							{ blocks.map( ( block ) => (
 								<Item key={ block.uuid }>
 									<Flex>
+										<FlexItem>
+											<Icon
+												icon={ blockIcon( block.type ) }
+											/>
+										</FlexItem>
 										<FlexBlock>{ block.label }</FlexBlock>
 										<FlexItem>
 											<code>{ block.slug }</code>
-										</FlexItem>
-
-										<FlexItem>
-											<Icon icon={ blockDefault } />
 										</FlexItem>
 									</Flex>
 								</Item>
@@ -60,13 +69,12 @@ export const FieldsUI = function () {
 							{ fields.map( ( field ) => (
 								<Item key={ field.uuid }>
 									<Flex>
+										<FlexItem>
+											<Icon icon={ post } />
+										</FlexItem>
 										<FlexBlock>{ field.label }</FlexBlock>
 										<FlexItem>
 											<code>{ field.slug }</code>
-										</FlexItem>
-
-										<FlexItem>
-											<Icon icon={ seen } />
 										</FlexItem>
 									</Flex>
 								</Item>
@@ -212,4 +220,20 @@ const BlocksList = () => {
 			</VStack>
 		</>
 	);
+};
+const blockIcon = ( type ) => {
+	switch ( type ) {
+		case 'core/paragraph':
+			return paragraph;
+		case 'core/image':
+			return image;
+		case 'core/heading':
+			return heading;
+		case 'core/group':
+			return group;
+		case 'core/button':
+			return button;
+		default:
+			return blockDefault;
+	}
 };

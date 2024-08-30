@@ -13,7 +13,14 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import { blockDefault } from '@wordpress/icons';
+import {
+	blockDefault,
+	paragraph,
+	image,
+	heading,
+	group,
+	button,
+} from '@wordpress/icons';
 
 import { SUPPORTED_BLOCK_ATTRIBUTES } from '../constants';
 
@@ -42,7 +49,10 @@ const EditBlockForm = ( {
 							marginBottom: '1rem',
 						} }
 					>
-						<Button icon={ blockDefault } title={ formData.type }>
+						<Button
+							icon={ blockIcon( formData.type ) }
+							title={ formData.type }
+						>
 							{ __( 'Block Binding' ) }
 						</Button>
 					</ButtonGroup>
@@ -102,6 +112,23 @@ const BlockAttributes = ( { slug, type } ) => {
 			) ) }
 		</ItemGroup>
 	);
+};
+
+const blockIcon = ( type ) => {
+	switch ( type ) {
+		case 'core/paragraph':
+			return paragraph;
+		case 'core/image':
+			return image;
+		case 'core/heading':
+			return heading;
+		case 'core/group':
+			return group;
+		case 'core/button':
+			return button;
+		default:
+			return blockDefault;
+	}
 };
 
 export default EditBlockForm;
