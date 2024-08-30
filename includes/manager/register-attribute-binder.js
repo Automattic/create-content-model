@@ -1,5 +1,5 @@
 import { addFilter } from '@wordpress/hooks';
-import { useCallback, useMemo, useEffect, useState } from '@wordpress/element';
+import { useCallback, useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
@@ -14,8 +14,7 @@ import {
 	FlexBlock,
 	FlexItem,
 } from '@wordpress/components';
-import { useSelect, useDispatch } from '@wordpress/data';
-import { store as editorStore } from '@wordpress/editor';
+import { useSelect } from '@wordpress/data';
 import { store as blocksStore } from '@wordpress/blocks';
 import { useEntityProp } from '@wordpress/core-data';
 
@@ -23,20 +22,11 @@ import ManageBindings from './_manage-bindings';
 
 import SUPPORTED_BLOCK_ATTRIBUTES from './_supported-attributes';
 
-const ErrorMessage = ( { children } ) => {
-	return (
-		<span style={ { color: 'var(--wp--preset--color--vivid-red)' } }>
-			{ children }
-		</span>
-	);
-};
-
 const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 	return ( props ) => {
 		const { getBlockType } = useSelect( blocksStore );
 		const { getBlockParentsByBlockName, getBlocksByClientId } =
 			useSelect( 'core/block-editor' );
-		const { lockPostSaving, unlockPostSaving } = useDispatch( editorStore );
 		const [ editingBoundAttribute, setEditingBoundAttribute ] =
 			useState( null );
 
@@ -55,12 +45,6 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 
 		const boundField = fields.find(
 			( field ) => field.slug === attributes.metadata?.slug
-		);
-
-		const getBinding = useCallback(
-			( attribute ) =>
-				attributes.metadata?.[ window.BINDINGS_KEY ]?.[ attribute ],
-			[ attributes.metadata ]
 		);
 
 		const removeBindings = useCallback( () => {
@@ -136,63 +120,6 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 			},
 			[ attributes.metadata, setAttributes, supportedAttributes ]
 		);
-
-		const validations = useMemo( () => {
-			const metadata = attributes.metadata ?? {};
-			const bindings = metadata[ window.BINDINGS_KEY ] ?? {};
-
-			const _validations = {};
-
-			const hasAtLeastOneBinding = Object.keys( bindings ).length > 0;
-
-			if (
-				hasAtLeastOneBinding &&
-				! metadata[ window.BLOCK_VARIATION_NAME_ATTR ]
-			) {
-				_validations[ window.BLOCK_VARIATION_NAME_ATTR ] = (
-					<ErrorMessage>
-						{ __( 'Block variation name is required' ) }
-					</ErrorMessage>
-				);
-			}
-
-			if (
-				metadata[ window.BLOCK_VARIATION_NAME_ATTR ] &&
-				! hasAtLeastOneBinding
-			) {
-				_validations[ window.BLOCK_VARIATION_NAME_ATTR ] = (
-					<ErrorMessage>
-						{ __( 'Bind at least one attribute' ) }
-					</ErrorMessage>
-				);
-			}
-
-			Object.keys( bindings ).forEach( ( attribute ) => {
-				const field = getBinding( attribute );
-
-				if ( field === 'post_content' && name !== 'core/group' ) {
-					_validations[ attribute ] = (
-						<ErrorMessage>
-							{ __(
-								'Only Group blocks can be bound to post_content'
-							) }
-						</ErrorMessage>
-					);
-				}
-			} );
-
-			return _validations;
-		}, [ attributes.metadata, getBinding, name ] );
-
-		useEffect( () => {
-			const hasValidationErrors = Object.keys( validations ).length > 0;
-
-			if ( hasValidationErrors ) {
-				lockPostSaving();
-			} else {
-				unlockPostSaving();
-			}
-		}, [ lockPostSaving, unlockPostSaving, validations ] );
 
 		if ( ! supportedAttributes || parentHasBindings ) {
 			return <BlockEdit { ...props } />;
