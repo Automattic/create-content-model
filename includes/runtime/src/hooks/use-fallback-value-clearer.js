@@ -1,7 +1,7 @@
 import { useLayoutEffect } from '@wordpress/element';
 import { useEntityProp } from '@wordpress/core-data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
 import { FALLBACK_VALUE_PLACEHOLDER, POST_TYPE } from '../constants';
 
 /**
@@ -9,14 +9,12 @@ import { FALLBACK_VALUE_PLACEHOLDER, POST_TYPE } from '../constants';
  * There is a bug in the Bindings API preventing this from working,
  * so here's our workaround.
  *
- * TODO Remove when Gutneberg 19.2 gets released.
+ * TODO Remove when Gutenberg 19.2 gets released.
  *
  * See https://github.com/Automattic/create-content-model/issues/63 for the problem.
  */
 export const useFallbackValueClearer = () => {
 	const [ meta, setMeta ] = useEntityProp( 'postType', POST_TYPE, 'meta' );
-
-	const { updateBlockAttributes } = useDispatch( blockEditorStore );
 
 	const blockToMetaMap = useSelect( ( select ) => {
 		const blocks = select( blockEditorStore ).getBlocks();
@@ -48,22 +46,16 @@ export const useFallbackValueClearer = () => {
 	}, [] );
 
 	useLayoutEffect( () => {
-		Object.entries( blockToMetaMap ).forEach(
-			( [ blockId, metaInfos ] ) => {
-				metaInfos.forEach( ( { metaKey, blockName } ) => {
-					const value = meta[ metaKey ];
+		Object.entries( blockToMetaMap ).forEach( ( [ , metaInfos ] ) => {
+			metaInfos.forEach( ( { metaKey } ) => {
+				const value = meta[ metaKey ];
 
-					if ( value === FALLBACK_VALUE_PLACEHOLDER ) {
-						setMeta( { [ metaKey ]: '' } );
-
-						updateBlockAttributes( blockId, {
-							placeholder: `Enter a value for ${ blockName }`,
-						} );
-					}
-				} );
-			}
-		);
-	}, [ meta, setMeta, blockToMetaMap, updateBlockAttributes ] );
+				if ( value === FALLBACK_VALUE_PLACEHOLDER ) {
+					setMeta( { [ metaKey ]: '' } );
+				}
+			} );
+		} );
+	}, [ meta, setMeta, blockToMetaMap ] );
 
 	return null;
 };

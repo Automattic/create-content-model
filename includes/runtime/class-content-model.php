@@ -333,8 +333,6 @@ final class Content_Model {
 	/**
 	 * Intercepts the saving request and removes the meta keys with default values.
 	 *
-	 * TODO Remove when Gutneberg 19.2 gets released.
-	 *
 	 * @param WP_HTTP_Response|null $response The response.
 	 * @param WP_REST_Server        $server   Route handler used for the request.
 	 * @param WP_REST_Request       $request  The request.
@@ -364,8 +362,6 @@ final class Content_Model {
 	/**
 	 * Intercepts the response and fills the empty meta keys with default values.
 	 *
-	 * TODO Remove when Gutneberg 19.2 gets released.
-	 *
 	 * @param WP_HTTP_Response $result The response.
 	 * @param WP_REST_Server   $server The server.
 	 * @param WP_REST_Request  $request The request.
@@ -385,6 +381,7 @@ final class Content_Model {
 				$bound_meta_key = $this->bound_meta_keys[ $key ] ?? null;
 
 				if ( empty( $value ) && $bound_meta_key ) {
+					// TODO: Switch to empty string when Gutenberg 19.2 gets released.
 					$data['meta'][ $key ] = self::FALLBACK_VALUE_PLACEHOLDER;
 				}
 			}
@@ -439,9 +436,31 @@ final class Content_Model {
 			return;
 		}
 
-		$data_hydrator = new Content_Model_Data_Hydrator( $this->template, false );
+		$editor_blocks = $this->template;
+		$editor_blocks = ( new Content_Model_Data_Hydrator( $editor_blocks, false ) )->hydrate();
+		$editor_blocks = content_model_block_walker( $editor_blocks, array( $this, 'add_fallback_value_placeholder' ) );
 
-		$post->post_content = serialize_blocks( $data_hydrator->hydrate() );
+		$post->post_content = serialize_blocks( $editor_blocks );
+	}
+
+	/**
+	 * If a block has bindings modify the placeholder text.
+	 *
+	 * @param array $block The original block.
+	 *
+	 * @return array The modified block.
+	 */
+	public function add_fallback_value_placeholder( $block ) {
+		$tentative_block = new Content_Model_Block( $block );
+
+		if ( ! empty( $tentative_block->get_bindings() ) ) {
+			// translators: %s is the block variation name.
+			$block['attrs']['placeholder'] = sprintf( __( 'Enter a value for %s' ), $tentative_block->get_block_variation_name() );
+
+			return $block;
+		}
+
+		return $block;
 	}
 
 	/**
