@@ -1,8 +1,8 @@
 import { useLayoutEffect } from '@wordpress/element';
-import { registerPlugin } from '@wordpress/plugins';
 import { useEntityProp } from '@wordpress/core-data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { useSelect, useDispatch } from '@wordpress/data';
+import { FALLBACK_VALUE_PLACEHOLDER, POST_TYPE } from '../constants';
 
 /**
  * This allows the user to edit values that are bound to an attribute.
@@ -13,12 +13,8 @@ import { useSelect, useDispatch } from '@wordpress/data';
  *
  * See https://github.com/Automattic/create-content-model/issues/63 for the problem.
  */
-const CreateContentModelFallbackValueClearer = () => {
-	const [ meta, setMeta ] = useEntityProp(
-		'postType',
-		window.contentModelFields.postType,
-		'meta'
-	);
+export const useFallbackValueClearer = () => {
+	const [ meta, setMeta ] = useEntityProp( 'postType', POST_TYPE, 'meta' );
 
 	const { updateBlockAttributes } = useDispatch( blockEditorStore );
 
@@ -56,10 +52,8 @@ const CreateContentModelFallbackValueClearer = () => {
 			( [ blockId, metaInfos ] ) => {
 				metaInfos.forEach( ( { metaKey, blockName } ) => {
 					const value = meta[ metaKey ];
-					if (
-						value ===
-						window.contentModelFields.FALLBACK_VALUE_PLACEHOLDER
-					) {
+
+					if ( value === FALLBACK_VALUE_PLACEHOLDER ) {
 						setMeta( { [ metaKey ]: '' } );
 
 						updateBlockAttributes( blockId, {
@@ -73,7 +67,3 @@ const CreateContentModelFallbackValueClearer = () => {
 
 	return null;
 };
-
-registerPlugin( 'create-content-model-fallback-value-clearer', {
-	render: CreateContentModelFallbackValueClearer,
-} );
