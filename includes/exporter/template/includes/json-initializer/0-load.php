@@ -10,6 +10,6 @@ declare( strict_types = 1 );
 require_once __DIR__ . '/class-content-model-json-initializer.php';
 
 add_action(
-	'plugins_loaded',
+	'init',
 	array( Content_Model_Json_Initializer::class, 'maybe_register_content_models_from_json' )
 );
