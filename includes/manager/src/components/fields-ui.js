@@ -36,42 +36,44 @@ export const FieldsUI = function () {
 				title={ __( 'Post Meta' ) }
 				className="create-content-model-field-settings"
 			>
-				{ blocks.length > 0 && (
-					<ItemGroup isBordered isSeparated>
-						{ blocks.map( ( block ) => (
-							<Item key={ block.uuid }>
-								<Flex>
-									<FlexBlock>{ block.label }</FlexBlock>
-									<FlexItem>
-										<code>{ block.slug }</code>
-									</FlexItem>
+				<ItemGroup isBordered isSeparated>
+					{ blocks.length > 0 && (
+						<>
+							{ blocks.map( ( block ) => (
+								<Item key={ block.uuid }>
+									<Flex>
+										<FlexBlock>{ block.label }</FlexBlock>
+										<FlexItem>
+											<code>{ block.slug }</code>
+										</FlexItem>
 
-									<FlexItem>
-										<Icon icon={ blockDefault } />
-									</FlexItem>
-								</Flex>
-							</Item>
-						) ) }
-					</ItemGroup>
-				) }
-				{ fields.length > 0 && (
-					<ItemGroup isBordered isSeparated>
-						{ fields.map( ( field ) => (
-							<Item key={ field.uuid }>
-								<Flex>
-									<FlexBlock>{ field.label }</FlexBlock>
-									<FlexItem>
-										<code>{ field.slug }</code>
-									</FlexItem>
+										<FlexItem>
+											<Icon icon={ blockDefault } />
+										</FlexItem>
+									</Flex>
+								</Item>
+							) ) }
+						</>
+					) }
+					{ fields.length > 0 && (
+						<>
+							{ fields.map( ( field ) => (
+								<Item key={ field.uuid }>
+									<Flex>
+										<FlexBlock>{ field.label }</FlexBlock>
+										<FlexItem>
+											<code>{ field.slug }</code>
+										</FlexItem>
 
-									<FlexItem>
-										<Icon icon={ seen } />
-									</FlexItem>
-								</Flex>
-							</Item>
-						) ) }
-					</ItemGroup>
-				) }
+										<FlexItem>
+											<Icon icon={ seen } />
+										</FlexItem>
+									</Flex>
+								</Item>
+							) ) }
+						</>
+					) }
+				</ItemGroup>
 
 				<PanelRow>
 					<Button
