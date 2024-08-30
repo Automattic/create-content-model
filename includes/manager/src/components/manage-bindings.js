@@ -10,7 +10,7 @@ const ManageBindings = ( {
 		slug: '',
 		description: '',
 		type: 'text',
-		visible: true,
+		visible: false,
 		uuid: crypto.randomUUID(),
 	},
 	onSave = () => {},

@@ -14,7 +14,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { seen, unseen, blockDefault } from '@wordpress/icons';
+import { seen, blockDefault } from '@wordpress/icons';
 
 import EditFieldForm from './edit-field';
 import { POST_TYPE_NAME } from '../constants';
@@ -51,23 +51,15 @@ export const FieldsUI = function () {
 										<code>{ field.slug }</code>
 									</FlexItem>
 
-									{ field.visible && (
+									{ field.type.indexOf( 'core' ) > -1 ? (
+										<FlexItem>
+											<Icon icon={ blockDefault } />
+										</FlexItem>
+									) : (
 										<FlexItem>
 											<Icon icon={ seen } />
 										</FlexItem>
 									) }
-									{ ! field.visible &&
-										field.type.indexOf( 'core' ) > -1 && (
-											<FlexItem>
-												<Icon icon={ blockDefault } />
-											</FlexItem>
-										) }
-									{ ! field.visible &&
-										field.type.indexOf( 'core' ) < 0 && (
-											<FlexItem>
-												<Icon icon={ unseen } />
-											</FlexItem>
-										) }
 								</Flex>
 							</Item>
 						) ) }
@@ -79,7 +71,7 @@ export const FieldsUI = function () {
 						variant="secondary"
 						onClick={ () => setFieldsOpen( true ) }
 					>
-						{ __( 'Manage Fields' ) }
+						{ __( 'Manage Post Meta' ) }
 					</Button>
 				</PanelRow>
 

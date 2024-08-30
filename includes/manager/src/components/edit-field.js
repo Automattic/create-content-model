@@ -3,7 +3,6 @@ import {
 	ButtonGroup,
 	TextControl,
 	SelectControl,
-	ToggleControl,
 	__experimentalGrid as Grid,
 	CardBody,
 	Card,
@@ -105,10 +104,15 @@ const EditFieldForm = ( {
 						) }
 					</ButtonGroup>
 
-					<Grid columns={ 3 }>
+					<Grid
+						columns={
+							formData.type.indexOf( 'core/' ) === -1 ? 4 : 3
+						}
+					>
 						<TextControl
 							label={ __( 'Name' ) }
 							value={ formData.label }
+							disabled={ formData.type.indexOf( 'core/' ) === 0 }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, label: value } )
 							}
@@ -116,6 +120,7 @@ const EditFieldForm = ( {
 						<TextControl
 							label={ __( 'Key' ) }
 							value={ formData.slug }
+							disabled={ formData.type.indexOf( 'core/' ) === 0 }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, slug: value } )
 							}
@@ -130,11 +135,10 @@ const EditFieldForm = ( {
 								} )
 							}
 						/>
-					</Grid>
-					{ formData.type.indexOf( 'core/' ) === -1 && (
-						<Grid columns={ 2 } alignment="bottom">
+
+						{ formData.type.indexOf( 'core/' ) === -1 && (
 							<SelectControl
-								label={ __( 'Type' ) }
+								label={ __( 'Field Type' ) }
 								value={ formData.type }
 								disabled={
 									formData.type.indexOf( 'core/' ) === 0
@@ -153,20 +157,8 @@ const EditFieldForm = ( {
 									setFormData( { ...formData, type: value } )
 								}
 							/>
-							<ToggleControl
-								label={ __(
-									'Show Field in Custom Fields Form'
-								) }
-								checked={ formData.visible ?? false }
-								onChange={ ( value ) =>
-									setFormData( {
-										...formData,
-										visible: value,
-									} )
-								}
-							/>
-						</Grid>
-					) }
+						) }
+					</Grid>
 					{ formData.type.indexOf( 'core/' ) === 0 ? (
 						<BlockAttributes
 							slug={ formData.slug }
