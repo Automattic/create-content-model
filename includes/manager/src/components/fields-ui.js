@@ -1,4 +1,3 @@
-import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import {
 	Button,
@@ -17,16 +16,13 @@ import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
 import { seen, unseen, blockDefault } from '@wordpress/icons';
 
-import EditFieldForm from './_edit-field';
+import EditFieldForm from './edit-field';
+import { POST_TYPE_NAME } from '../constants';
 
-const CreateContentModelPageSettings = function () {
+export const FieldsUI = function () {
 	const [ isFieldsOpen, setFieldsOpen ] = useState( false );
 
-	const [ meta ] = useEntityProp(
-		'postType',
-		window.contentModelFields.postType,
-		'meta'
-	);
+	const [ meta ] = useEntityProp( 'postType', POST_TYPE_NAME, 'meta' );
 
 	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
@@ -34,7 +30,7 @@ const CreateContentModelPageSettings = function () {
 	// Add UUID to fields
 	fields.forEach( ( field ) => {
 		if ( ! field.uuid ) {
-			field.uuid = window.crypto.randomUUID();
+			field.uuid = crypto.randomUUID();
 		}
 	} );
 
@@ -104,7 +100,7 @@ const CreateContentModelPageSettings = function () {
 const FieldsList = () => {
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
-		window.contentModelFields.postType,
+		POST_TYPE_NAME,
 		'meta'
 	);
 
@@ -168,7 +164,7 @@ const FieldsList = () => {
 						setFields( [
 							...fields,
 							{
-								uuid: window.crypto.randomUUID(),
+								uuid: crypto.randomUUID(),
 								label: '',
 								slug: '',
 								description: '',
@@ -184,8 +180,3 @@ const FieldsList = () => {
 		</>
 	);
 };
-
-// Register the plugin.
-registerPlugin( 'create-content-model-page-settings', {
-	render: CreateContentModelPageSettings,
-} );

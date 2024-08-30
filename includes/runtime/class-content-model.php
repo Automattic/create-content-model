@@ -81,10 +81,8 @@ final class Content_Model {
 		$this->blocks = $this->inflate_template_blocks( $this->template );
 		$this->fields = json_decode( get_post_meta( $content_model_post->ID, 'fields', true ), true );
 		$this->register_meta_fields();
-		$this->maybe_enqueue_the_fields_ui();
-		$this->maybe_enqueue_bound_group_extractor();
-		$this->maybe_enqueue_content_locking();
-		$this->maybe_enqueue_fallback_value_clearer();
+
+		add_action( 'enqueue_block_editor_assets', array( $this, 'maybe_enqueue_scripts' ) );
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
 
@@ -462,167 +460,35 @@ final class Content_Model {
 	}
 
 	/**
-	 * When you use the Bindings API, the Editor automatically extracts bound attributes as post meta.
-	 * But because we're binding to the inner blocks of Groups (and not an attribute),
-	 * we need to manually extract it.
+	 * Enqueue the helper scripts if entering data to a content model.
 	 *
 	 * @return void
 	 */
-	private function maybe_enqueue_bound_group_extractor() {
-		add_action(
-			'enqueue_block_editor_assets',
-			function () {
-				global $post;
+	public function maybe_enqueue_scripts() {
+		global $post;
 
-				if ( ! $post || $this->slug !== $post->post_type ) {
-					return;
-				}
+		if ( ! $post || $this->slug !== $post->post_type ) {
+			return;
+		}
 
-				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/bound-group-extractor.asset.php';
+		$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/runtime.asset.php';
 
-				wp_register_script(
-					'data-types/bound-group-extractor',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/bound-group-extractor.js',
-					$asset_file['dependencies'],
-					$asset_file['version'],
-					true
-				);
-
-				wp_localize_script(
-					'data-types/bound-group-extractor',
-					'contentModelFields',
-					array(
-						'postType' => $this->slug,
-						'fields'   => $this->fields,
-					)
-				);
-
-				wp_enqueue_script( 'data-types/bound-group-extractor' );
-			}
+		wp_enqueue_script(
+			'content-model/runtime',
+			CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/runtime.js',
+			$asset_file['dependencies'],
+			$asset_file['version'],
+			true
 		);
-	}
 
-	/**
-	 * Conditionally enqueues the fields UI script for the block editor.
-	 *
-	 * Checks if the current post is of the correct type before enqueueing the script.
-	 *
-	 * @return void
-	 */
-	private function maybe_enqueue_the_fields_ui() {
-		add_action(
-			'enqueue_block_editor_assets',
-			function () {
-				global $post;
-
-				if ( ! $post || $this->slug !== $post->post_type ) {
-					return;
-				}
-
-				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/fields-ui.asset.php';
-
-				wp_register_script(
-					'data-types/fields-ui',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/fields-ui.js',
-					$asset_file['dependencies'],
-					$asset_file['version'],
-					true
-				);
-
-				wp_localize_script(
-					'data-types/fields-ui',
-					'contentModelFields',
-					array(
-						'postType' => $this->slug,
-						'fields'   => $this->fields,
-					)
-				);
-
-				wp_enqueue_script( 'data-types/fields-ui' );
-			}
-		);
-	}
-
-
-	/**
-	 * Conditionally enqueues the fields UI script for the block editor.
-	 *
-	 * Checks if the current post is of the correct type before enqueueing the script.
-	 *
-	 * @return void
-	 */
-	private function maybe_enqueue_content_locking() {
-		add_action(
-			'enqueue_block_editor_assets',
-			function () {
-				global $post;
-
-				if ( ! $post || $this->slug !== $post->post_type ) {
-					return;
-				}
-
-				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/content-locking.asset.php';
-
-				wp_register_script(
-					'data-types/content-locking',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/content-locking.js',
-					$asset_file['dependencies'],
-					$asset_file['version'],
-					true
-				);
-
-				wp_localize_script(
-					'data-types/content-locking',
-					'contentModelFields',
-					array(
-						'postType' => $this->slug,
-						'fields'   => $this->fields,
-					)
-				);
-
-				wp_enqueue_script( 'data-types/content-locking' );
-			}
-		);
-	}
-
-	/**
-	 * Conditionally enqueues the fallback value clearer, allowing the block to become editable.
-	 *
-	 * Checks if the current post is of the correct type before enqueueing the script.
-	 *
-	 * @return void
-	 */
-	private function maybe_enqueue_fallback_value_clearer() {
-		add_action(
-			'enqueue_block_editor_assets',
-			function () {
-				global $post;
-
-				if ( ! $post || $this->slug !== $post->post_type ) {
-					return;
-				}
-
-				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/fallback-value-clearer.asset.php';
-
-				wp_register_script(
-					'data-types/fallback-value-clearer',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/fallback-value-clearer.js',
-					$asset_file['dependencies'],
-					$asset_file['version'],
-					true
-				);
-
-				wp_localize_script(
-					'data-types/fallback-value-clearer',
-					'contentModelFields',
-					array(
-						'postType'                   => $this->slug,
-						'FALLBACK_VALUE_PLACEHOLDER' => self::FALLBACK_VALUE_PLACEHOLDER,
-					)
-				);
-
-				wp_enqueue_script( 'data-types/fallback-value-clearer' );
-			}
+		wp_localize_script(
+			'content-model/runtime',
+			'contentModelData',
+			array(
+				'POST_TYPE'                  => $this->slug,
+				'FIELDS'                     => $this->fields,
+				'FALLBACK_VALUE_PLACEHOLDER' => self::FALLBACK_VALUE_PLACEHOLDER,
+			)
 		);
 	}
 }

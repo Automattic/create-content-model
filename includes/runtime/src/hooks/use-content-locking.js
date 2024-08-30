@@ -1,16 +1,11 @@
-import { registerPlugin } from '@wordpress/plugins';
 import { useEffect } from '@wordpress/element';
-import { dispatch } from '@wordpress/data';
-import { useDispatch } from '@wordpress/data';
+import { dispatch, useDispatch } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
+import { SUPPORTED_BLOCK_ATTRIBUTES } from '../constants';
 
-/**
- * Our base plugin component.
- * @returns CreateContentModelPageSettings
- */
-const CreateContentModelContentLocking = function () {
-	const fields = contentModelFields.fields;
+const SUPPORTED_BLOCKS = Object.keys( SUPPORTED_BLOCK_ATTRIBUTES );
 
+export const useContentLocking = function () {
 	const blocks = wp.data.select( 'core/block-editor' ).getBlocks();
 
 	const currentBlock = wp.data
@@ -19,25 +14,12 @@ const CreateContentModelContentLocking = function () {
 
 	const { setBlockEditingMode } = useDispatch( blockEditorStore );
 
-	if ( ! fields ) {
-		return null;
-	}
-
 	useEffect( () => {
 		if ( blocks.length > 0 ) {
 			parseBlocks( blocks, setBlockEditingMode );
 		}
 	}, [ blocks, setBlockEditingMode, currentBlock ] );
-
-	return;
 };
-const SUPPORTED_BLOCKS = [
-	'core/group',
-	'core/paragraph',
-	'core/heading',
-	'core/image',
-	'core/button',
-];
 
 const parseBlocks = ( blocks, setEditMode, forceEnabled = false ) => {
 	blocks.forEach( ( block ) => {
@@ -100,8 +82,3 @@ const findBoundGroup = ( blocks ) => {
 	}
 	return null;
 };
-
-// Register the plugin.
-registerPlugin( 'create-content-model-content-locking', {
-	render: CreateContentModelContentLocking,
-} );

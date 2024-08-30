@@ -38,7 +38,7 @@ class Content_Model_Loader {
 	 * Initializes the Content_Model_Loader class.
 	 *
 	 * Checks if the current user has the capability to manage options.
-	 * If they do, it registers the post type and enqueues the attribute binder.
+	 * If they do, it registers the post type and enqueues the manager scripts.
 	 *
 	 * @return void
 	 */
@@ -48,11 +48,8 @@ class Content_Model_Loader {
 		}
 
 		$this->register_post_type();
-		$this->maybe_enqueue_the_attribute_binder();
-		$this->maybe_enqueue_the_cpt_settings_panel();
-		$this->maybe_enqueue_the_fields_ui();
-		$this->maybe_enqueue_content_model_length_restrictor();
-		$this->maybe_enqueue_the_defaut_value_placeholder();
+
+		add_action( 'enqueue_block_editor_assets', array( $this, 'maybe_enqueue_scripts' ) );
 
 		add_action( 'save_post', array( $this, 'map_template_to_bindings_api_signature' ), 99, 2 );
 
@@ -149,178 +146,35 @@ class Content_Model_Loader {
 	}
 
 	/**
-	 * Conditionally enqueues the attribute binder script for the block editor.
-	 *
-	 * Checks if the current post is of the correct type before enqueueing the script.
+	 * Enqueue the helper scripts if opening the content model manager.
 	 *
 	 * @return void
 	 */
-	private function maybe_enqueue_the_attribute_binder() {
-		add_action(
-			'enqueue_block_editor_assets',
-			function () {
-				global $post;
+	public function maybe_enqueue_scripts() {
+		global $post;
 
-				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
-					return;
-				}
+		if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
+			return;
+		}
 
-				$register_attribute_binder_js = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/register-attribute-binder.asset.php';
+		$asset_file = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/manager.asset.php';
 
-				wp_enqueue_script(
-					'content-model/attribute-binder',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/register-attribute-binder.js',
-					$register_attribute_binder_js['dependencies'],
-					$register_attribute_binder_js['version'],
-					true
-				);
-
-				wp_add_inline_script(
-					'content-model/attribute-binder',
-					'window.BINDINGS_KEY = "' . Content_Model_Loader::BINDINGS_KEY . '";',
-					'before'
-				);
-
-				wp_add_inline_script(
-					'content-model/attribute-binder',
-					'window.BLOCK_VARIATION_NAME_ATTR = "' . Content_Model_Block::BLOCK_VARIATION_NAME_ATTR . '";',
-					'before'
-				);
-			}
+		wp_enqueue_script(
+			'content-model/manager',
+			CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/manager.js',
+			$asset_file['dependencies'],
+			$asset_file['version'],
+			true
 		);
-	}
 
-	/**
-	 * Conditionally enqueues the CPT settings script for the content model editor.
-	 *
-	 * Checks if the current post is of the correct type before enqueueing the script.
-	 *
-	 * @return void
-	 */
-	private function maybe_enqueue_the_cpt_settings_panel() {
-		add_action(
-			'enqueue_block_editor_assets',
-			function () {
-				global $post;
-
-				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
-					return;
-				}
-
-				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/manager/dist/cpt-settings-panel.asset.php';
-
-				wp_register_script(
-					'data-types/cpt-settings-panel',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/cpt-settings-panel.js',
-					$asset_file['dependencies'],
-					$asset_file['version'],
-					true
-				);
-
-				wp_localize_script(
-					'data-types/cpt-settings-panel',
-					'contentModelFields',
-					array(
-						'postType' => Content_Model_Manager::POST_TYPE_NAME,
-					)
-				);
-
-				wp_enqueue_script( 'data-types/cpt-settings-panel' );
-			}
-		);
-	}
-
-
-	/**
-	 * Conditionally enqueues the fields UI script for the block editor.
-	 *
-	 * Checks if the current post is of the correct type before enqueueing the script.
-	 *
-	 * @return void
-	 */
-	private function maybe_enqueue_the_fields_ui() {
-		add_action(
-			'enqueue_block_editor_assets',
-			function () {
-				global $post;
-
-				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
-					return;
-				}
-
-				$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/manager/dist/fields-ui.asset.php';
-
-				wp_register_script(
-					'data-types/fields-ui',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/fields-ui.js',
-					$asset_file['dependencies'],
-					$asset_file['version'],
-					true
-				);
-
-				wp_localize_script(
-					'data-types/fields-ui',
-					'contentModelFields',
-					array(
-						'postType' => Content_Model_Manager::POST_TYPE_NAME,
-					)
-				);
-
-				wp_enqueue_script( 'data-types/fields-ui' );
-			}
-		);
-	}
-
-	/**
-	 * Conditionally enqueues the content model length restrictor script for the block editor.
-	 *
-	 * Checks if the current post is of the correct type before enqueueing the script.
-	 *
-	 * @return void
-	 */
-	private function maybe_enqueue_content_model_length_restrictor() {
-		add_action(
-			'enqueue_block_editor_assets',
-			function () {
-				global $post;
-
-				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
-					return;
-				}
-
-				$content_model_length_restrictor_js = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/content-model-title-length-restrictor.asset.php';
-
-				wp_enqueue_script(
-					'content-model/length-restrictor',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/content-model-title-length-restrictor.js',
-					$content_model_length_restrictor_js['dependencies'],
-					$content_model_length_restrictor_js['version'],
-					true
-				);
-			}
-		);
-	}
-
-	private function maybe_enqueue_the_defaut_value_placeholder() {
-		add_action(
-			'enqueue_block_editor_assets',
-			function () {
-				global $post;
-
-				if ( ! $post || Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
-					return;
-				}
-
-				$content_model_length_restrictor_js = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/default-value-placeholder-changer.asset.php';
-
-				wp_enqueue_script(
-					'content-model/default-value-placeholder-changer',
-					CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/default-value-placeholder-changer.js',
-					$content_model_length_restrictor_js['dependencies'],
-					$content_model_length_restrictor_js['version'],
-					true
-				);
-			}
+		wp_localize_script(
+			'content-model/manager',
+			'contentModelData',
+			array(
+				'BINDINGS_KEY'              => self::BINDINGS_KEY,
+				'BLOCK_VARIATION_NAME_ATTR' => Content_Model_Block::BLOCK_VARIATION_NAME_ATTR,
+				'POST_TYPE_NAME'            => Content_Model_Manager::POST_TYPE_NAME,
+			)
 		);
 	}
 

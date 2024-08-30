@@ -1,4 +1,3 @@
-import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { TextControl, Dashicon } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
@@ -8,17 +7,18 @@ import {
 	createInterpolateElement,
 } from '@wordpress/element';
 import { useEntityProp } from '@wordpress/core-data';
+import { POST_TYPE_NAME } from '../constants';
 
-const CreateContentModelCptSettings = function () {
+export const CPTSettingsPanel = function () {
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
-		window.contentModelFields.postType,
+		POST_TYPE_NAME,
 		'meta'
 	);
 
 	const [ title, setTitle ] = useEntityProp(
 		'postType',
-		window.contentModelFields.postType,
+		POST_TYPE_NAME,
 		'title'
 	);
 
@@ -94,8 +94,3 @@ const CreateContentModelCptSettings = function () {
 		</>
 	);
 };
-
-// Register the plugin.
-registerPlugin( 'create-content-model-cpt-settings', {
-	render: CreateContentModelCptSettings,
-} );

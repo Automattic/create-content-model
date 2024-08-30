@@ -3,9 +3,8 @@ import { useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
 import { store as noticesStore } from '@wordpress/notices';
-import { registerPlugin } from '@wordpress/plugins';
 
-const ContentModelLengthRestrictor = () => {
+export const useContentModelNameLengthRestrictor = () => {
 	const { editPost } = useDispatch( editorStore );
 	const { createNotice } = useDispatch( noticesStore );
 
@@ -27,7 +26,3 @@ const ContentModelLengthRestrictor = () => {
 		}
 	}, [ title, editPost, createNotice ] );
 };
-
-registerPlugin( 'content-model-title-length-restrictor', {
-	render: ContentModelLengthRestrictor,
-} );
