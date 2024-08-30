@@ -1,0 +1,26 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"meta": {
+		"title": "Create Content Model latest",
+		"description": "Installs the latest version of create-content-model plugin to WordPress Playground",
+		"author": "Automattic",
+		"categories": [ "Content", "CPT" ]
+	},
+	"landingPage": "/wp-admin/",
+	"steps": [
+		{
+			"step": "login"
+		},
+		{
+			"step": "installPlugin",
+			"pluginZipFile": {
+				"resource": "url",
+				"url": "https://raw.githubusercontent.com/Automattic/create-content-model-releases/latest/create-content-model.zip"
+			}
+		},
+		{
+			"step": "activatePlugin",
+			"pluginPath": "create-content-model/create-content-model.php"
+		}
+	]
+}
