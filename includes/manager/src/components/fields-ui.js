@@ -101,14 +101,14 @@ export const FieldsUI = function () {
 						<TabPanel
 							tabs={ [
 								{
+									name: 'fields',
+									title: __( 'Custom Fields' ),
+									content: <FieldsList />,
+								},
+								{
 									name: 'blocks',
 									title: __( 'Block Bindings' ),
 									content: <BlocksList />,
-								},
-								{
-									name: 'fields',
-									title: __( 'Fields' ),
-									content: <FieldsList />,
 								},
 							] }
 						>
