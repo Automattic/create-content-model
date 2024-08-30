@@ -1,5 +1,5 @@
 // https://github.com/WordPress/WordPress/blob/master/wp-includes/class-wp-block.php#L246-L251
-const SUPPORTED_BLOCK_ATTRIBUTES = {
+export const SUPPORTED_BLOCK_ATTRIBUTES = {
 	'core/group': [ 'content' ],
 	'core/paragraph': [ 'content' ],
 	'core/heading': [ 'content' ],
@@ -7,4 +7,5 @@ const SUPPORTED_BLOCK_ATTRIBUTES = {
 	'core/button': [ 'url', 'text', 'linkTarget', 'rel' ],
 };
 
-export default SUPPORTED_BLOCK_ATTRIBUTES;
+export const { BINDINGS_KEY, BLOCK_VARIATION_NAME_ATTR, POST_TYPE_NAME } =
+	window.contentModelData;

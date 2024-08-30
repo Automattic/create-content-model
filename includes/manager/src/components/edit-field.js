@@ -14,7 +14,7 @@ import {
 	FlexItem,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import {
 	trash,
 	chevronUp,
@@ -22,17 +22,9 @@ import {
 	blockDefault,
 	post,
 } from '@wordpress/icons';
-import { useEffect } from '@wordpress/element';
 
-import SUPPORTED_BLOCK_ATTRIBUTES from './_supported-attributes';
+import { SUPPORTED_BLOCK_ATTRIBUTES } from '../constants';
 
-/**
- * Display a form to edit a field.
- * @param {Object} props
- * @param {Function} props.onSave
- * @param {Object} props.defaultFormData (to be updated with the field data for editing)
- * @returns EditFieldForm
- */
 const EditFieldForm = ( {
 	field = {
 		label: '',
@@ -98,11 +90,16 @@ const EditFieldForm = ( {
 								icon={ trash }
 								title={ __( 'Delete Field' ) }
 								onClick={ () => {
-									confirm(
+									// eslint-disable-next-line no-alert
+									const userWantsToDelete = confirm(
 										__(
 											'Are you sure you want to delete this field?'
 										)
-									) && onDelete( formData );
+									);
+
+									if ( userWantsToDelete ) {
+										onDelete( formData );
+									}
 								} }
 							/>
 						) }

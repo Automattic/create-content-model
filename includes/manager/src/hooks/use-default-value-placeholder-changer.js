@@ -2,9 +2,8 @@ import { __, sprintf } from '@wordpress/i18n';
 import { useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
-import { registerPlugin } from '@wordpress/plugins';
 
-const ContentModelDefaultValuePlaceholderChanger = () => {
+export const useDefaultValuePlaceholderChanger = () => {
 	const boundBlocks = useSelect( ( select ) => {
 		const blocks = select( blockEditorStore ).getBlocks();
 		const map = {};
@@ -41,7 +40,3 @@ const ContentModelDefaultValuePlaceholderChanger = () => {
 		} );
 	}, [ boundBlocks, updateBlockAttributes ] );
 };
-
-registerPlugin( 'content-model-default-value-placeholder-changer', {
-	render: ContentModelDefaultValuePlaceholderChanger,
-} );

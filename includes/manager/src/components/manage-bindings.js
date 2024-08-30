@@ -2,14 +2,8 @@ import { Button, TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState, useEffect } from '@wordpress/element';
+import { POST_TYPE_NAME } from '../constants';
 
-/**
- * Display a form to edit a field.
- * @param {Object} props
- * @param {Function} props.onSave
- * @param {Object} props.defaultFormData (to be updated with the field data for editing)
- * @returns EditFieldForm
- */
 const ManageBindings = ( {
 	defaultFormData = {
 		label: '',
@@ -17,7 +11,7 @@ const ManageBindings = ( {
 		description: '',
 		type: 'text',
 		visible: true,
-		uuid: window.crypto.randomUUID(),
+		uuid: crypto.randomUUID(),
 	},
 	onSave = () => {},
 } ) => {
@@ -26,7 +20,7 @@ const ManageBindings = ( {
 
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
-		contentModelFields.postType,
+		POST_TYPE_NAME,
 		'meta'
 	);
 
