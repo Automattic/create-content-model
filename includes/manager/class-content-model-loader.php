@@ -157,18 +157,18 @@ class Content_Model_Loader {
 			return;
 		}
 
-		$manager_scripts = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/manager.asset.php';
+		$asset_file = include CONTENT_MODEL_PLUGIN_PATH . '/includes/manager/dist/manager.asset.php';
 
 		wp_enqueue_script(
-			'content-model/manager-scripts',
+			'content-model/manager',
 			CONTENT_MODEL_PLUGIN_URL . '/includes/manager/dist/manager.js',
-			$manager_scripts['dependencies'],
-			$manager_scripts['version'],
+			$asset_file['dependencies'],
+			$asset_file['version'],
 			true
 		);
 
 		wp_localize_script(
-			'content-model/manager-scripts',
+			'content-model/manager',
 			'contentModelData',
 			array(
 				'BINDINGS_KEY'              => self::BINDINGS_KEY,

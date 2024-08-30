@@ -473,7 +473,7 @@ final class Content_Model {
 
 		$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/runtime.asset.php';
 
-		wp_register_script(
+		wp_enqueue_script(
 			'content-model/runtime',
 			CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/runtime.js',
 			$asset_file['dependencies'],
@@ -490,7 +490,5 @@ final class Content_Model {
 				'FALLBACK_VALUE_PLACEHOLDER' => self::FALLBACK_VALUE_PLACEHOLDER,
 			)
 		);
-
-		wp_enqueue_script( 'content-model/runtime' );
 	}
 }
