@@ -74,7 +74,22 @@ export const FieldsUI = function () {
 						size="large"
 						onRequestClose={ () => setFieldsOpen( false ) }
 					>
-						<FieldsList />
+						<TabPanel
+							tabs={ [
+								{
+									name: 'fields',
+									title: __( 'Fields' ),
+									content: <FieldsList tab="fields" />,
+								},
+								{
+									name: 'blocks',
+									title: __( 'Blocks' ),
+									content: <FieldsList tab="blocks" />,
+								},
+							] }
+						>
+							{ ( tab ) => <>{ tab.content }</> }
+						</TabPanel>
 					</Modal>
 				) }
 			</PluginDocumentSettingPanel>
@@ -82,7 +97,7 @@ export const FieldsUI = function () {
 	);
 };
 
-const FieldsList = () => {
+const FieldsList = ( { tab } ) => {
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
 		POST_TYPE_NAME,
@@ -111,55 +126,64 @@ const FieldsList = () => {
 	return (
 		<>
 			<VStack spacing={ 2 }>
-				{ fields.map( ( field ) => (
-					<EditFieldForm
-						key={ field.uuid }
-						field={ field }
-						onDelete={ deleteField }
-						onChange={ editField }
-						total={ fields.length }
-						index={ fields.findIndex(
-							( f ) => f.uuid === field.uuid
-						) }
-						onMoveUp={ ( movedField ) => {
-							const index = fields.findIndex(
-								( f ) => f.uuid === movedField.uuid
-							);
-							const newFields = [ ...fields ];
-							newFields.splice( index, 1 );
-							newFields.splice( index - 1, 0, movedField );
-							setFields( newFields );
-						} }
-						onMoveDown={ ( movedField ) => {
-							const index = fields.findIndex(
-								( f ) => f.uuid === movedField.uuid
-							);
-							const newFields = [ ...fields ];
-							newFields.splice( index, 1 );
-							newFields.splice( index + 1, 0, movedField );
-							setFields( newFields );
-						} }
-					/>
-				) ) }
+				{ fields
+					.filter( ( field ) => {
+						if ( tab === 'fields' ) {
+							return ! field.type.startsWith( 'core/' );
+						}
 
-				<Button
-					variant="secondary"
-					onClick={ () =>
-						setFields( [
-							...fields,
-							{
-								uuid: crypto.randomUUID(),
-								label: '',
-								slug: '',
-								description: '',
-								type: 'text',
-								visible: true,
-							},
-						] )
-					}
-				>
-					{ __( 'Add Field' ) }
-				</Button>
+						return field.type.startsWith( 'core/' );
+					} )
+					.map( ( field ) => (
+						<EditFieldForm
+							key={ field.uuid }
+							field={ field }
+							onDelete={ deleteField }
+							onChange={ editField }
+							total={ fields.length }
+							index={ fields.findIndex(
+								( f ) => f.uuid === field.uuid
+							) }
+							onMoveUp={ ( movedField ) => {
+								const index = fields.findIndex(
+									( f ) => f.uuid === movedField.uuid
+								);
+								const newFields = [ ...fields ];
+								newFields.splice( index, 1 );
+								newFields.splice( index - 1, 0, movedField );
+								setFields( newFields );
+							} }
+							onMoveDown={ ( movedField ) => {
+								const index = fields.findIndex(
+									( f ) => f.uuid === movedField.uuid
+								);
+								const newFields = [ ...fields ];
+								newFields.splice( index, 1 );
+								newFields.splice( index + 1, 0, movedField );
+								setFields( newFields );
+							} }
+						/>
+					) ) }
+				{ tab === 'fields' ?? (
+					<Button
+						variant="secondary"
+						onClick={ () =>
+							setFields( [
+								...fields,
+								{
+									uuid: crypto.randomUUID(),
+									label: '',
+									slug: '',
+									description: '',
+									type: 'text',
+									visible: true,
+								},
+							] )
+						}
+					>
+						{ __( 'Add Field' ) }
+					</Button>
+				) }
 			</VStack>
 		</>
 	);

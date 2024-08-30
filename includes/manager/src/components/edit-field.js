@@ -41,6 +41,8 @@ const EditFieldForm = ( {
 } ) => {
 	const [ formData, setFormData ] = useState( field );
 
+	const isBlock = formData.type.startsWith( 'core/' );
+
 	useEffect( () => {
 		onChange( formData );
 	}, [ formData ] );
@@ -54,16 +56,16 @@ const EditFieldForm = ( {
 							marginBottom: '1rem',
 						} }
 					>
-						{ formData.type.indexOf( 'core/' ) === -1 ? (
-							<Button icon={ post } title={ formData.type }>
-								{ __( 'Custom Field' ) }
-							</Button>
-						) : (
+						{ isBlock ? (
 							<Button
 								icon={ blockDefault }
 								title={ formData.type }
 							>
 								{ __( 'Block Binding' ) }
+							</Button>
+						) : (
+							<Button icon={ post } title={ formData.type }>
+								{ __( 'Custom Field' ) }
 							</Button>
 						) }
 						{ index > 0 && (
@@ -84,7 +86,7 @@ const EditFieldForm = ( {
 								} }
 							/>
 						) }
-						{ formData.type.indexOf( 'core/' ) === -1 ?? (
+						{ ! isBlock ?? (
 							<Button
 								icon={ trash }
 								title={ __( 'Delete Field' ) }
@@ -104,11 +106,7 @@ const EditFieldForm = ( {
 						) }
 					</ButtonGroup>
 
-					<Grid
-						columns={
-							formData.type.indexOf( 'core/' ) === -1 ? 4 : 3
-						}
-					>
+					<Grid columns={ isBlock ? 3 : 4 }>
 						<TextControl
 							label={ __( 'Name' ) }
 							value={ formData.label }
@@ -136,7 +134,7 @@ const EditFieldForm = ( {
 							}
 						/>
 
-						{ formData.type.indexOf( 'core/' ) === -1 && (
+						{ ! isBlock && (
 							<SelectControl
 								label={ __( 'Field Type' ) }
 								value={ formData.type }
@@ -159,7 +157,7 @@ const EditFieldForm = ( {
 							/>
 						) }
 					</Grid>
-					{ formData.type.indexOf( 'core/' ) === 0 ? (
+					{ isBlock ? (
 						<BlockAttributes
 							slug={ formData.slug }
 							type={ formData.type }
