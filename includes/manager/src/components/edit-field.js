@@ -38,7 +38,6 @@ const EditFieldForm = ( {
 	);
 
 	useEffect( () => {
-		console.log( 'formData', formData, slugWasTouched );
 		if ( ! slugWasTouched ) {
 			setFormData( {
 				...formData,
