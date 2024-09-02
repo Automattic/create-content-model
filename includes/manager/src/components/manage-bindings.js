@@ -3,6 +3,7 @@ import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState, useEffect } from '@wordpress/element';
 import { POST_TYPE_NAME } from '../constants';
+import { cleanForSlug } from '@wordpress/url';
 
 const ManageBindings = ( {
 	defaultFormData = {
@@ -30,6 +31,11 @@ const ManageBindings = ( {
 		e.preventDefault();
 		let newBlocks = blocks;
 
+		if ( formData.slug === '' ) {
+			const slug = cleanForSlug( formData.label );
+			formData.slug = slug;
+		}
+
 		if ( blocks.find( ( block ) => block.uuid === formData.uuid ) ) {
 			// If the slug is the same and it exists, update the block.
 			newBlocks = newBlocks.map( ( block ) => {
@@ -50,7 +56,7 @@ const ManageBindings = ( {
 	};
 
 	useEffect( () => {
-		if ( formData.slug === '' ) {
+		if ( formData.label === '' ) {
 			setIsValid( false );
 		} else {
 			setIsValid( true );
@@ -67,14 +73,6 @@ const ManageBindings = ( {
 						setFormData( { ...formData, label: value } )
 					}
 				/>
-				<TextControl
-					label={ __( 'Binding Metakey' ) }
-					value={ formData.slug }
-					onChange={ ( value ) =>
-						setFormData( { ...formData, slug: value } )
-					}
-				/>
-
 				<Button
 					variant="secondary"
 					type="submit"

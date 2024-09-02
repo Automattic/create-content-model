@@ -133,7 +133,9 @@ export const AttributeBinderPanel = ( { attributes, setAttributes, name } ) => {
 									)
 								}
 							>
-								{ __( 'Manage Binding' ) }
+								{ bindings
+									? __( 'Manage Binding' )
+									: __( 'Add Binding' ) }
 							</Button>
 							{ bindings && (
 								<Button
