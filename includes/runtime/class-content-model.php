@@ -110,8 +110,10 @@ final class Content_Model {
 	private function register_post_type() {
 		$singular_name = $this->title;
 
-		$plural_name   = get_post_meta( $this->post_id, 'plural_label', true );
-		$plural_name ??= $singular_name . 's';
+		$plural_name = get_post_meta( $this->post_id, 'plural_label', true );
+		if ( empty( $plural_name ) ) {
+			$plural_name = $singular_name . 's';
+		}
 
 		$labels = array(
 			'name'               => $plural_name,
@@ -137,7 +139,10 @@ final class Content_Model {
 			'not_found_in_trash' => sprintf( __( 'No %s found in trash' ), $plural_name ),
 		);
 
-		$icon = get_post_meta( $this->post_id, 'icon', true ) ?? 'admin-site';
+		$icon = get_post_meta( $this->post_id, 'icon', true );
+		if ( empty( $icon ) ) {
+			$icon = 'admin-site';
+		}
 		$icon = str_replace( 'dashicons-', '', $icon );
 
 		register_post_type(
