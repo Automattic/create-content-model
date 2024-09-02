@@ -32,7 +32,7 @@ const ManageBindings = ( {
 		let newBlocks = blocks;
 
 		if ( formData.slug === '' ) {
-			const slug = cleanForSlug( formData.label );
+			const slug = cleanForSlug( formData.label ).replace( /-/g, '_' );
 			formData.slug = slug;
 		}
 
