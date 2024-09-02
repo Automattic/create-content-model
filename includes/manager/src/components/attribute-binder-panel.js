@@ -35,13 +35,12 @@ export const AttributeBinderPanel = ( { attributes, setAttributes, name } ) => {
 		'meta'
 	);
 
-	const fields = useMemo( () => {
-		// Saving the fields as serialized JSON because I was tired of fighting the REST API.
-		return meta?.fields ? JSON.parse( meta.fields ) : [];
-	}, [ meta.fields ] );
+	const blocks = useMemo( () => {
+		return meta?.blocks ? JSON.parse( meta.blocks ) : [];
+	}, [ meta.blocks ] );
 
-	const boundField = fields.find(
-		( field ) => field.slug === attributes.metadata?.slug
+	const boundField = blocks.find(
+		( block ) => block.slug === attributes.metadata?.slug
 	);
 
 	const removeBindings = useCallback( () => {
@@ -55,25 +54,25 @@ export const AttributeBinderPanel = ( { attributes, setAttributes, name } ) => {
 		delete newAttributes.metadata[ BLOCK_VARIATION_NAME_ATTR ];
 		delete newAttributes.metadata.slug;
 
-		const newFields = fields.filter(
-			( field ) => field.slug !== attributes.metadata.slug
+		const newBlocks = blocks.filter(
+			( block ) => block.slug !== attributes.metadata.slug
 		);
 
 		setMeta( {
-			fields: JSON.stringify( newFields ),
+			blocks: JSON.stringify( newBlocks ),
 		} );
 
 		setAttributes( newAttributes );
-	}, [ attributes.metadata, setAttributes, fields, setMeta ] );
+	}, [ attributes.metadata, setAttributes, blocks, setMeta ] );
 
 	const setBinding = useCallback(
-		( field ) => {
+		( block ) => {
 			const newBindings = supportedAttributes.reduce(
 				( acc, attribute ) => {
 					acc[ attribute ] =
-						'post_content' === field.slug
-							? field.slug
-							: `${ field.slug }__${ attribute }`;
+						'post_content' === block.slug
+							? block.slug
+							: `${ block.slug }__${ attribute }`;
 
 					return acc;
 				},
@@ -83,8 +82,8 @@ export const AttributeBinderPanel = ( { attributes, setAttributes, name } ) => {
 			const newAttributes = {
 				metadata: {
 					...( attributes.metadata ?? {} ),
-					[ BLOCK_VARIATION_NAME_ATTR ]: field.label,
-					slug: field.slug,
+					[ BLOCK_VARIATION_NAME_ATTR ]: block.label,
+					slug: block.slug,
 					[ BINDINGS_KEY ]: newBindings,
 				},
 			};

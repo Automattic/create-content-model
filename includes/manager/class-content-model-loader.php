@@ -122,6 +122,22 @@ class Content_Model_Loader {
 			)
 		);
 
+		register_post_meta(
+			Content_Model_Manager::POST_TYPE_NAME,
+			'blocks',
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'sanitize_callback' => '',
+				'default'           => '[]',
+				'show_in_rest'      => array(
+					'schema ' => array(
+						'type' => 'string',
+					),
+				),
+			)
+		);
+
 		$cpt_fields = array(
 			'plural_label' => array(
 				'type'         => 'string',

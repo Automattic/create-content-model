@@ -3,7 +3,6 @@ import {
 	ButtonGroup,
 	TextControl,
 	SelectControl,
-	ToggleControl,
 	__experimentalGrid as Grid,
 	CardBody,
 	Card,
@@ -15,15 +14,7 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import {
-	trash,
-	chevronUp,
-	chevronDown,
-	blockDefault,
-	post,
-} from '@wordpress/icons';
-
-import { SUPPORTED_BLOCK_ATTRIBUTES } from '../constants';
+import { trash, chevronUp, chevronDown, post } from '@wordpress/icons';
 
 const EditFieldForm = ( {
 	field = {
@@ -55,18 +46,10 @@ const EditFieldForm = ( {
 							marginBottom: '1rem',
 						} }
 					>
-						{ formData.type.indexOf( 'core/' ) === -1 ? (
-							<Button icon={ post } title={ formData.type }>
-								{ __( 'Custom Field' ) }
-							</Button>
-						) : (
-							<Button
-								icon={ blockDefault }
-								title={ formData.type }
-							>
-								{ __( 'Block Binding' ) }
-							</Button>
-						) }
+						<Button icon={ post } title={ formData.type }>
+							{ __( 'Custom Field' ) }
+						</Button>
+
 						{ index > 0 && (
 							<Button
 								icon={ chevronUp }
@@ -85,27 +68,26 @@ const EditFieldForm = ( {
 								} }
 							/>
 						) }
-						{ formData.type.indexOf( 'core/' ) === -1 ?? (
-							<Button
-								icon={ trash }
-								title={ __( 'Delete Field' ) }
-								onClick={ () => {
-									// eslint-disable-next-line no-alert
-									const userWantsToDelete = confirm(
-										__(
-											'Are you sure you want to delete this field?'
-										)
-									);
 
-									if ( userWantsToDelete ) {
-										onDelete( formData );
-									}
-								} }
-							/>
-						) }
+						<Button
+							icon={ trash }
+							title={ __( 'Delete Field' ) }
+							onClick={ () => {
+								// eslint-disable-next-line no-alert
+								const userWantsToDelete = confirm(
+									__(
+										'Are you sure you want to delete this field?'
+									)
+								);
+
+								if ( userWantsToDelete ) {
+									onDelete( formData );
+								}
+							} }
+						/>
 					</ButtonGroup>
 
-					<Grid columns={ 3 }>
+					<Grid columns={ 4 }>
 						<TextControl
 							label={ __( 'Name' ) }
 							value={ formData.label }
@@ -130,89 +112,40 @@ const EditFieldForm = ( {
 								} )
 							}
 						/>
-					</Grid>
-					{ formData.type.indexOf( 'core/' ) === -1 && (
-						<Grid columns={ 2 } alignment="bottom">
-							<SelectControl
-								label={ __( 'Type' ) }
-								value={ formData.type }
-								disabled={
-									formData.type.indexOf( 'core/' ) === 0
-								}
-								options={ [
-									{ label: __( 'Text' ), value: 'text' },
-									{
-										label: __( 'Textarea' ),
-										value: 'textarea',
-									},
-									{ label: __( 'URL' ), value: 'url' },
-									{ label: __( 'Image' ), value: 'image' },
-									{ label: __( 'Number' ), value: 'number' },
-								] }
-								onChange={ ( value ) =>
-									setFormData( { ...formData, type: value } )
-								}
-							/>
-							<ToggleControl
-								label={ __(
-									'Show Field in Custom Fields Form'
-								) }
-								checked={ formData.visible ?? false }
-								onChange={ ( value ) =>
-									setFormData( {
-										...formData,
-										visible: value,
-									} )
-								}
-							/>
-						</Grid>
-					) }
-					{ formData.type.indexOf( 'core/' ) === 0 ? (
-						<BlockAttributes
-							slug={ formData.slug }
-							type={ formData.type }
+
+						<SelectControl
+							label={ __( 'Field Type' ) }
+							value={ formData.type }
+							options={ [
+								{ label: __( 'Text' ), value: 'text' },
+								{
+									label: __( 'Textarea' ),
+									value: 'textarea',
+								},
+								{ label: __( 'URL' ), value: 'url' },
+								{ label: __( 'Image' ), value: 'image' },
+								{ label: __( 'Number' ), value: 'number' },
+							] }
+							onChange={ ( value ) =>
+								setFormData( { ...formData, type: value } )
+							}
 						/>
-					) : (
-						<ItemGroup isBordered isSeparated>
-							<Item>
-								<Flex>
-									<FlexBlock>{ formData.type }</FlexBlock>
-									<FlexItem>
-										<span>
-											<code>{ formData.slug }</code>
-										</span>
-									</FlexItem>
-								</Flex>
-							</Item>
-						</ItemGroup>
-					) }
+					</Grid>
+					<ItemGroup isBordered isSeparated>
+						<Item>
+							<Flex>
+								<FlexBlock>{ formData.type }</FlexBlock>
+								<FlexItem>
+									<span>
+										<code>{ formData.slug }</code>
+									</span>
+								</FlexItem>
+							</Flex>
+						</Item>
+					</ItemGroup>
 				</CardBody>
 			</Card>
 		</>
-	);
-};
-
-const BlockAttributes = ( { slug, type } ) => {
-	const supportedAttributes = SUPPORTED_BLOCK_ATTRIBUTES[ type ];
-	return (
-		<ItemGroup isBordered isSeparated>
-			{ supportedAttributes.map( ( attribute ) => (
-				<Item key={ attribute }>
-					<Flex>
-						<FlexBlock>{ attribute }</FlexBlock>
-						<FlexItem>
-							<span>
-								{ 'post_content' === slug ? (
-									<code>{ slug }</code>
-								) : (
-									<code>{ `${ slug }__${ attribute }` }</code>
-								) }
-							</span>
-						</FlexItem>
-					</Flex>
-				</Item>
-			) ) }
-		</ItemGroup>
 	);
 };
 

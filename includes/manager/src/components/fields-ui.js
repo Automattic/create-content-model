@@ -2,6 +2,7 @@ import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import {
 	Button,
 	PanelRow,
+	TabPanel,
 	Modal,
 	__experimentalVStack as VStack,
 	__experimentalItemGroup as ItemGroup,
@@ -14,9 +15,18 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
 import { useState } from '@wordpress/element';
-import { seen, unseen, blockDefault } from '@wordpress/icons';
+import {
+	post,
+	blockDefault,
+	paragraph,
+	heading,
+	button,
+	group,
+	image,
+} from '@wordpress/icons';
 
 import EditFieldForm from './edit-field';
+import EditBlockForm from './edit-block';
 import { POST_TYPE_NAME } from '../constants';
 
 export const FieldsUI = function () {
@@ -24,15 +34,8 @@ export const FieldsUI = function () {
 
 	const [ meta ] = useEntityProp( 'postType', POST_TYPE_NAME, 'meta' );
 
-	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
-
-	// Add UUID to fields
-	fields.forEach( ( field ) => {
-		if ( ! field.uuid ) {
-			field.uuid = crypto.randomUUID();
-		}
-	} );
+	const blocks = meta?.blocks ? JSON.parse( meta.blocks ) : [];
 
 	return (
 		<>
@@ -41,45 +44,51 @@ export const FieldsUI = function () {
 				title={ __( 'Post Meta' ) }
 				className="create-content-model-field-settings"
 			>
-				{ fields.length > 0 && (
-					<ItemGroup isBordered isSeparated>
-						{ fields.map( ( field ) => (
-							<Item key={ field.uuid }>
-								<Flex>
-									<FlexBlock>{ field.label }</FlexBlock>
-									<FlexItem>
-										<code>{ field.slug }</code>
-									</FlexItem>
-
-									{ field.visible && (
+				<ItemGroup isBordered isSeparated>
+					{ blocks.length > 0 && (
+						<>
+							{ blocks.map( ( block ) => (
+								<Item key={ block.uuid }>
+									<Flex>
 										<FlexItem>
-											<Icon icon={ seen } />
+											<Icon
+												icon={ blockIcon( block.type ) }
+											/>
 										</FlexItem>
-									) }
-									{ ! field.visible &&
-										field.type.indexOf( 'core' ) > -1 && (
-											<FlexItem>
-												<Icon icon={ blockDefault } />
-											</FlexItem>
-										) }
-									{ ! field.visible &&
-										field.type.indexOf( 'core' ) < 0 && (
-											<FlexItem>
-												<Icon icon={ unseen } />
-											</FlexItem>
-										) }
-								</Flex>
-							</Item>
-						) ) }
-					</ItemGroup>
-				) }
+										<FlexBlock>{ block.label }</FlexBlock>
+										<FlexItem>
+											<code>{ block.slug }</code>
+										</FlexItem>
+									</Flex>
+								</Item>
+							) ) }
+						</>
+					) }
+					{ fields.length > 0 && (
+						<>
+							{ fields.map( ( field ) => (
+								<Item key={ field.uuid }>
+									<Flex>
+										<FlexItem>
+											<Icon icon={ post } />
+										</FlexItem>
+										<FlexBlock>{ field.label }</FlexBlock>
+										<FlexItem>
+											<code>{ field.slug }</code>
+										</FlexItem>
+									</Flex>
+								</Item>
+							) ) }
+						</>
+					) }
+				</ItemGroup>
 
 				<PanelRow>
 					<Button
 						variant="secondary"
 						onClick={ () => setFieldsOpen( true ) }
 					>
-						{ __( 'Manage Fields' ) }
+						{ __( 'Manage Post Meta' ) }
 					</Button>
 				</PanelRow>
 
@@ -89,7 +98,22 @@ export const FieldsUI = function () {
 						size="large"
 						onRequestClose={ () => setFieldsOpen( false ) }
 					>
-						<FieldsList />
+						<TabPanel
+							tabs={ [
+								{
+									name: 'fields',
+									title: __( 'Custom Fields' ),
+									content: <FieldsList />,
+								},
+								{
+									name: 'blocks',
+									title: __( 'Block Bindings' ),
+									content: <BlocksList />,
+								},
+							] }
+						>
+							{ ( tab ) => <>{ tab.content }</> }
+						</TabPanel>
 					</Modal>
 				) }
 			</PluginDocumentSettingPanel>
@@ -104,7 +128,6 @@ const FieldsList = () => {
 		'meta'
 	);
 
-	// Saving the fields as serialized JSON because I was tired of fighting the REST API.
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 
 	// Save the fields back to the meta.
@@ -126,6 +149,7 @@ const FieldsList = () => {
 
 	return (
 		<>
+			<p>{ __( 'Custom fields show up in the post sidebar.' ) }</p>
 			<VStack spacing={ 2 }>
 				{ fields.map( ( field ) => (
 					<EditFieldForm
@@ -160,6 +184,7 @@ const FieldsList = () => {
 
 				<Button
 					variant="secondary"
+					style={ { marginTop: '1rem' } }
 					onClick={ () =>
 						setFields( [
 							...fields,
@@ -179,4 +204,36 @@ const FieldsList = () => {
 			</VStack>
 		</>
 	);
+};
+
+const BlocksList = () => {
+	const [ meta ] = useEntityProp( 'postType', POST_TYPE_NAME, 'meta' );
+
+	const blocks = meta?.blocks ? JSON.parse( meta.blocks ) : [];
+
+	return (
+		<>
+			<VStack spacing={ 2 }>
+				{ blocks.map( ( block ) => (
+					<EditBlockForm key={ block.uuid } block={ block } />
+				) ) }
+			</VStack>
+		</>
+	);
+};
+const blockIcon = ( type ) => {
+	switch ( type ) {
+		case 'core/paragraph':
+			return paragraph;
+		case 'core/image':
+			return image;
+		case 'core/heading':
+			return heading;
+		case 'core/group':
+			return group;
+		case 'core/button':
+			return button;
+		default:
+			return blockDefault;
+	}
 };
