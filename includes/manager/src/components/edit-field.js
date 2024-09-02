@@ -91,7 +91,6 @@ const EditFieldForm = ( {
 						<TextControl
 							label={ __( 'Name' ) }
 							value={ formData.label }
-							disabled={ formData.type.indexOf( 'core/' ) === 0 }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, label: value } )
 							}
@@ -99,7 +98,6 @@ const EditFieldForm = ( {
 						<TextControl
 							label={ __( 'Key' ) }
 							value={ formData.slug }
-							disabled={ formData.type.indexOf( 'core/' ) === 0 }
 							onChange={ ( value ) =>
 								setFormData( { ...formData, slug: value } )
 							}
@@ -118,7 +116,6 @@ const EditFieldForm = ( {
 						<SelectControl
 							label={ __( 'Field Type' ) }
 							value={ formData.type }
-							disabled={ formData.type.indexOf( 'core/' ) === 0 }
 							options={ [
 								{ label: __( 'Text' ), value: 'text' },
 								{
