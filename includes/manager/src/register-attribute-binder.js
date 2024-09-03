@@ -33,10 +33,10 @@ const withAttributeBinder = createHigherOrderComponent( ( BlockEdit ) => {
 
 		return (
 			<>
-				<BlockEdit { ...props } />
 				{ shouldDisplayAttributeBinderPanel && (
 					<AttributeBinderPanel { ...props } />
 				) }
+				<BlockEdit { ...props } />
 			</>
 		);
 	};
