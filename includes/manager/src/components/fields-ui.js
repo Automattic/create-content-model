@@ -37,6 +37,8 @@ export const FieldsUI = function () {
 	const fields = meta?.fields ? JSON.parse( meta.fields ) : [];
 	const blocks = meta?.blocks ? JSON.parse( meta.blocks ) : [];
 
+	const hasRegisteredAnyPostMeta = blocks.length > 0 || fields.length > 0;
+
 	return (
 		<>
 			<PluginDocumentSettingPanel
@@ -44,44 +46,38 @@ export const FieldsUI = function () {
 				title={ __( 'Post Meta' ) }
 				className="create-content-model-field-settings"
 			>
-				<ItemGroup isBordered isSeparated>
-					{ blocks.length > 0 && (
-						<>
-							{ blocks.map( ( block ) => (
-								<Item key={ block.uuid }>
-									<Flex>
-										<FlexItem>
-											<Icon
-												icon={ blockIcon( block.type ) }
-											/>
-										</FlexItem>
-										<FlexBlock>{ block.label }</FlexBlock>
-										<FlexItem>
-											<code>{ block.slug }</code>
-										</FlexItem>
-									</Flex>
-								</Item>
-							) ) }
-						</>
-					) }
-					{ fields.length > 0 && (
-						<>
-							{ fields.map( ( field ) => (
-								<Item key={ field.uuid }>
-									<Flex>
-										<FlexItem>
-											<Icon icon={ post } />
-										</FlexItem>
-										<FlexBlock>{ field.label }</FlexBlock>
-										<FlexItem>
-											<code>{ field.slug }</code>
-										</FlexItem>
-									</Flex>
-								</Item>
-							) ) }
-						</>
-					) }
-				</ItemGroup>
+				{ hasRegisteredAnyPostMeta && (
+					<ItemGroup isBordered isSeparated>
+						{ blocks.map( ( block ) => (
+							<Item key={ block.uuid }>
+								<Flex>
+									<FlexItem>
+										<Icon
+											icon={ blockIcon( block.type ) }
+										/>
+									</FlexItem>
+									<FlexBlock>{ block.label }</FlexBlock>
+									<FlexItem>
+										<code>{ block.slug }</code>
+									</FlexItem>
+								</Flex>
+							</Item>
+						) ) }
+						{ fields.map( ( field ) => (
+							<Item key={ field.uuid }>
+								<Flex>
+									<FlexItem>
+										<Icon icon={ post } />
+									</FlexItem>
+									<FlexBlock>{ field.label }</FlexBlock>
+									<FlexItem>
+										<code>{ field.slug }</code>
+									</FlexItem>
+								</Flex>
+							</Item>
+						) ) }
+					</ItemGroup>
+				) }
 
 				<PanelRow>
 					<Button
