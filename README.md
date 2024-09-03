@@ -10,63 +10,19 @@ WordPress.com’s experimental Create Content Model plugin transforms the way cu
 
 [[video]]
 
-## About
-
-Our team at WordPress.com is excited to share our recent prototyping  efforts on game changing approaches to custom content creation. 
-
-This Create Content Model plugin builds upon our custom post types project at the [CloudFest Hackathon in 2024](https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/). We’ve leveraged core functionality, like [block bindings](https://make.wordpress.org/core/2024/03/06/new-feature-the-block-bindings-api/) and [block variations](https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/), to create a new paradigm for creating and managing custom post types and custom fields in WordPress. 
-
-Unlike existing custom post type and custom field plugins, our plugin  takes a native approach by putting the creation and management of these elements directly in the WordPress Block Editor.
-
-Using the Block Bindings API, custom fields (`post_meta`) are bound to a block’s attributes. Block Variations are created from each bound block for use in front-end template layouts. The result is an extremely intuitive workflow for both the setup of custom post types and fields and their usage in front-end templating. 
-
-```
-<!-- wp:paragraph {
-	"metadata":{
-		"bindings":{
-			"content":{
-				"source":"core/post-meta",
-				"args":{
-					"key":"movie-rating"
-				}
-			}
-		}
-	}
-} -->
-<p></p>
-<!-- /wp:paragraph -->
-```
-
-A key feature of the Create Content Model plugin is the [export](https://github.com/Automattic/create-content-model/blob/78d4a208e0c2c74cebd2a7b434e086731c762b41/includes/exporter/class-content-model-exporter.php) of a locked custom data model and a data entry UI. Developers can generate and reuse the same content model on multiple sites without ongoing plugin maintenance or costs. They can hand off fully functional sites with locked custom post types and fields, ready for clients to populate the content. 
-
-
-```
-private function generate_json_for_model( $model ) {
-   return array(
-      'type'     => 'postType',
-      'postType' => $model->slug,
-      'slug'     => $model->slug,
-      'label'    => $model->title,
-      'template' => $model->template,
-      'fields'   => $this->format_fields_for_export( $model->get_meta_fields() ),
-   );
-}
-```
-
-This Create Content Model plugin provides a preview of functionality that can be further developed into a practical solution for users and developers navigating the evolving landscape of WordPress content management.
-
-<!--
-
-## Try it out & give us feedback
-See it in action in the WordPress Playground[link to playground site]. And then share your feedback in a [GitHub issue](https://github.com/Automattic/create-content-model/issues).
-
-Or download the plugin [here](download link)
--->
-
-
 ## Getting Started
 
 Find detailed instructions on creating your content model using this plugin in the [Get Started](/GETSTARTED.md) guide.
+
+## About
+
+Our team at WordPress.com is excited to share our recent prototyping efforts on game changing approaches to custom content creation. 
+
+The Create Content Model plugin builds upon our custom post types project at the [CloudFest Hackathon in 2024](https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/). We’ve leveraged core functionality, like [block bindings](https://make.wordpress.org/core/2024/03/06/new-feature-the-block-bindings-api/) and [block variations](https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/), to create a new paradigm for creating and managing custom post types and custom fields in WordPress. 
+
+Unlike existing custom post type and custom field plugins, our plugin takes a native approach by putting the creation and management of these elements directly in the WordPress Block Editor. Using the Block Bindings API, `post_meta` fields are bound to block attributes. Block variations are created from each bound block for use in front-end template layouts. The result is an extremely intuitive workflow for both the setup of custom post types and fields and their usage in front-end templating.
+
+A key feature of the Create Content Model plugin is the export of a locked custom data model and a data entry UI. Developers can generate and reuse the same content models on multiple sites without ongoing plugin maintenance or costs. They can hand off fully functional sites with locked custom post types and fields, ready for clients to populate the content.
 
 ## Development
 
