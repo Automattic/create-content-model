@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Create Content Model
  * Description: Create content models in WP Admin.
- * Version: 1.0
+ * Version: 0.0.0-placeholder
  *
  * @package content-model
  */
