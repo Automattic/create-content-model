@@ -92,7 +92,7 @@ We built this as a prototype and may invest into it further based on level of in
 [GNU General Public License](/LICENSE.md)
 
 ## Credits & Acknowledgements 
-We’d like to thank the team at WordPress.com who made this project possible:  Brian Coords, Luis Felipe Zaguini, Candy Tsai,  Autumn Fjeld, Daniel Bachhuber.
+We’d like to thank the team at WordPress.com who made this project possible: [Luis Felipe Zaguini](https://github.com/zaguiini), [Candy Tsai](https://github.com/candy02058912), [Autumn Fjeld](https://github.com/autumnfjeld), [Brian Coords](https://github.com/bacoords), [Daniel Bachhuber](https://github.com/danielbachhuber).
 
 ## Stay in the Loop with WordPress.com
 Follow us:
