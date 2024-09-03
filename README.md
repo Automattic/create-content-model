@@ -26,14 +26,13 @@ A key feature of the Create Content Model plugin is the export of a locked custo
 
 ## Development
 
-* `npm install` to install the dependencies
-* `npm run dev-server` to start the local WordPress server
-* open new terminal window
-* `npm start` to start the JavaScript bundler watcher
+* Run `npm install` to install the dependencies
+* Run `npm run dev-server` to start the local WordPress server
+* In a new terminal window, run `npm start` to start the JavaScript bundler watcher
 
 ### Bundling
 
-Run `npm run plugin-zip` to create a zip file of the plugin. This will automatically bundle the JavaScript files. We will update this with versioning when that is in place.
+Run `npm run plugin-zip` to create a zip file of the plugin. This will automatically bundle the JavaScript files.
 
 ## Contribute & Contact 
 
@@ -41,7 +40,7 @@ Want to help us move this concept forward?
 
 Feel free to open an issue in the repo to discuss your proposed improvement. Pull requests are welcome for bug fixes and enhancements.
 
-We built this as a prototype and may invest into it further based on level of interest.  Our near term vision is outline in this [roadmap issue](https://github.com/Automattic/create-content-model/issues/77).
+We built this as a prototype and may invest into it further based on level of interest. Our near term vision is outline in this [roadmap issue](https://github.com/Automattic/create-content-model/issues/77).
 
 ## Licensing
 [GNU General Public License](/LICENSE.md)
