@@ -151,6 +151,7 @@ final class Content_Model {
 				'labels'       => $labels,
 				'public'       => true,
 				'show_in_menu' => true,
+				'has_archive'  => true,
 				'show_in_rest' => true,
 				'menu_icon'    => "dashicons-$icon",
 				'supports'     => array( 'title', 'editor', 'custom-fields' ),
