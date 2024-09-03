@@ -93,8 +93,6 @@ final class Content_Model_Block {
 
 		add_filter( 'get_block_type_variations', array( $this, 'register_block_variation' ), 10, 2 );
 
-		add_filter( 'block_variation_attributes', array( $this, 'hydrate_block_variation_attributes' ), 10, 2 );
-
 		add_filter( 'pre_render_block', array( $this, 'render_group_variation' ), 99, 2 );
 	}
 
@@ -156,13 +154,15 @@ final class Content_Model_Block {
 		}
 
 		$variation = array(
-			'name'       => '__' . $this->block_variation_slug . '/' . $block_type->name,
 			'title'      => $this->block_variation_name,
 			'category'   => $this->content_model->slug . '-fields',
-			'attributes' => array(
-				'metadata' => array(
-					self::BLOCK_VARIATION_NAME_ATTR => $this->block_variation_name,
-					self::CONTENT_MODEL_SLUG_ATTR   => $this->content_model->slug,
+			'attributes' => array_merge(
+				$this->raw_block['attrs'],
+				array(
+					'metadata' => array(
+						self::BLOCK_VARIATION_NAME_ATTR => $this->block_variation_name,
+						self::CONTENT_MODEL_SLUG_ATTR   => $this->content_model->slug,
+					),
 				),
 			),
 		);
@@ -189,35 +189,6 @@ final class Content_Model_Block {
 		$variations[] = $variation;
 
 		return $variations;
-	}
-
-	/**
-	 * Replaces the variation attributes in the block with the ones from the content model template.
-	 *
-	 * @param array               $block_attributes The block attributes from the incoming block variation.
-	 * @param Content_Model_Block $block_variation The incoming block variation.
-	 *
-	 * @return array The replaced attributes from the block variation.
-	 */
-	public function hydrate_block_variation_attributes( $block_attributes, $block_variation ) {
-		if ( $block_variation->get_block_variation_name() !== $this->block_variation_name ) {
-			return $block_attributes;
-		}
-
-		if ( $block_variation->get_content_model() !== $this->content_model ) {
-			return $block_attributes;
-		}
-
-		$block_attributes['metadata'] = array_merge(
-			$block_attributes['metadata'] ?? array(),
-			array(
-				self::BLOCK_VARIATION_NAME_ATTR => $this->block_variation_name,
-				self::CONTENT_MODEL_SLUG_ATTR   => $this->content_model->slug,
-				'bindings'                      => $this->get_bindings(),
-			)
-		);
-
-		return $block_attributes;
 	}
 
 	/**

@@ -82,7 +82,8 @@ final class Content_Model {
 		$this->fields = json_decode( get_post_meta( $content_model_post->ID, 'fields', true ), true );
 		$this->register_meta_fields();
 
-		add_action( 'enqueue_block_editor_assets', array( $this, 'maybe_enqueue_scripts' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'maybe_enqueue_templating_scripts' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'maybe_enqueue_data_entry_scripts' ) );
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
 
@@ -141,7 +142,7 @@ final class Content_Model {
 
 		$icon = get_post_meta( $this->post_id, 'icon', true );
 		if ( empty( $icon ) ) {
-			$icon = 'admin-site';
+			$icon = 'admin-post';
 		}
 		$icon = str_replace( 'dashicons-', '', $icon );
 
@@ -151,6 +152,7 @@ final class Content_Model {
 				'labels'       => $labels,
 				'public'       => true,
 				'show_in_menu' => true,
+				'has_archive'  => true,
 				'show_in_rest' => true,
 				'menu_icon'    => "dashicons-$icon",
 				'supports'     => array( 'title', 'editor', 'custom-fields' ),
@@ -484,35 +486,58 @@ final class Content_Model {
 	}
 
 	/**
-	 * Enqueue the helper scripts if entering data to a content model.
+	 * Enqueue the data entry helper scripts.
 	 *
 	 * @return void
 	 */
-	public function maybe_enqueue_scripts() {
+	public function maybe_enqueue_data_entry_scripts() {
 		global $post;
 
 		if ( ! $post || $this->slug !== $post->post_type ) {
 			return;
 		}
 
-		$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/runtime.asset.php';
+		$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/data-entry.asset.php';
 
 		wp_enqueue_script(
-			'content-model/runtime',
-			CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/runtime.js',
+			'content-model/data-entry',
+			CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/data-entry.js',
 			$asset_file['dependencies'],
 			$asset_file['version'],
 			true
 		);
 
 		wp_localize_script(
-			'content-model/runtime',
+			'content-model/data-entry',
 			'contentModelData',
 			array(
 				'POST_TYPE'                  => $this->slug,
 				'FIELDS'                     => $this->fields,
 				'FALLBACK_VALUE_PLACEHOLDER' => self::FALLBACK_VALUE_PLACEHOLDER,
 			)
+		);
+	}
+
+	/**
+	 * Enqueue the templating helper scripts.
+	 *
+	 * @return void
+	 */
+	public function maybe_enqueue_templating_scripts() {
+		$current_screen = get_current_screen();
+
+		if ( 'site-editor' !== $current_screen->id ) {
+			return;
+		}
+
+		$asset_file = include CONTENT_MODEL_PLUGIN_PATH . 'includes/runtime/dist/templating.asset.php';
+
+		wp_enqueue_script(
+			'content-model/templating',
+			CONTENT_MODEL_PLUGIN_URL . '/includes/runtime/dist/templating.js',
+			$asset_file['dependencies'],
+			$asset_file['version'],
+			true
 		);
 	}
 }

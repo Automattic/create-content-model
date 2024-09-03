@@ -81,8 +81,11 @@ export const CPTSettingsPanel = function () {
 						<div
 							style={ {
 								position: 'absolute',
-								top: '30px',
-								right: '8px',
+								top: '24px',
+								right: '6px',
+								height: '32px',
+								display: 'flex',
+								alignItems: 'center',
 							} }
 						>
 							{ ' ' }

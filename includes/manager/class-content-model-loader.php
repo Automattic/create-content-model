@@ -150,7 +150,7 @@ class Content_Model_Loader {
 				'type'         => 'string',
 				'single'       => true,
 				'show_in_rest' => true,
-				'default'      => 'admin-site',
+				'default'      => 'admin-post',
 			),
 		);
 
