@@ -15,6 +15,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import { trash, chevronUp, chevronDown, post } from '@wordpress/icons';
+import { cleanForSlug } from '@wordpress/url';
 
 const EditFieldForm = ( {
 	field = {
@@ -32,8 +33,17 @@ const EditFieldForm = ( {
 	total,
 } ) => {
 	const [ formData, setFormData ] = useState( field );
+	const [ slugWasTouched, setSlugWasTouched ] = useState(
+		formData.slug !== ''
+	);
 
 	useEffect( () => {
+		if ( ! slugWasTouched ) {
+			setFormData( {
+				...formData,
+				slug: cleanForSlug( formData.label ).replace( /-/g, '_' ),
+			} );
+		}
 		onChange( formData );
 	}, [ formData ] );
 
@@ -98,9 +108,10 @@ const EditFieldForm = ( {
 						<TextControl
 							label={ __( 'Key' ) }
 							value={ formData.slug }
-							onChange={ ( value ) =>
-								setFormData( { ...formData, slug: value } )
-							}
+							onChange={ ( value ) => {
+								setSlugWasTouched( true );
+								setFormData( { ...formData, slug: value } );
+							} }
 						/>
 						<TextControl
 							label={ __( 'Description (optional)' ) }
