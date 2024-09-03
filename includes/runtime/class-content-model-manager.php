@@ -48,8 +48,6 @@ class Content_Model_Manager {
 	 */
 	private function __construct() {
 		$this->register_content_models();
-
-		add_filter( 'get_block_templates', array( $this, 'hydrate_block_variations_within_templates' ) );
 	}
 
 	/**
@@ -97,50 +95,5 @@ class Content_Model_Manager {
 	 */
 	public static function get_content_models_from_database() {
 		return get_posts( array( 'post_type' => self::POST_TYPE_NAME ) );
-	}
-
-	/**
-	 * Go through the templates and hydrate the block variations.
-	 *
-	 * @param WP_Block_Template[] $templates The parsed templates.
-	 *
-	 * @return WP_Block_Template[] The hydrated templates.
-	 */
-	public function hydrate_block_variations_within_templates( $templates ) {
-		foreach ( $templates as $template ) {
-			$blocks = parse_blocks( wp_unslash( $template->content ) );
-			$blocks = $this->hydrate_block_variations( $blocks );
-
-			$template->content = serialize_blocks( $blocks );
-		}
-
-		return $templates;
-	}
-
-	/**
-	 * Recursively hydrates (i.e., replaces the bound attributes from the block variation
-	 * defined in the CPT template) block variations.
-	 *
-	 * @param array $blocks The blocks from the front-end template to hydrate.
-	 *
-	 * @return array The hydrated blocks.
-	 */
-	private function hydrate_block_variations( $blocks ) {
-		return content_model_block_walker(
-			$blocks,
-			function ( $block ) {
-				$tentative_block = new Content_Model_Block( $block );
-
-				if ( ! empty( $tentative_block->get_block_variation_name() ) ) {
-					$block['attrs'] = apply_filters(
-						'block_variation_attributes',
-						$block['attrs'],
-						$tentative_block
-					);
-				}
-
-				return $block;
-			}
-		);
 	}
 }
