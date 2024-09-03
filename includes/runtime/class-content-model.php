@@ -308,9 +308,9 @@ final class Content_Model {
 	 */
 	public function register_block_category( $categories ) {
 		$categories[] = array(
-			'slug'  => $this->slug . '-fields',
+			'slug'  => $this->slug . '-blocks',
 			// translators: %s is content model name.
-			'title' => sprintf( __( '%s fields' ), ucwords( $this->title ) ),
+			'title' => sprintf( __( '%s blocks' ), ucwords( $this->title ) ),
 		);
 
 		return $categories;
