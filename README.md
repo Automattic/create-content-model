@@ -64,7 +64,9 @@ Or download the plugin [here](download link)
 -->
 
 
+## Getting Started
 
+Find detailed instructions on creating your content model using this plugin in the [Get Started](/GETSTARTED.md) guide.
 
 ## Development
 
@@ -77,10 +79,6 @@ Or download the plugin [here](download link)
 
 Run `npm run plugin-zip` to create a zip file of the plugin. This will automatically bundle the JavaScript files. We will update this with versioning when that is in place.
 
-## Documentation
-Find detailed instructions on creating your content model using this plugin in the [Get Started](/GETSTARTED.md) guide.
-
-
 ## Contribute & Contact 
 
 Want to help us move this concept forward?
@@ -88,7 +86,6 @@ Want to help us move this concept forward?
 Feel free to open an issue in the repo to discuss your proposed improvement. Pull requests are welcome for bug fixes and enhancements.
 
 We built this as a prototype and may invest into it further based on level of interest.  Our near term vision is outline in this [roadmap issue](https://github.com/Automattic/create-content-model/issues/77).
-
 
 ## Licensing
 [GNU General Public License](/LICENSE.md)
