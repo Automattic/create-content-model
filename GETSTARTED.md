@@ -1,10 +1,6 @@
 
 # Get Started
 
-
-Watch our tutorial video [TODO]
-
-
 ## Quick Start
 
 ### Data Model Main Workflow
