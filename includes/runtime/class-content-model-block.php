@@ -154,6 +154,7 @@ final class Content_Model_Block {
 		}
 
 		$variation = array(
+			'name'       => sanitize_title( $this->block_variation_name ),
 			'title'      => $this->block_variation_name,
 			'category'   => $this->content_model->slug . '-fields',
 			'attributes' => array_merge(
