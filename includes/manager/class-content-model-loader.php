@@ -53,6 +53,8 @@ class Content_Model_Loader {
 
 		add_action( 'save_post', array( $this, 'map_template_to_bindings_api_signature' ), 99, 2 );
 
+		add_action( 'save_post', array( $this, 'flush_rewrite_rules_on_slug_change' ), 99, 2 );
+
 		/**
 		 * We need two different hooks here because the Editor and the front-end read from different sources.
 		 *
@@ -291,5 +293,20 @@ class Content_Model_Loader {
 		unset( $block['attrs']['metadata']['bindings'] );
 
 		return $block;
+	}
+
+
+	/**
+	 * Flushes the rewrite rules when the slug of a content model changes.
+	 *
+	 * @param int     $post_id The post ID.
+	 * @param WP_Post $post The post.
+	 */
+	public function flush_rewrite_rules_on_slug_change( $post_id, $post ) {
+		if ( Content_Model_Manager::POST_TYPE_NAME !== $post->post_type ) {
+			return;
+		}
+
+		flush_rewrite_rules();
 	}
 }
