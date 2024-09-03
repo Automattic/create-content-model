@@ -141,7 +141,7 @@ final class Content_Model {
 
 		$icon = get_post_meta( $this->post_id, 'icon', true );
 		if ( empty( $icon ) ) {
-			$icon = 'admin-site';
+			$icon = 'admin-post';
 		}
 		$icon = str_replace( 'dashicons-', '', $icon );
 
