@@ -208,7 +208,6 @@ final class Content_Model {
 						'show_in_rest' => true,
 						'single'       => true,
 						'type'         => 'string', // todo: support other types.
-						'default'      => $field['default'] ?? $field['slug'],
 					)
 				);
 			}
