@@ -104,6 +104,6 @@ Follow us:
 
 [![image](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/wordpressdotcom)
 
-<!-- Later we can add deveopers newsletter -->
+<!-- Later we can add developers newsletter -->
 
 And while you’re at it, check out our [WordPress hosting solution for developers](https://wordpress.com/hosting) and [our agency program](https://wordpress.com/for-agencies/).

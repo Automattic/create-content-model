@@ -132,7 +132,7 @@ class Content_Model_Html_Manipulator {
 	 * Swap the node's innerHTML with the given HTML.
 	 *
 	 * @param \DOMElement $node The HTML node.
-	 * @param string      $html The desired inner HMTL.
+	 * @param string      $html The desired inner HTML.
 	 *
 	 * @return void
 	 */

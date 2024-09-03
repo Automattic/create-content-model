@@ -85,7 +85,7 @@ final class Content_Model_Block {
 		$this->bindings = $metadata['bindings'] ?? array();
 
 		/**
-		 * If not instanciated directly by a content model, do not register hooks.
+		 * If not instantiated directly by a content model, do not register hooks.
 		 */
 		if ( ! $content_model ) {
 			return;
