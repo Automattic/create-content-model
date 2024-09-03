@@ -61,6 +61,12 @@ class Content_Model_Loader {
 		 * The Editor reads the whole post, while the front-end reads only the post content.
 		 */
 		add_action( 'the_post', array( $this, 'map_template_to_content_model_editor_signature' ) );
+
+		/**
+		 * Update placeholder prompts to be more suitable for creating a new model.
+		 */
+		add_filter( 'enter_title_here', array( $this, 'set_title_placeholder' ), 10, 2 );
+		add_filter( 'default_content', array( $this, 'set_content_placeholder' ), 10, 2 );
 	}
 
 	/**
@@ -308,5 +314,37 @@ class Content_Model_Loader {
 		}
 
 		flush_rewrite_rules();
+	}
+
+	/**
+	 * Sets the title placeholder for the Content Model post type.
+	 *
+	 * @param string  $title The default title placeholder.
+	 * @param WP_Post $post  The current post object.
+	 * @return string The modified title placeholder.
+	 */
+	public function set_title_placeholder( $title, $post ) {
+		if ( Content_Model_Manager::POST_TYPE_NAME === $post->post_type ) {
+			return __( 'Add model name' );
+		}
+		return $title;
+	}
+
+	/**
+	 * Sets the content placeholder for the Content Model post type.
+	 *
+	 * @param string  $content The default content.
+	 * @param WP_Post $post    The current post object.
+	 * @return string The modified default content.
+	 */
+	public function set_content_placeholder( $content, $post ) {
+		if ( Content_Model_Manager::POST_TYPE_NAME === $post->post_type ) {
+			$placeholder = __( 'Start building your model' );
+			return sprintf(
+				'<!-- wp:paragraph {"placeholder":"%s"} --><p></p><!-- /wp:paragraph -->',
+				esc_attr( $placeholder )
+			);
+		}
+		return $content;
 	}
 }

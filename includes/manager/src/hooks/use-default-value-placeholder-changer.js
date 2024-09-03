@@ -32,8 +32,8 @@ export const useDefaultValuePlaceholderChanger = () => {
 		Object.entries( boundBlocks ).forEach( ( [ blockId, blockName ] ) => {
 			updateBlockAttributes( blockId, {
 				placeholder: sprintf(
-					// translators: %s is the block name.
-					__( 'Enter the default value for %s' ),
+					// translators: %s is the block binding's name.
+					__( 'Add placeholder value for %s' ),
 					blockName
 				),
 			} );
