@@ -79,7 +79,7 @@ final class Content_Model {
 
 		// TODO: Not load this eagerly.
 		$this->blocks = $this->inflate_template_blocks( $this->template );
-		$this->fields = json_decode( get_post_meta( $content_model_post->ID, 'fields', true ), true );
+		$this->fields = $this->parse_fields();
 		$this->register_meta_fields();
 
 		add_action( 'enqueue_block_editor_assets', array( $this, 'maybe_enqueue_templating_scripts' ) );
@@ -158,6 +158,27 @@ final class Content_Model {
 				'supports'     => array( 'title', 'editor', 'custom-fields' ),
 			)
 		);
+	}
+
+	/**
+	 * Parses the fields associated with the Content Model.
+	 *
+	 * @return array Fields associated with the Content Model.
+	 */
+	private function parse_fields() {
+		$fields = get_post_meta( $this->post_id, 'fields', true );
+
+		if ( ! $fields ) {
+			return array();
+		}
+
+		$decoded_files = json_decode( $fields, true );
+
+		if ( is_array( $decoded_files ) ) {
+			return $decoded_files;
+		}
+
+		return array();
 	}
 
 
