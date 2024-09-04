@@ -39,6 +39,8 @@ Once a block is “bound,” it will be editable in the future, and any data ent
 
 ![data-model-add-binding](https://github.com/user-attachments/assets/7a93ce88-f241-4017-bc01-1ecb472164b1)
 
+If you have the [Gutenberg plugin](https://wordpress.org/plugins/gutenberg/) and enable the "Block Binding UI" experiment enabled, you can view and use your custom fields registered as postmeta when you manually bind an attribute.
+
 Since we’re using core WordPress’ [Block Bindings API](https://make.wordpress.org/core/2024/03/06/new-feature-the-block-bindings-api/), the only blocks that are currently supported are the [Paragraph](https://wordpress.org/documentation/article/paragraph-block/), [Heading](https://wordpress.org/documentation/article/heading-block/), [Image](https://wordpress.org/documentation/article/image-block/), and [Buttons](https://wordpress.org/documentation/article/buttons-block/) blocks.
 
 ### Rich content areas: the Group block
