@@ -34,7 +34,17 @@ A key feature of the Create Content Model plugin is the export of a locked custo
 
 Run `npm run plugin-zip` to create a zip file of the plugin. This will automatically bundle the JavaScript files.
 
-## Contribute & Contact 
+### Creating a new release
+
+Create a new release by filling the form on [this page](https://github.com/Automattic/create-content-model/releases/new).
+
+The release title and tag ("Choose a tag" selectbox, above the title) should be in the Semver format (`major.minor.patch`).
+
+The release description should be a list of bullet points of the most meaningful changes. You can copy the commit title from the merged PRs.
+
+After clicking "Publish release," a [GitHub workflow](https://github.com/Automattic/create-content-model/blob/trunk/.github/workflows/release.yml) will bundle the plugin and export the release artifact.
+
+## Contribute & Contact
 
 Want to help us move this concept forward?
 
@@ -45,16 +55,15 @@ We built this as a prototype and may invest into it further based on level of in
 ## Licensing
 [GNU General Public License](/LICENSE.md)
 
-## Credits & Acknowledgements 
+## Credits & Acknowledgements
 We’d like to thank the team at WordPress.com who made this project possible: [Luis Felipe Zaguini](https://github.com/zaguiini), [Candy Tsai](https://github.com/candy02058912), [Autumn Fjeld](https://github.com/autumnfjeld), [Brian Coords](https://github.com/bacoords), [Daniel Bachhuber](https://github.com/danielbachhuber).
 
 ## Stay in the Loop with WordPress.com
 Follow us:
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/showcase/wordpress.com)
-  
-[![X](https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/wordpressdotcom)
 
+[![X](https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/wordpressdotcom)
 
 [![image](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/wordpressdotcom)
 
