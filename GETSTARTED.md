@@ -4,7 +4,7 @@ Start leveraging the latest WordPress core features with WordPress.com’s exper
 
 Create custom post types and custom fields directly in the Block Editor, and then export your data model and data entry UI as a standalone, maintenance-free plugin. Everything you build is using core WordPress functionality, so you can run the future-proof plugin or you can use filters and hooks to extend and adapt your data model.
 
-To get started with the Create Content Model plugin, [download the latest release](https://github.com/Automattic/create-content-model-releases/raw/latest/create-content-model.zip) or [launch our WordPress Playground Blueprint](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/create-content-model/trunk/blueprint.json).
+To get started with the Create Content Model plugin, [download the latest release](https://github.com/Automattic/create-content-model/releases/latest/download/create-content-model.zip) or [launch our WordPress Playground Blueprint](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/create-content-model/trunk/blueprint.json).
 
 https://github.com/user-attachments/assets/50f2b533-a412-4f40-ae21-17af0b90c39d
 
