@@ -104,17 +104,53 @@ final class Content_Model {
 	}
 
 	/**
+	 * Retrieves the plural label for the content model.
+	 *
+	 * If the plural label is not set, it will default to the singular label with an 's' appended.
+	 *
+	 * @return string The plural label.
+	 */
+	public function get_plural_label() {
+		return $this->get_model_meta( 'plural_label' ) ?? "{$this->title}s";
+	}
+
+	/**
+	 * Retrieves the icon for the content model.
+	 *
+	 * If the icon is not set, it will default to 'admin-post'.
+	 *
+	 * @return string The icon slug.
+	 */
+	public function get_icon() {
+		$icon = $this->get_model_meta( 'icon' ) ?? 'admin-post';
+
+		return str_replace( 'dashicons-', '', $icon );
+	}
+
+	/**
+	 * Retrieves a meta value for the content model.
+	 *
+	 * @param string $key The meta key to retrieve.
+	 * @return mixed The value of the meta field, or null if it does not exist.
+	 */
+	private function get_model_meta( $key ) {
+		$meta = get_post_meta( $this->post_id, $key, true );
+
+		if ( ! empty( $meta ) ) {
+			return $meta;
+		}
+
+		return null;
+	}
+
+	/**
 	 * Registers the custom post type for the content model.
 	 *
 	 * @return void
 	 */
 	private function register_post_type() {
 		$singular_name = $this->title;
-
-		$plural_name = get_post_meta( $this->post_id, 'plural_label', true );
-		if ( empty( $plural_name ) ) {
-			$plural_name = $singular_name . 's';
-		}
+		$plural_name   = $this->get_plural_label();
 
 		$labels = array(
 			'name'               => $plural_name,
@@ -140,12 +176,6 @@ final class Content_Model {
 			'not_found_in_trash' => sprintf( __( 'No %s found in trash' ), $plural_name ),
 		);
 
-		$icon = get_post_meta( $this->post_id, 'icon', true );
-		if ( empty( $icon ) ) {
-			$icon = 'admin-post';
-		}
-		$icon = str_replace( 'dashicons-', '', $icon );
-
 		register_post_type(
 			$this->slug,
 			array(
@@ -154,7 +184,7 @@ final class Content_Model {
 				'show_in_menu' => true,
 				'has_archive'  => true,
 				'show_in_rest' => true,
-				'menu_icon'    => "dashicons-$icon",
+				'menu_icon'    => "dashicons-{$this->get_icon()}",
 				'supports'     => array( 'title', 'editor', 'custom-fields' ),
 			)
 		);
