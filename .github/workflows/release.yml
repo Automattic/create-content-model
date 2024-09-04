@@ -26,7 +26,7 @@ jobs:
           node-version: 20
           cache: "npm"
       - run: npm install
-      - run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ github.ref_name }}/g' {} +"
+      - run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag_name }}/g' {} +"
       - run: npm run plugin-zip
       - uses: softprops/action-gh-release@v2
         with:
