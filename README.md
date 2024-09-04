@@ -50,7 +50,7 @@ Want to help us move this concept forward?
 
 Feel free to open an issue in the repo to discuss your proposed improvement. Pull requests are welcome for bug fixes and enhancements.
 
-We built this as a prototype and may invest into it further based on level of interest. Our near term vision is outline in this [roadmap issue](https://github.com/Automattic/create-content-model/issues/77).
+We built this as a prototype and may invest into it further based on level of interest. Our near term vision is outlined in this [roadmap issue](https://github.com/Automattic/create-content-model/issues/77).
 
 ## Licensing
 [GNU General Public License](/LICENSE.md)
