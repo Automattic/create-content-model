@@ -1,7 +1,6 @@
 {
     "name": "create-content-model",
-    "version": "1.0.0",
-    "main": ".prettierrc.js",
+    "version": "0.0.0-placeholder",
     "scripts": {
         "prepare": "husky",
         "dev-server": "npx @wp-now/wp-now start --wp=nightly --skip-browser --blueprint=dev.json",

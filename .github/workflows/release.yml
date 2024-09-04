@@ -1,0 +1,30 @@
+name: "tagged-release"
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Fetch Tags
+        run: git fetch --tags --force
+      - id: tag-message
+        run: git tag -l --sort=-taggerdate --format='%(contents)' $(git describe --tags $(git branch --show-current))
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ github.ref_name }}/g' {} +"
+      - run: npm run plugin-zip
+      - uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.tag-message.outputs.stdout }}
+          files: create-content-model.zip
+          make_latest: true
