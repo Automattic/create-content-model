@@ -6,7 +6,7 @@ Create custom post types and custom fields directly in the Block Editor, and the
 
 To get started with the Create Content Model plugin, [download the latest release](https://github.com/Automattic/create-content-model/releases/latest/download/create-content-model.zip) or [launch our WordPress Playground Blueprint](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/create-content-model/trunk/blueprint.json).
 
-https://github.com/user-attachments/assets/50f2b533-a412-4f40-ae21-17af0b90c39d
+https://github.com/user-attachments/assets/09b449f0-4398-4037-ba07-820c76407d7d
 
 ## Creating a content model
 
