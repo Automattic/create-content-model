@@ -9,9 +9,14 @@ jobs:
   tagged-release:
     name: "Tagged Release"
     runs-on: "ubuntu-latest"
+    outputs:
+      tag_name: ${{ steps.get_tag.outputs.tag_name }}
 
     steps:
       - uses: actions/checkout@master
+      - name: Get tag name
+        id: get_tag
+        run: echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
       - name: Fetch Tags
         run: git fetch --tags --force
       - id: tag-message
@@ -19,7 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
       - run: npm install
       - run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ github.ref_name }}/g' {} +"
       - run: npm run plugin-zip
@@ -28,3 +33,51 @@ jobs:
           body: ${{ steps.tag-message.outputs.stdout }}
           files: create-content-model.zip
           make_latest: true
+
+      - name: Upload plugin zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-zip
+          path: create-content-model.zip
+
+  publish-to-releases-repo:
+    name: "Publish to Releases Repository"
+    needs: tagged-release
+    runs-on: "ubuntu-latest"
+
+    steps:
+      # Download the artifact from the previous job
+      - name: Download plugin zip
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-zip
+
+      - name: Create output directory
+        run: mkdir -p output
+
+      - name: Move plugin zip to output/
+        run: mv create-content-model.zip output/
+
+      - name: Get user email
+        id: get_email
+        run: |
+          EMAIL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/users/${{ github.actor }} \
+            | jq -r '.email // empty')
+          if [ -z "$EMAIL" ]; then
+            EMAIL="${{ github.actor }}@users.noreply.github.com"
+          fi
+          echo "email=$EMAIL" >> $GITHUB_OUTPUT
+
+      - name: Push zip to create-content-model-releases repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+        with:
+          source-directory: "output"
+          destination-github-username: "automattic"
+          destination-repository-name: "create-content-model-releases"
+          user-name: ${{ github.actor }}
+          user-email: ${{ steps.get_email.outputs.email }}
+          target-branch: releases
+          commit-message: "${{ needs.tagged-release.outputs.tag_name }} from ORIGIN_COMMIT"
