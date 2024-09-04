@@ -6,7 +6,7 @@ WordPress.com’s experimental Create Content Model plugin transforms the way cu
 
 [![Try in WordPress Playground](https://img.shields.io/badge/Try%20in%20WordPress%20Playground-blue?style=for-the-badge)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/create-content-model/trunk/blueprint.json)
 
-[![Download Latest Release](https://img.shields.io/badge/Download%20Latest%20Release-blue?style=for-the-badge)](https://github.com/Automattic/create-content-model-releases/raw/latest/create-content-model.zip)
+[![Download Latest Release](https://img.shields.io/badge/Download%20Latest%20Release-blue?style=for-the-badge)](https://github.com/Automattic/create-content-model/releases/latest/download/create-content-model.zip)
 
 [[video]]
 
