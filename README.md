@@ -8,7 +8,7 @@ WordPress.com’s experimental Create Content Model plugin transforms the way cu
 
 You can also test out the plugin locally with [Studio](https://developer.wordpress.com/studio/)! Check out the [Get Started](/GETSTARTED.md#test-locally-with-studio) guide for details.
 
-https://github.com/user-attachments/assets/7fbe9162-6a95-4340-9f7e-456b3fa70471
+https://github.com/user-attachments/assets/723a973a-eb92-4b71-9f64-ac269d0f9861
 
 ## Getting Started
 
