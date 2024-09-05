@@ -11,8 +11,6 @@ declare( strict_types = 1 );
  * Manages the registered Content Models.
  */
 final class Content_Model {
-	public const FALLBACK_VALUE_PLACEHOLDER = '__CREATE_CONTENT_MODEL__FALLBACK_VALUE__';
-
 	/**
 	 * The slug of the content model.
 	 *
@@ -75,12 +73,7 @@ final class Content_Model {
 		$this->template = parse_blocks( $content_model_post->post_content );
 		$this->post_id  = $content_model_post->ID;
 
-		$this->register_post_type();
-
-		// TODO: Not load this eagerly.
-		$this->blocks = $this->inflate_template_blocks( $this->template );
-		$this->fields = $this->parse_fields();
-		$this->register_meta_fields();
+		add_action( 'wp_loaded', array( $this, 'register_post_type' ) );
 
 		add_action( 'enqueue_block_editor_assets', array( $this, 'maybe_enqueue_templating_scripts' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'maybe_enqueue_data_entry_scripts' ) );
@@ -88,7 +81,6 @@ final class Content_Model {
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ) );
 
 		add_filter( 'rest_request_before_callbacks', array( $this, 'remove_default_meta_keys_on_save' ), 10, 3 );
-		add_filter( 'rest_post_dispatch', array( $this, 'fill_empty_meta_keys_with_default_values' ), 10, 3 );
 
 		add_action( 'rest_after_insert_' . $this->slug, array( $this, 'extract_post_content_from_blocks' ), 99, 1 );
 
@@ -108,7 +100,7 @@ final class Content_Model {
 	 *
 	 * @return void
 	 */
-	private function register_post_type() {
+	public function register_post_type() {
 		$singular_name = $this->title;
 
 		$plural_name = get_post_meta( $this->post_id, 'plural_label', true );
@@ -158,6 +150,11 @@ final class Content_Model {
 				'supports'     => array( 'title', 'editor', 'custom-fields' ),
 			)
 		);
+
+		$this->blocks = $this->inflate_template_blocks( $this->template );
+		$this->fields = $this->parse_fields();
+
+		$this->register_meta_fields();
 	}
 
 	/**
@@ -215,7 +212,6 @@ final class Content_Model {
 	 * @return void
 	 */
 	private function register_meta_fields() {
-
 		if ( ! empty( $this->fields ) ) {
 			foreach ( $this->fields as $field ) {
 				if ( strpos( $field['type'], 'core' ) !== false ) {
@@ -374,7 +370,7 @@ final class Content_Model {
 			$meta = $request->get_param( 'meta' ) ?? array();
 
 			foreach ( $meta as $key => $value ) {
-				if ( '' === $value ) {
+				if ( empty( $value ) ) {
 					unset( $meta[ $key ] );
 					delete_post_meta( $request->get_param( 'id' ), $key );
 				}
@@ -386,38 +382,6 @@ final class Content_Model {
 		return $response;
 	}
 
-	/**
-	 * Intercepts the response and fills the empty meta keys with default values.
-	 *
-	 * @param WP_HTTP_Response $result The response.
-	 * @param WP_REST_Server   $server The server.
-	 * @param WP_REST_Request  $request The request.
-	 *
-	 * @return WP_REST_Response The response.
-	 */
-	public function fill_empty_meta_keys_with_default_values( $result, $server, $request ) {
-		$is_allowed_method     = in_array( $request->get_method(), array( 'GET', 'POST', 'PUT' ), true );
-		$is_touching_post_type = str_starts_with( $request->get_route(), '/wp/v2/' . $this->slug );
-
-		if ( $is_allowed_method && $is_touching_post_type ) {
-			$data = $result->get_data();
-
-			$data['meta'] ??= array();
-
-			foreach ( $data['meta'] as $key => $value ) {
-				$bound_meta_key = $this->bound_meta_keys[ $key ] ?? null;
-
-				if ( empty( $value ) && $bound_meta_key ) {
-					// TODO: Switch to empty string when Gutenberg 19.2 gets released.
-					$data['meta'][ $key ] = self::FALLBACK_VALUE_PLACEHOLDER;
-				}
-			}
-
-			$result->set_data( $data );
-		}
-
-		return $result;
-	}
 	/**
 	 * Extracts the post content from the blocks.
 	 *
@@ -531,9 +495,8 @@ final class Content_Model {
 			'content-model/data-entry',
 			'contentModelData',
 			array(
-				'POST_TYPE'                  => $this->slug,
-				'FIELDS'                     => $this->fields,
-				'FALLBACK_VALUE_PLACEHOLDER' => self::FALLBACK_VALUE_PLACEHOLDER,
+				'POST_TYPE' => $this->slug,
+				'FIELDS'    => $this->fields,
 			)
 		);
 	}
