@@ -5,6 +5,9 @@
  * @package create-content-model
  */
 
+/**
+ * Handles the export functionality for Content Models.
+ */
 class Content_Model_Exporter {
 	/**
 	 * The instance.
@@ -225,12 +228,14 @@ class Content_Model_Exporter {
 	 */
 	private function generate_json_for_model( $model ) {
 		return array(
-			'type'     => 'postType',
-			'postType' => $model->slug,
-			'slug'     => $model->slug,
-			'label'    => $model->title,
-			'template' => $model->template,
-			'fields'   => $this->format_fields_for_export( $model->get_meta_fields() ),
+			'type'        => 'postType',
+			'postType'    => $model->slug,
+			'slug'        => $model->slug,
+			'label'       => $model->title,
+			'pluralLabel' => $model->get_plural_label(),
+			'icon'        => $model->get_icon(),
+			'template'    => $model->template,
+			'fields'      => $this->format_fields_for_export( $model->get_meta_fields() ),
 		);
 	}
 
@@ -365,7 +370,7 @@ class Content_Model_Exporter {
 
 	/**
 	 * Creates a ZIP file containing the content models and necessary plugin files.
-	* This does not include content models that are not published.
+	 * This does not include content models that are not published.
 	 *
 	 * @param array $all_models_json The JSON data for the content models.
 	 * @return int|false The attachment ID of the created ZIP file, or false on failure.
