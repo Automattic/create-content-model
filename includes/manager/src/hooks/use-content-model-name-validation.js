@@ -4,7 +4,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
 import { store as noticesStore } from '@wordpress/notices';
 
-export const useContentModelNameLengthRestrictor = () => {
+export const useContentModelNameValidation = () => {
 	const { editPost, lockPostSaving, unlockPostSaving } =
 		useDispatch( editorStore );
 	const { createNotice, removeNotice } = useDispatch( noticesStore );
