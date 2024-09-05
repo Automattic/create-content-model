@@ -11,7 +11,11 @@ export const useBoundGroupExtractor = () => {
 	const [ , setMeta ] = useEntityProp( 'postType', POST_TYPE, 'meta' );
 
 	useEffect( () => {
-		const boundBlocks = findBoundBlocks( blocks );
+		const boundBlocks = findBoundGroupBlocks( blocks );
+
+		if ( Object.keys( boundBlocks ).length === 0 ) {
+			return;
+		}
 
 		setMeta( boundBlocks );
 	}, [ blocks, setMeta ] );
@@ -19,7 +23,7 @@ export const useBoundGroupExtractor = () => {
 	return null;
 };
 
-const findBoundBlocks = ( blocks, acc = {} ) => {
+const findBoundGroupBlocks = ( blocks, acc = {} ) => {
 	for ( const block of blocks ) {
 		if ( 'core/group' !== block.name ) {
 			continue;
@@ -32,7 +36,7 @@ const findBoundBlocks = ( blocks, acc = {} ) => {
 		}
 
 		if ( block.innerBlocks.length > 0 ) {
-			acc = findBoundBlocks( block.innerBlocks, acc );
+			acc = findBoundGroupBlocks( block.innerBlocks, acc );
 		}
 	}
 
