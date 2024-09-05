@@ -4,7 +4,7 @@ Start leveraging the latest WordPress core features with WordPress.com’s exper
 
 Create custom post types and custom fields directly in the Block Editor, and then export your data model and data entry UI as a standalone, maintenance-free plugin. Everything you build is using core WordPress functionality, so you can run the future-proof plugin or you can use filters and hooks to extend and adapt your data model.
 
-To get started with the Create Content Model plugin, [download the latest release](https://github.com/Automattic/create-content-model/releases/latest/download/create-content-model.zip) or [launch our WordPress Playground Blueprint](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/create-content-model/trunk/blueprint.json).
+To get started with the Create Content Model plugin, [download the latest release](https://github.com/Automattic/create-content-model/releases/latest/download/create-content-model.zip), [launch our WordPress Playground Blueprint](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/create-content-model/trunk/blueprint.json), or [test locally with Studio](#test-locally-with-studio).
 
 https://github.com/user-attachments/assets/09b449f0-4398-4037-ba07-820c76407d7d
 
@@ -91,6 +91,10 @@ Create Content Model is a development tool, but it’s not required to run on yo
 3. Install your data model plugin on a new site (or deactivate the main plugin on the current site and import the new plugin). Remember to upload it as the .zip file.
 4. Optionally, add version control for your own content model plugin to track changes and deploy your plugin across multiple sites.
 
-  
+## Test locally with Studio
 
-
+1. Download [Studio](https://developer.wordpress.com/studio/)
+2. Add Site
+3. Open WP admin
+4. Download latest plugin release
+5. Install plugin
