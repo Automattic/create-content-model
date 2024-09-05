@@ -228,14 +228,14 @@ class Content_Model_Exporter {
 	 */
 	private function generate_json_for_model( $model ) {
 		return array(
-			'type'         => 'postType',
-			'postType'     => $model->slug,
-			'slug'         => $model->slug,
-			'label'        => $model->title,
-			'plural_label' => $model->get_plural_label(),
-			'icon'         => $model->get_icon(),
-			'template'     => $model->template,
-			'fields'       => $this->format_fields_for_export( $model->get_meta_fields() ),
+			'type'        => 'postType',
+			'postType'    => $model->slug,
+			'slug'        => $model->slug,
+			'label'       => $model->title,
+			'pluralLabel' => $model->get_plural_label(),
+			'icon'        => $model->get_icon(),
+			'template'    => $model->template,
+			'fields'      => $this->format_fields_for_export( $model->get_meta_fields() ),
 		);
 	}
 
