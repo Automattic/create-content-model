@@ -9,8 +9,13 @@ export const useContentModelNameLengthRestrictor = () => {
 		useDispatch( editorStore );
 	const { createNotice } = useDispatch( noticesStore );
 
-	const title = useSelect( ( select ) =>
-		select( editorStore ).getEditedPostAttribute( 'title' )
+	const { title, isPublishSidebarOpened, isPublishingPost } = useSelect(
+		( select ) => ( {
+			title: select( editorStore ).getEditedPostAttribute( 'title' ),
+			isPublishSidebarOpened:
+				select( editorStore ).isPublishSidebarOpened(),
+			isPublishingPost: select( editorStore ).isPublishingPost(),
+		} )
 	);
 
 	useEffect( () => {
@@ -18,22 +23,43 @@ export const useContentModelNameLengthRestrictor = () => {
 
 		if ( trimmedTitle.length === 0 ) {
 			lockPostSaving( 'title-empty-lock' );
-			return;
+		} else {
+			unlockPostSaving( 'title-empty-lock' );
+			editPost( { title: trimmedTitle.substring( 0, 20 ) } );
+
+			if ( trimmedTitle.length > 20 ) {
+				createNotice(
+					'warning',
+					__( 'Model name is limited to 20 characters.' ),
+					{
+						id: 'title-length-notice',
+						type: 'snackbar',
+						isDismissible: true,
+					}
+				);
+			}
 		}
 
-		unlockPostSaving( 'title-empty-lock' );
-
-		editPost( { title: trimmedTitle.substring( 0, 20 ) } );
-
-		if ( trimmedTitle.length > 20 ) {
+		if (
+			( isPublishSidebarOpened || isPublishingPost ) &&
+			trimmedTitle.length === 0
+		) {
 			createNotice(
 				'warning',
-				__( 'Title is limited to 20 characters.' ),
+				__( 'Please enter a model name in order to publish.' ),
 				{
-					type: 'snackbar',
+					id: 'title-empty-notice',
 					isDismissible: true,
 				}
 			);
 		}
-	}, [ title, lockPostSaving, unlockPostSaving, editPost, createNotice ] );
+	}, [
+		title,
+		isPublishSidebarOpened,
+		isPublishingPost,
+		lockPostSaving,
+		unlockPostSaving,
+		editPost,
+		createNotice,
+	] );
 };
