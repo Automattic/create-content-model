@@ -96,5 +96,5 @@ Create Content Model is a development tool, but it’s not required to run on yo
 1. Download [Studio](https://developer.wordpress.com/studio/)
 2. Add Site
 3. Open WP admin
-4. Download latest plugin release
+4. Download the [latest plugin release](https://github.com/Automattic/create-content-model/releases/latest/download/create-content-model.zip)
 5. Install plugin
