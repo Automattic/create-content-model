@@ -6,7 +6,7 @@ WordPress.com’s experimental Create Content Model plugin transforms the way cu
 
 [![Try in WordPress Playground](https://img.shields.io/badge/Try%20in%20WordPress%20Playground-blue?style=for-the-badge)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/create-content-model/trunk/blueprint.json)
 
-You can also test out the plugin locally with [Studio](https://developer.wordpress.com/studio/)! Check out the [Get Started](/GETSTARTED.md) guide for details.
+You can also test out the plugin locally with [Studio](https://developer.wordpress.com/studio/)! Check out the [Get Started](/GETSTARTED.md#test-locally-with-studio) guide for details.
 
 [[video]]
 
