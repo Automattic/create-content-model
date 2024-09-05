@@ -7,7 +7,7 @@ import { store as noticesStore } from '@wordpress/notices';
 export const useContentModelNameLengthRestrictor = () => {
 	const { editPost, lockPostSaving, unlockPostSaving } =
 		useDispatch( editorStore );
-	const { createNotice } = useDispatch( noticesStore );
+	const { createNotice, removeNotice } = useDispatch( noticesStore );
 
 	const { title, isPublishSidebarOpened, isPublishingPost } = useSelect(
 		( select ) => ( {
@@ -25,6 +25,8 @@ export const useContentModelNameLengthRestrictor = () => {
 			lockPostSaving( 'title-empty-lock' );
 		} else {
 			unlockPostSaving( 'title-empty-lock' );
+			removeNotice( 'title-empty-notice' );
+
 			editPost( { title: trimmedTitle.substring( 0, 20 ) } );
 
 			if ( trimmedTitle.length > 20 ) {
@@ -61,5 +63,6 @@ export const useContentModelNameLengthRestrictor = () => {
 		unlockPostSaving,
 		editPost,
 		createNotice,
+		removeNotice,
 	] );
 };
