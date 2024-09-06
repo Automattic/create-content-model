@@ -18,17 +18,6 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Get latest tag
-        id: get_tag
-        uses: actions-ecosystem/action-get-latest-tag@v1
-        with:
-          semver_only: true
-          initial_version: 0.0.0
-
-      - name: Update version to latest trunk commit
-        run: |
-          grep -rl "0.0.0-placeholder" . | grep -v "\.git" | xargs -I {} sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag }}-dev-${{ github.sha }}/g' {}
-
       - name: Install dependencies
         run: npm ci
 
