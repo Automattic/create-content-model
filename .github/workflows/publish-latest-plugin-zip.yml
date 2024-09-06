@@ -1,7 +1,8 @@
 name: Publish plugin to Automattic/create-content-model-releases latest on trunk merge
 
 on:
-  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
     branches:
       - trunk
 
@@ -12,6 +13,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get most recent tag
+        id: get_tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 1.0.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -20,6 +29,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Update version to latest trunk commit
+        run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag }}-dev-${{ github.sha }}/g' {} +"
 
       - name: Build and create plugin zip
         run: npm run plugin-zip
@@ -51,4 +63,4 @@ jobs:
           destination-repository-name: "create-content-model-releases"
           user-name: ${{ github.actor }}
           user-email: ${{ steps.get_email.outputs.email }}
-          target-branch: latest
+          target-branch: test
