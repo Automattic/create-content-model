@@ -23,6 +23,7 @@ jobs:
       - name: Get tag name
         id: get_tag
         run: |
+          git fetch --tags --force
           LATEST_TAG=$(git describe --tags --abbrev=0)
           echo "tag_name=$LATEST_TAG" >> $GITHUB_OUTPUT
 
