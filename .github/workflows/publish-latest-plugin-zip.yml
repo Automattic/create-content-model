@@ -28,7 +28,7 @@ jobs:
         run: npm ci
 
       - name: Update version to latest trunk commit
-        run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag_name }}-${{ github.sha }}/g' {} +"
+        run: "find . -type f -exec sed -i 's/0.0.2-dev-e35b494710b4d5d40cc0b7adfe5398ef52307bfb/${{ steps.get_tag.outputs.tag_name }}-${{ github.sha }}/g' {} +"
 
       - name: Build and create plugin zip
         run: npm run plugin-zip
