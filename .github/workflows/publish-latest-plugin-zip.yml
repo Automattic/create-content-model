@@ -1,8 +1,7 @@
 name: Publish plugin to Automattic/create-content-model-releases latest on trunk merge
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
     branches:
       - trunk
 
@@ -63,4 +62,4 @@ jobs:
           destination-repository-name: "create-content-model-releases"
           user-name: ${{ github.actor }}
           user-email: ${{ steps.get_email.outputs.email }}
-          target-branch: test
+          target-branch: latest
