@@ -22,7 +22,9 @@ jobs:
 
       - name: Get tag name
         id: get_tag
-        run: echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "tag_name=$LATEST_TAG" >> $GITHUB_OUTPUT
 
       - name: Install dependencies
         run: npm ci
