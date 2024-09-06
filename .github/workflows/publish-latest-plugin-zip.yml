@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.get_tag.outputs.tag_name }}
 
     steps:
       - name: Checkout code
@@ -18,18 +20,18 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Get latest tag
+      - name: Get tag name
         id: get_tag
-        uses: actions-ecosystem/action-get-latest-tag@v1
-        with:
-          semver_only: true
-          initial_version: 0.0.0
+        run: |
+          git fetch --tags --force
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "tag_name=$LATEST_TAG" >> $GITHUB_OUTPUT
 
       - name: Install dependencies
         run: npm ci
 
       - name: Update version to latest trunk commit
-        run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag }}-${{ github.sha }}/g' {} +"
+        run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag_name }}-${{ github.sha }}/g' {} +"
 
       - name: Build and create plugin zip
         run: npm run plugin-zip
