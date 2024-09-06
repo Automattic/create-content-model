@@ -25,12 +25,11 @@ jobs:
           semver_only: true
           initial_version: 0.0.0
 
-      - name: Update version to latest trunk commit
-        run: |
-          grep -rl "0.0.0-placeholder" . | grep -v "\.git" | xargs -I {} sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag }}-dev-${{ github.sha }}/g' {}
-
       - name: Install dependencies
         run: npm ci
+
+      - name: Update version to latest trunk commit
+        run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag }}-${{ github.sha }}/g' {} +"
 
       - name: Build and create plugin zip
         run: npm run plugin-zip
