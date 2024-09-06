@@ -12,6 +12,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get most recent tag
+        id: get_tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 1.0.0
+
+      - name: Update version to latest trunk commit
+        run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag }}-dev-${{ github.sha }}/g' {} +"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
