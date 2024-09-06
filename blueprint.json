@@ -15,7 +15,7 @@
 			"step": "installPlugin",
 			"pluginZipFile": {
 				"resource": "url",
-				"url": "https://raw.githubusercontent.com/Automattic/create-content-model-releases/latest/create-content-model.zip"
+				"url": "https://raw.githubusercontent.com/Automattic/create-content-model-releases/releases/create-content-model.zip"
 			}
 		},
 		{
