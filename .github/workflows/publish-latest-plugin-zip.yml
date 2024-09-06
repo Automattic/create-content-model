@@ -21,6 +21,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Update version to latest trunk commit
+        run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ github.sha }}/g' {} +"
+
       - name: Build and create plugin zip
         run: npm run plugin-zip
 
