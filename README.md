@@ -6,13 +6,13 @@ WordPress.com’s experimental Create Content Model plugin transforms the way cu
 
 [![Try in WordPress Playground](https://img.shields.io/badge/Try%20in%20WordPress%20Playground-blue?style=for-the-badge)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/create-content-model/trunk/blueprint.json)
 
-You can also test out the plugin locally with [Studio](https://developer.wordpress.com/studio/)! Check out the [Get Started](/GETSTARTED.md#test-locally-with-studio) guide for details.
+You can also test out the plugin locally with [Studio](https://developer.wordpress.com/studio/)! Check out the [Get Started](/get-started.md#test-locally-with-studio) guide for details.
 
 https://github.com/user-attachments/assets/723a973a-eb92-4b71-9f64-ac269d0f9861
 
 ## Getting Started
 
-Find detailed instructions on creating your content model using this plugin in the [Get Started](/GETSTARTED.md) guide.
+Find detailed instructions on creating your content model using this plugin in the [Get Started](/get-started.md) guide.
 
 [![Download Latest Release](https://img.shields.io/badge/Download%20Latest%20Release-blue?style=for-the-badge)](https://github.com/Automattic/create-content-model/releases/latest/download/create-content-model.zip)
 
