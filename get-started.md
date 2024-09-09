@@ -92,9 +92,10 @@ Create Content Model is a development tool, but it’s not required to run on yo
 4. Optionally, add version control for your own content model plugin to track changes and deploy your plugin across multiple sites.
 
 ## Test locally with Studio
+Studio is WordPress.com's free, open-source local development environment.
 
-1. Download [Studio](https://developer.wordpress.com/studio/)
-2. Add Site
-3. Open WP admin
-4. Download the [latest plugin release](https://github.com/Automattic/create-content-model/releases/latest/download/create-content-model.zip)
-5. Install plugin
+1. Download [Studio](https://developer.wordpress.com/studio/?utm_source=github&utm_medium=get-started&utm_campaign=create-content-model).
+2. Add a site.
+3. Open WP Admin.
+4. Download the [latest plugin release](https://github.com/Automattic/create-content-model/releases/latest/download/create-content-model.zip).
+5. Install and activate the plugin.
