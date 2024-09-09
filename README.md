@@ -6,7 +6,7 @@ WordPress.com’s experimental Create Content Model plugin transforms the way cu
 
 [![Try in WordPress Playground](https://img.shields.io/badge/Try%20in%20WordPress%20Playground-blue?style=for-the-badge)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Automattic/create-content-model/trunk/blueprint.json)
 
-You can also test out the plugin locally with [Studio](https://developer.wordpress.com/studio/)! Check out the [Get Started](/get-started.md#test-locally-with-studio) guide for details.
+You can also test out the plugin locally with [Studio](https://developer.wordpress.com/studio/?utm_source=github&utm_medium=readme&utm_campaign=create-content-model)! Check out the [Get Started](/get-started.md#test-locally-with-studio) guide for details.
 
 https://github.com/user-attachments/assets/723a973a-eb92-4b71-9f64-ac269d0f9861
 
@@ -20,7 +20,7 @@ Find detailed instructions on creating your content model using this plugin in t
 
 Our team at WordPress.com is excited to share our recent prototyping efforts on game changing approaches to custom content creation. 
 
-The Create Content Model plugin builds upon our custom post types project at the [CloudFest Hackathon in 2024](https://wordpress.com/blog/2024/04/15/custom-post-types-wordpress-admin/). We’ve leveraged core functionality, like [block bindings](https://make.wordpress.org/core/2024/03/06/new-feature-the-block-bindings-api/) and [block variations](https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/), to create a new paradigm for creating and managing custom post types and custom fields in WordPress.
+The Create Content Model plugin builds upon our custom post types project at the [CloudFest Hackathon in 2024](https://wordpress.com/blog/2024/04/15/custom-post-types-wordpress-admin/?utm_source=github&utm_medium=readme&utm_campaign=create-content-model). We’ve leveraged core functionality, like [block bindings](https://make.wordpress.org/core/2024/03/06/new-feature-the-block-bindings-api/) and [block variations](https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/), to create a new paradigm for creating and managing custom post types and custom fields in WordPress.
 
 Unlike existing custom post type and custom field plugins, our plugin takes a native approach by putting the creation and management of these elements directly in the WordPress Block Editor. Using the Block Bindings API, `post_meta` fields are bound to block attributes. Block variations are created from each bound block for use in front-end template layouts. The result is an extremely intuitive workflow for both the setup of custom post types and fields and their usage in front-end templating.
 
@@ -71,4 +71,4 @@ Follow us:
 
 <!-- Later we can add developers newsletter -->
 
-And while you’re at it, check out our [WordPress hosting solution for developers](https://wordpress.com/hosting) and [our agency program](https://wordpress.com/for-agencies/).
+And while you’re at it, check out our [WordPress hosting solution for developers](https://wordpress.com/hosting?utm_source=github&utm_medium=readme&utm_campaign=create-content-model) and [our agency program](https://wordpress.com/for-agencies/?utm_source=github&utm_medium=readme&utm_campaign=create-content-model).
