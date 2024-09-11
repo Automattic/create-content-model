@@ -111,7 +111,7 @@ final class Content_Model {
 	 * @return string The plural label.
 	 */
 	public function get_plural_label() {
-		return $this->get_model_meta( 'plural_label' ) ?? "{$this->title}s";
+		return $this->get_model_meta( 'plural_label' ) ?? $this->get_plural( $this->title );
 	}
 
 	/**
@@ -141,6 +141,22 @@ final class Content_Model {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Attempts to get the plural label based on the given singular label.
+	 *
+	 * @param string $singular The singular label.
+	 * @return string The plural label (best guess based on common English grammar rules).
+	 */
+	private function get_plural( $singular ) {
+		if ( str_ends_with( $singular, 'y' ) ) {
+			return substr( $singular, 0, -1 ) . 'ies';
+		}
+		if ( str_ends_with( $singular, 's' ) || str_ends_with( $singular, 'ch' ) ) {
+			return "{$singular}es";
+		}
+		return "{$singular}s";
 	}
 
 	/**
