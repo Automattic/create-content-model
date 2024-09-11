@@ -9,6 +9,16 @@ import {
 import { useEntityProp } from '@wordpress/core-data';
 import { POST_TYPE_NAME } from '../constants';
 
+function getPlural( singular ) {
+	if ( singular.endsWith( 'y' ) ) {
+		return `${ singular.slice( 0, -1 ) }ies`;
+	}
+	if ( singular.endsWith( 's' ) || singular.endsWith( 'ch' ) ) {
+		return `${ singular }es`;
+	}
+	return `${ singular }s`;
+}
+
 export const CPTSettingsPanel = function () {
 	const [ meta, setMeta ] = useEntityProp(
 		'postType',
@@ -27,7 +37,7 @@ export const CPTSettingsPanel = function () {
 	useLayoutEffect( () => {
 		if ( title !== lastTitle.current ) {
 			lastTitle.current = title;
-			setMeta( { ...meta, plural_label: `${ title }s` } );
+			setMeta( { ...meta, plural_label: getPlural( title ) } );
 		}
 	}, [ title, meta, setMeta ] );
 
