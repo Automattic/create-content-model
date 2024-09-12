@@ -7,5 +7,4 @@ export const SUPPORTED_BLOCK_ATTRIBUTES = {
 	'core/button': [ 'url', 'text', 'linkTarget', 'rel' ],
 };
 
-export const { POST_TYPE, FIELDS, FALLBACK_VALUE_PLACEHOLDER } =
-	window.contentModelData;
+export const { POST_TYPE, FIELDS } = window.contentModelData;
