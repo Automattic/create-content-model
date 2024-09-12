@@ -10,6 +10,8 @@ You can also test out the plugin locally with [Studio](https://developer.wordpre
 
 https://github.com/user-attachments/assets/723a973a-eb92-4b71-9f64-ac269d0f9861
 
+For a more thorough introduction, check out Brian Coord's [Custom fields and post types inside the block editor livestream](https://www.youtube.com/watch?v=VLB3OkgNOTs).
+
 ## Getting Started
 
 Find detailed instructions on creating your content model using this plugin in the [Get Started](/get-started.md) guide.
