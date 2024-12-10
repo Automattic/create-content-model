@@ -87,7 +87,7 @@ Create a custom [Query Loop](https://wordpress.org/documentation/article/query-l
 Create Content Model is a development tool, but it’s not required to run on your site. If you’re done building your content model, you can “export” it as a standalone plugin:
 
 1. Click Content Models → **Export**.
-2. Export the data model plugin by clicking the **Download ZIP fil**e button.
+2. Export the data model plugin by clicking the **Download ZIP file** button.
 3. Install your data model plugin on a new site (or deactivate the main plugin on the current site and import the new plugin). Remember to upload it as the .zip file.
 4. Optionally, add version control for your own content model plugin to track changes and deploy your plugin across multiple sites.
 
