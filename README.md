@@ -10,7 +10,10 @@ You can also test out the plugin locally with [Studio](https://developer.wordpre
 
 https://github.com/user-attachments/assets/723a973a-eb92-4b71-9f64-ac269d0f9861
 
-For a more thorough introduction, check out Brian Coord's [Custom fields and post types inside the block editor livestream](https://www.youtube.com/watch?v=VLB3OkgNOTs).
+For a more thorough introduction:
+
+-   Check out Brian Coord's [Custom fields and post types inside the block editor livestream](https://www.youtube.com/watch?v=VLB3OkgNOTs).
+-   [Watch our talk at WordCamp Asia 2025](https://www.youtube.com/live/nKntUgxnZuY?feature=shared&t=3409), and this is the [demo video](https://youtu.be/67CHMveu38Y) shown at the end of the talk.
 
 ## Getting Started
 
