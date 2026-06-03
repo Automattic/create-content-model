@@ -28,7 +28,7 @@ jobs:
       - run: npm install
       - run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag_name }}/g' {} +"
       - run: npm run plugin-zip
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           body: ${{ steps.tag-message.outputs.stdout }}
           files: create-content-model.zip
@@ -70,7 +70,7 @@ jobs:
           echo "email=$EMAIL" >> $GITHUB_OUTPUT
 
       - name: Push zip to create-content-model-releases repository
-        uses: cpina/github-action-push-to-another-repository@main
+        uses: cpina/github-action-push-to-another-repository@55306faa4ed53b815ae49e564af8cfb359d32ae2 # v1.7.3
         env:
           SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
         with:
