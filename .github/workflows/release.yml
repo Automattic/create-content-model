@@ -21,21 +21,21 @@ jobs:
         run: git fetch --tags --force
       - id: tag-message
         run: git tag -l --sort=-taggerdate --format='%(contents)' $(git describe --tags $(git branch --show-current))
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: "npm"
       - run: npm install
       - run: "find . -type f -exec sed -i 's/0.0.0-placeholder/${{ steps.get_tag.outputs.tag_name }}/g' {} +"
       - run: npm run plugin-zip
-      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+      - uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           body: ${{ steps.tag-message.outputs.stdout }}
           files: create-content-model.zip
           make_latest: true
 
       - name: Upload plugin zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: plugin-zip
           path: create-content-model.zip
@@ -48,7 +48,7 @@ jobs:
     steps:
       # Download the artifact from the previous job
       - name: Download plugin zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: plugin-zip
 
