@@ -17,7 +17,7 @@ jobs:
 
       - name: Get most recent tag
         id: get_tag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
+        uses: WyriHaximus/github-action-get-previous-tag@04e8485ecb6487243907e330d522ff60f02283ce # v1.4.0
         with:
           fallback: 1.0.0
 
@@ -53,7 +53,7 @@ jobs:
           echo "email=$EMAIL" >> $GITHUB_OUTPUT
 
       - name: Push zip to another repository
-        uses: cpina/github-action-push-to-another-repository@main
+        uses: cpina/github-action-push-to-another-repository@55306faa4ed53b815ae49e564af8cfb359d32ae2 # v1.7.3
         env:
           SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
         with:
