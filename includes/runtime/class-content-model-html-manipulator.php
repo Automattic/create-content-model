@@ -84,6 +84,8 @@ class Content_Model_Html_Manipulator {
 
 					if ( 'class' === $attribute ) {
 						$value .= ' ' . $attribute_value;
+					} elseif ( in_array( $attribute, array( 'href', 'src', 'action', 'formaction', 'poster', 'xlink:href' ), true ) ) {
+						$value = esc_url_raw( $attribute_value );
 					} else {
 						$value = $attribute_value;
 					}

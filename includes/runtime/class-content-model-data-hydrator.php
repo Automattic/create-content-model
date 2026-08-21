@@ -80,7 +80,9 @@ class Content_Model_Data_Hydrator {
 		if ( 'post_content' === $field ) {
 			$content = get_the_content();
 		} else {
-			$content = get_post_meta( get_the_ID(), $field, true );
+			// Post meta is not run through kses on save, so filter values
+			// stored before the sanitize_callback was added.
+			$content = wp_kses_post( get_post_meta( get_the_ID(), $field, true ) );
 		}
 
 		// If can't find the content, do not try to inject it.
