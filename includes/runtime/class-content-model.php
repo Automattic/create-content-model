@@ -271,10 +271,12 @@ final class Content_Model {
 					$this->slug,
 					$field['slug'],
 					array(
-						'description'  => $field['description'],
-						'show_in_rest' => true,
-						'single'       => true,
-						'type'         => 'string', // todo: support other types.
+						'description'       => $field['description'],
+						'show_in_rest'      => true,
+						'single'            => true,
+						'type'              => 'string', // todo: support other types.
+						'sanitize_callback' => 'wp_kses_post',
+						'auth_callback'     => array( __CLASS__, 'meta_auth_callback' ),
 					)
 				);
 			}
@@ -293,10 +295,14 @@ final class Content_Model {
 					'attribute_name' => $attribute_name,
 				);
 
+				$type = $block->get_attribute_type( $attribute_name );
+
 				$args = array(
-					'show_in_rest' => true,
-					'single'       => true,
-					'type'         => $block->get_attribute_type( $attribute_name ),
+					'show_in_rest'      => true,
+					'single'            => true,
+					'type'              => $type,
+					'sanitize_callback' => self::get_sanitize_callback_for_type( $type ),
+					'auth_callback'     => array( __CLASS__, 'meta_auth_callback' ),
 				);
 
 				$default_value = $block->get_default_value_for_attribute( $attribute_name );
@@ -312,6 +318,39 @@ final class Content_Model {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Returns the sanitize callback to use for a given attribute type.
+	 *
+	 * @param string $type The attribute type.
+	 *
+	 * @return callable
+	 */
+	private static function get_sanitize_callback_for_type( $type ) {
+		switch ( $type ) {
+			case 'integer':
+				return 'intval';
+			case 'number':
+				return 'floatval';
+			case 'boolean':
+				return 'rest_sanitize_boolean';
+			default:
+				return 'wp_kses_post';
+		}
+	}
+
+	/**
+	 * Authorizes writes to a content model meta field.
+	 *
+	 * @param bool   $allowed Whether the user can edit the meta.
+	 * @param string $meta_key The meta key.
+	 * @param int    $post_id The post ID.
+	 *
+	 * @return bool
+	 */
+	public static function meta_auth_callback( $allowed, $meta_key, $post_id ) {
+		return current_user_can( 'edit_post', $post_id );
 	}
 
 	/**
